@@ -114,6 +114,8 @@ check('aria-label="Previous featured"' in home and 'aria-label="Next featured"' 
 check('data-featured-step="-1"' in home and 'data-featured-step="1"' in home, "featured arrows should step through the list")
 check('class="cover-controls" hidden' in home, "featured arrows stay hidden until the page script runs")
 check("stepFeatured" in site_js and "data-featured-step" in site_js, "page script should cycle the featured cover")
+check("mapListCard" in site_js and "map-thumb" in site_js and "openPopup" in site_js, "map list should use compact cards and still open the pin")
+check("#map-list .map-hit" in styles and "#map-list .map-thumb" in styles, "map list cards should stay compact")
 check(".cover-arrow" in styles and "min-width: 44px" in styles, "featured arrows should stay large enough to tap")
 for slug in featured:
     check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")

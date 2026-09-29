@@ -66,6 +66,43 @@ export function spreadOverlaps(items) {
   return placed;
 }
 
+const MONOGRAM_SKIP = new Set(["the", "and", "at", "of", "a", "an", "by", "for", "on", "in"]);
+
+export function monogram(name) {
+  const cleaned = String(name || "").replace(/[’']/g, "").replace(/&/g, " ");
+  let words = (cleaned.match(/[A-Za-z0-9]+/g) || []).filter((word) => !MONOGRAM_SKIP.has(word.toLowerCase()));
+  if (!words.length) words = String(name || "").match(/[A-Za-z0-9]+/g) || ["E"];
+  return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
+}
+
+function listTone(item) {
+  const blob = [...(item.cuisines || []), ...(item.foods || [])].join(" ").toLowerCase();
+  if (/coffee|cafe|donut/.test(blob)) return "coffee";
+  if (/dessert|ice cream|chocolate|sweet/.test(blob)) return "sweet";
+  if (/pizza|italian/.test(blob)) return "italian";
+  if (/sushi|japanese/.test(blob)) return "sushi";
+  if (/seafood|oyster|fish/.test(blob)) return "seafood";
+  if (/burger/.test(blob)) return "burger";
+  if (/mexican|taco|latin/.test(blob)) return "spice";
+  if (/wine|bar/.test(blob)) return "wine";
+  return "gulf";
+}
+
+export function mapListCard(item) {
+  const href = `/restaurants/${encodeURIComponent(item.slug || "")}/`;
+  const meta = [item.area, item.price].filter(Boolean).join(" · ");
+  const media = item.image
+    ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name || "Restaurant")}">`
+    : `<span class="map-thumb ph" data-tone="${escapeHtml(listTone(item))}"><span class="mono" aria-hidden="true">${escapeHtml(monogram(item.name))}</span></span>`;
+  const thumb = item.image ? `<span class="map-thumb">${media}</span>` : media;
+  const address = item.address ? `<span class="map-address">${escapeHtml(item.address)}</span>` : "";
+  return (
+    `<a class="map-hit" href="${href}">${thumb}<span class="map-copy">` +
+    `<strong>${escapeHtml(item.name || "")}</strong>` +
+    `<span class="map-meta">${escapeHtml(meta)}</span>${address}</span></a>`
+  );
+}
+
 export function markerPopup(item) {
   const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
   const photo = item.image
@@ -260,26 +297,16 @@ function bootMap() {
     const bounds = [];
     for (const item of visible) {
       const marker = L.marker([item.pinLat, item.pinLng], { icon }).addTo(map);
-      const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
       marker.bindPopup(markerPopup(item), { maxWidth: 280 });
       markers.push(marker);
       bounds.push([item.pinLat, item.pinLng]);
       if (list) {
-        const link = document.createElement("a");
-        link.href = href;
-        link.className = "map-hit";
-        const name = document.createElement("strong");
-        name.textContent = item.name;
-        const meta = document.createElement("span");
-        meta.textContent = [item.area, item.price].filter(Boolean).join(" · ");
-        link.append(name, meta);
-        if (item.address) {
-          const address = document.createElement("span");
-          address.className = "map-address";
-          address.textContent = item.address;
-          link.append(address);
-        }
-        link.addEventListener("mouseenter", () => marker.openPopup());
+        const holder = document.createElement("div");
+        holder.innerHTML = mapListCard(item);
+        const link = holder.firstElementChild;
+        const open = () => marker.openPopup();
+        link.addEventListener("mouseenter", open);
+        link.addEventListener("focus", open);
         list.append(link);
       }
     }

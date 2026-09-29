@@ -603,6 +603,42 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
 .map-hit span { color: var(--muted); font-size: 0.85rem; }
 .map-hit .map-address { font-size: 0.78rem; font-weight: 300; line-height: 1.35; }
 .map-hit:hover strong { color: var(--gulf); }
+#map-list .map-hit {
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.38rem 0.15rem 0.38rem 0;
+}
+#map-list .map-thumb {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--gulf-deep);
+  padding: 0;
+  gap: 0;
+}
+#map-list .map-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#map-list .map-thumb .mono { font-size: 0.95rem; line-height: 1; letter-spacing: 0.03em; }
+#map-list .map-copy { display: grid; gap: 0.02rem; min-width: 0; }
+#map-list .map-hit strong {
+  font-size: 1.05rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#map-list .map-meta,
+#map-list .map-address {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#map-list .map-meta { color: var(--ink); font-weight: 400; }
+#map-list .map-address { color: var(--muted); font-weight: 300; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
   border-radius: 0;
   box-shadow: none;
@@ -694,6 +730,7 @@ html.js-filter #cards .card { display: none; }
   .profile-grid aside { position: sticky; top: 5.5rem; }
   #map { height: min(68vh, 640px); }
   .map-layout { grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.75fr); align-items: start; }
+  #map-list { max-height: min(68vh, 640px); overflow-y: auto; }
 }
 @media (min-width: 980px) {
   .meal-index { grid-template-columns: repeat(5, 1fr); }

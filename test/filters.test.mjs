@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, featuredIndex, filtersFromParams, markerPopup, matches, spreadOverlaps, stepFeatured } from "../site.js";
+import { describeFilters, featuredIndex, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -71,6 +71,25 @@ test("map popups show the name, address, and profile", () => {
   assert.match(plainHtml, /class="popup-address"/);
   assert.doesNotMatch(plainHtml, /popup-photo/);
   assert.match(plainHtml, /href="\/restaurants\/o-ku-alys-beach\/"/);
+});
+
+test("map list cards stay compact", () => {
+  assert.equal(monogram("The Red Bar"), "RB");
+  assert.equal(monogram("O-Ku"), "OK");
+  assert.equal(monogram("Bud & Alley’s"), "BA");
+  const stinkys = restaurants.find((item) => item.slug === "stinkys-fish-camp-dune-allen-beach");
+  const photo = mapListCard(stinkys);
+  assert.match(photo, /class="map-thumb"/);
+  assert.match(photo, /stinkys-fish-camp\.jpg/);
+  assert.match(photo, /<strong>Stinky’s Fish Camp<\/strong>/);
+  assert.match(photo, /class="map-meta">Dune Allen Beach · \$\$/);
+  assert.match(photo, /class="map-address">5960 W County Hwy 30A/);
+  const plain = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const mark = mapListCard(plain);
+  assert.match(mark, /class="map-thumb ph"/);
+  assert.match(mark, /aria-hidden="true">OK</);
+  assert.match(mark, /Alys Beach · /);
+  assert.doesNotMatch(mark, /<img/);
 });
 
 test("stacked pins at the same coordinate are pulled apart", () => {
