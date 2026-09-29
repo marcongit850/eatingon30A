@@ -59,6 +59,22 @@ FALLBACK_COPY = {
 
 MEAL_ORDER = ["Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"]
 
+# Phase 1 shell. These slugs are the only listings published to the site.
+# data/restaurants.csv still holds the full export. Set this to None after
+# visual sign-off to generate a page for every PUBLISHED row.
+SAMPLE_SLUGS = [
+    "stinkys-fish-camp-dune-allen-beach",
+    "the-red-bar-grayton-beach",
+    "hurricane-oyster-bar-grayton-beach",
+    "pizza-by-the-sea-watercolor",
+    "bud-and-alleys-seaside",
+    "amavida-coffee-roasters-seaside",
+    "big-bad-breakfast-inlet-beach",
+    "georges-at-alys-beach-alys-beach",
+    "neat-bottle-shop-and-tasting-room-alys-beach",
+    "sugar-shak-rosemary-beach",
+]
+
 # The Wix export's detail photo for this restaurant is a multi-megabyte PNG.
 # The same frame is committed as a compressed JPEG. The CSV stays the source.
 LOCAL_WIX_FILES = {
@@ -336,6 +352,27 @@ def load_restaurants() -> list[dict]:
     return restaurants
 
 
+def published_restaurants() -> list[dict]:
+    """Listings that should appear on the site. The shell uses SAMPLE_SLUGS."""
+    restaurants = load_restaurants()
+    if not SAMPLE_SLUGS:
+        return restaurants
+    by_slug = {restaurant["slug"]: restaurant for restaurant in restaurants}
+    missing = [slug for slug in SAMPLE_SLUGS if slug not in by_slug]
+    if missing:
+        raise SystemExit("Sample slugs missing from data/restaurants.csv: " + ", ".join(missing))
+    return [by_slug[slug] for slug in SAMPLE_SLUGS]
+
+
+def sample_banner() -> str:
+    if not SAMPLE_SLUGS:
+        return ""
+    return (
+        '<p class="sample-banner">Design preview. These pages use a sample of listings so the look and filters can be approved. '
+        "The full restaurant CSV stays in the project and is not on the site yet.</p>"
+    )
+
+
 def load_areas(restaurants: list[dict]) -> list[dict]:
     by_slug: dict[str, dict] = {}
     for row in load_rows(DATA / "locations.csv"):
@@ -516,6 +553,7 @@ def layout(title: str, description: str, path: str, active: str, body: str, extr
         + extra_head
         + "</head>\n<body>\n"
         + header(active)
+        + sample_banner()
         + '<main id="main">\n'
         + body
         + "</main>\n"
@@ -623,7 +661,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<div class="hero-copy"><div class="wrap">'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>Find the best restaurants along 30A.</h1>"
-        '<p class="lede">Your guide to dining on Florida’s Emerald Coast. Pick a meal or a town and the directory opens already filtered.</p>'
+        '<p class="lede">Your guide to dining on Florida’s Emerald Coast. Pick a meal or a town and the sample directory opens already filtered.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
         '<label class="field"><span class="visually-hidden" style="position:absolute;left:-999px">Search restaurants</span>'
         '<input name="q" type="search" placeholder="Try oysters, coffee, pizza…"></label>'
@@ -632,16 +670,17 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         "</div></div></section>"
         '<section class="section"><div class="wrap">'
         '<div class="section-head"><div><p class="kicker">West to east</p><h2>Explore by town</h2></div>'
-        "<p>Each town opens the restaurant directory with that area already selected.</p></div>"
+        "<p>Towns in this preview. Each one opens the directory with that area already selected.</p></div>"
         f'<div class="town-grid">{"".join(towns)}</div>'
         '<p class="meta" style="margin-top:1rem"><a href="/areas/">Read the town guides</a> · <a href="/map/">Open the map</a></p>'
         "</div></section>"
         '<section class="section" style="padding-top:0"><div class="wrap split">'
         f"<div class=\"prose\"><h2>A directory for the whole corridor</h2><p>{e(ABOUT)}</p>"
-        '<p><a class="button" href="/restaurants/">Browse all restaurants</a></p></div>'
+        "<p>This preview is the design shell. The full catalog is imported after the look and filters are signed off.</p>"
+        '<p><a class="button" href="/restaurants/">Browse the sample</a></p></div>'
         '<aside class="prose"><div class="stat-row">'
-        f"<p><strong>{len(restaurants)}</strong> restaurants</p>"
-        f"<p><strong>{len(areas)}</strong> towns</p>"
+        f"<p><strong>{len(restaurants)}</strong> sample listings</p>"
+        f"<p><strong>{len(areas)}</strong> towns in this preview</p>"
         "</div><p>The map uses OpenStreetMap tiles. A card shows a photo when the listing has a working image URL, and a color block when it does not.</p></aside>"
         "</div></section>"
     )
@@ -700,8 +739,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     cards = "".join(card(restaurant) for restaurant in restaurants)
     body = (
         '<div class="wrap page-intro"><p class="kicker">Directory</p>'
-        '<h1 id="listing-title">All restaurants</h1>'
-        "<p class=\"lede\">Filter by town, meal, or cuisine. Homepage shortcuts land here with the matching filter already on.</p>"
+        '<h1 id="listing-title">Sample directory</h1>'
+        "<p class=\"lede\">Filter by town, meal, or cuisine. Homepage shortcuts land here with the matching filter already on. Only the sample listings are loaded.</p>"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
@@ -884,8 +923,8 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
 def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro"><p class="kicker">OpenStreetMap</p>'
-        '<h1 id="listing-title">Map of 30A restaurants</h1>'
-        "<p class=\"lede\">Same filters as the directory. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
+        '<h1 id="listing-title">Sample map</h1>'
+        "<p class=\"lede\">Same filters as the directory, limited to the sample. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
@@ -979,6 +1018,7 @@ def build_about() -> None:
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT)}</p>"
         "<p>Start with breakfast, lunch, or dinner on the homepage, or pick a town. Those links open the directory with the filter already applied. The map uses the same filters and OpenStreetMap tiles.</p>"
+        "<p>What you see now is a design shell: a handful of real listings so the pages are not empty. The full export stays in <code>data/restaurants.csv</code> and is published only after this look is approved.</p>"
         "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. If a restaurant has a working photo URL in the data, the card shows it. Otherwise the card keeps a simple color block.</p>"
         '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
     )
@@ -1106,7 +1146,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
 
 
 def main() -> None:
-    restaurants = load_restaurants()
+    restaurants = published_restaurants()
     areas = load_areas(restaurants)
     hero = hero_image()
     cuisines = sorted({cuisine for restaurant in restaurants for cuisine in restaurant["cuisines"]})

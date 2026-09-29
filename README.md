@@ -1,6 +1,16 @@
 # Eating on 30A
 
-A static restaurant guide for Scenic Highway 30A in Walton County, Florida. It replaces the Wix site with pages generated from two CSV files. The directory, town shortcuts, and map all use those files. There is no Airtable base and no Google Places or Google Maps API.
+A static restaurant guide for Scenic Highway 30A in Walton County, Florida. The current site is a **design shell** for approval of the look and the filters. It is not the full catalog.
+
+## Phase 1 (this preview)
+
+The homepage, directory, filters, detail template, and map are live, styled, and wired up. They show a sample of 10 restaurants from a few towns (Dune Allen, Grayton, WaterColor, Seaside, Inlet Beach, Alys Beach, and Rosemary Beach), including the one listing that has a real photo. Meal, town, cuisine, and search filters work on that sample. The map uses the same sample.
+
+## Phase 2 (after visual sign-off)
+
+The full export stays committed at `data/restaurants.csv` (114 published rows) and `data/locations.csv`. It is **not** generated into pages yet. After the shell is approved, set `SAMPLE_SLUGS` to `None` in `scripts/build.py` and run `python3 scripts/build.py`. That publishes every `PUBLISHED` row: one detail page each, and the full directory and map.
+
+There is no Airtable base and no Google Places or Google Maps API.
 
 The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or any other custom domain to this Worker. Vanity DNS stays where it is until someone moves it on purpose.
 
@@ -29,7 +39,7 @@ That rebuilds the site, checks the generated pages, and checks the filter rules.
 
 ## Edit the directory
 
-`data/restaurants.csv` and `data/locations.csv` are the source of truth. Edit those files, then regenerate:
+`data/restaurants.csv` and `data/locations.csv` are the source of truth. The build currently publishes only the slugs in `SAMPLE_SLUGS`. Edit the CSVs whenever you like; the rest of the file is kept for phase 2 and does not appear on the site until that list is cleared. Then regenerate:
 
 ```bash
 python3 scripts/build.py

@@ -66,7 +66,7 @@ export function spreadOverlaps(items) {
   return placed;
 }
 
-export function describeFilters(filters, areaNames) {
+export function describeFilters(filters, areaNames, emptyLabel = "Sample directory") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
   if (filters.cuisine) parts.push(filters.cuisine);
@@ -74,7 +74,7 @@ export function describeFilters(filters, areaNames) {
   if (filters.outdoor === "yes") parts.push("Outdoor dining");
   if (filters.kids === "yes") parts.push("Kid friendly");
   if (filters.music === "yes") parts.push("Live music");
-  let label = parts.length ? parts.join(" · ") : "All restaurants";
+  let label = parts.length ? parts.join(" · ") : emptyLabel;
   if (filters.area) {
     const town = areaNames[filters.area] || filters.area;
     label += ` in ${town}`;
@@ -246,7 +246,7 @@ function bootMap() {
         list.append(link);
       }
     }
-    const label = describeFilters(filters, areaNames);
+    const label = describeFilters(filters, areaNames, "Sample map");
     if (title) title.textContent = label;
     if (count) count.textContent = visible.length === 1 ? "1 place on the map" : `${visible.length} places on the map`;
     if (note) {

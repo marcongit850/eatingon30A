@@ -49,6 +49,14 @@ h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); }
 .skip:focus { top: 0.5rem; }
 
 .wrap { width: var(--wrap); margin-inline: auto; }
+.sample-banner {
+  margin: 0;
+  background: var(--gulf-deep);
+  color: #f6f1e7;
+  text-align: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.92rem;
+}
 .site-header {
   position: sticky;
   top: 0;

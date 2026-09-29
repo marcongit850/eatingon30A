@@ -30,7 +30,14 @@ def check(condition: bool, message: str) -> None:
         failures.append(message)
 
 
-check(len(restaurants) == len(source) == 114, f"expected 114 restaurants, got json {len(restaurants)} source {len(source)}")
+shown = build.published_restaurants()
+check(len(source) == 114, f"full CSV should stay at 114 published rows, got {len(source)}")
+check(len(restaurants) == len(shown), "public json should match the sample, not the full CSV")
+check(6 <= len(restaurants) <= 12, f"shell should publish 6–12 restaurants, got {len(restaurants)}")
+detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
+check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} sample rows")
+check("Design preview" in home, "homepage should say this is a design preview")
+check("full restaurant CSV" in home or "full catalog" in home.lower() or "not on the site yet" in home, "homepage should say the full import is later")
 check('"name": "eatingon30a"' in wrangler, "worker name must stay eatingon30a")
 check("eatingon30a.com" not in wrangler, "wrangler must not attach the vanity domain")
 check("routes" not in wrangler, "wrangler must not declare custom routes")
@@ -39,7 +46,7 @@ for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
     check(f'href="/restaurants/?meal={meal}"' in home, f"homepage missing meal link {meal}")
 
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
-check(len(areas) >= 12, "expected the 30A towns")
+check(1 <= len(areas) <= 8, f"sample should cover a few towns, got {len(areas)}")
 for area in areas:
     check(f'href="/restaurants/?area={area["slug"]}"' in home, f"homepage missing area filter {area['slug']}")
     check((ROOT / "areas" / area["slug"] / "index.html").exists(), f"missing town page {area['slug']}")
