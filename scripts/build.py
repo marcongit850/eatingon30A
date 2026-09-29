@@ -694,7 +694,10 @@ def layout(
         + robots
         + social_tags(title, description, canonical, image, image_alt)
         + '<meta name="theme-color" content="#102825">\n'
-        '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
+        '<link rel="icon" href="/favicon.ico" sizes="any">\n'
+        '<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">\n'
+        '<link rel="icon" href="/images/eating-favicon-512.png" type="image/png" sizes="512x512">\n'
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">\n'
