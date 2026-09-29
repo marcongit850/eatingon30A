@@ -842,7 +842,7 @@ def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
         f"<h2>{e(feature['name'])}</h2>"
         f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
         f'<p class="meta">{e(meta)}</p>'
-        f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
+        f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">View restaurant</a></p>'
         "</div></div>"
     )
 
@@ -1016,8 +1016,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     cards = "".join(card(restaurant) for restaurant in restaurants)
     body = (
         '<div class="wrap page-intro"><p class="kicker">Directory</p>'
-        '<h1 id="listing-title">The table</h1>'
-        "<p class=\"lede\">Narrow the guide by town, meal, or a few words. Homepage shortcuts land here with the matching filter already on.</p>"
+        '<h1 id="listing-title">Where to eat</h1>'
+        "<p class=\"lede\">Filter by beach town, meal, or a few words.</p>"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
@@ -1439,10 +1439,12 @@ def build_contact() -> None:
         "<p>Just include the restaurant name and what needs to be changed or added. "
         "We review every submission and can follow up using the email address you provide.</p></div>"
         '<form class="listing-form" action="/api/listing" method="post" data-listing>'
+        "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
+        '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
+        "<label><span>Email <abbr title=\"required\">*</abbr></span>"
+        '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label>'
         "<label><span>Restaurant name <abbr title=\"required\">*</abbr></span>"
         '<input name="restaurant" type="text" required maxlength="160" autocomplete="organization"></label>'
-        "<label><span>Town / location</span>"
-        '<input name="town" type="text" maxlength="120" autocomplete="off"></label>'
         "<fieldset><legend>Request type <abbr title=\"required\">*</abbr></legend>"
         '<label class="listing-choice"><input type="radio" name="type" value="update" required> <span>Update</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="edit"> <span>Edit</span></label>'
@@ -1451,11 +1453,7 @@ def build_contact() -> None:
         "</fieldset>"
         "<label><span>Details <abbr title=\"required\">*</abbr></span>"
         '<textarea name="details" required maxlength="4000" rows="6"></textarea></label>'
-        "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
-        '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
-        "<label><span>Email <abbr title=\"required\">*</abbr></span>"
-        '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label>'
-        '<button type="submit">Send to Marc</button>'
+        '<button type="submit">Submit</button>'
         '<p class="listing-status" role="status" aria-live="polite"></p>'
         "</form></div>"
     )
