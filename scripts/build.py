@@ -766,7 +766,7 @@ def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
     )
     flag = " hidden" if hidden else ""
     return (
-        f'<div class="wrap cover" data-featured{flag}>'
+        f'<div class="cover" data-featured{flag}>'
         f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
         f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=eager, name=feature["name"])}'
         "</a><div class=\"cover-copy\">"
@@ -776,6 +776,27 @@ def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
         f'<p class="meta">{e(meta)}</p>'
         f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
         "</div></div>"
+    )
+
+
+def featured_controls() -> str:
+    """Prev/next sit on the photo. They stay hidden until the page script binds them."""
+    left = (
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        '<path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" '
+        'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+    )
+    right = (
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        '<path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" '
+        'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+    )
+    return (
+        '<div class="cover-controls" hidden>'
+        f'<button type="button" class="cover-arrow" data-featured-step="-1" aria-label="Previous featured">{left}</button>'
+        f'<button type="button" class="cover-arrow" data-featured-step="1" aria-label="Next featured">{right}</button>'
+        '<p class="sr-only" data-featured-status aria-live="polite"></p>'
+        "</div>"
     )
 
 
@@ -816,9 +837,11 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     )
     cover = ""
     if slots:
+        controls = featured_controls() if len(featured) > 1 else ""
         cover = (
             '<section class="section cover-section" id="from-the-guide" aria-label="From the guide">'
-            f"{slots}{FEATURED_ROTATION}</section>"
+            '<div class="wrap cover-stage">'
+            f"{controls}{slots}</div>{FEATURED_ROTATION}</section>"
         )
     hero_html = (
         f'<img class="hero-photo" src="{e(hero)}" alt="{e(SHARE_ALT)}" width="1800" height="1200">'

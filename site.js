@@ -87,6 +87,14 @@ export function featuredIndex(count, now = Date.now()) {
   return ((day % total) + total) % total;
 }
 
+export function stepFeatured(index, delta, count) {
+  const total = Number(count) || 0;
+  if (total <= 0) return 0;
+  const current = Math.trunc(Number(index) || 0);
+  const move = Math.trunc(Number(delta) || 0);
+  return ((current + move) % total + total) % total;
+}
+
 export function describeFilters(filters, areaNames, emptyLabel = "The table") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
@@ -341,11 +349,46 @@ function bootDetailMap() {
 }
 
 function bootFeatured() {
-  const slots = [...document.querySelectorAll("#from-the-guide [data-featured]")];
+  const root = document.querySelector("#from-the-guide");
+  if (!root || root.dataset.featuredBound === "true") return;
+  const slots = [...root.querySelectorAll("[data-featured]")];
   if (slots.length < 2) return;
-  const index = featuredIndex(slots.length);
-  slots.forEach((slot, position) => {
-    slot.hidden = position !== index;
+  root.dataset.featuredBound = "true";
+  let index = slots.findIndex((slot) => !slot.hidden);
+  if (index < 0) index = featuredIndex(slots.length);
+  const status = root.querySelector("[data-featured-status]");
+  const controls = root.querySelector(".cover-controls");
+  if (controls) controls.hidden = false;
+
+  const show = (next, announce) => {
+    index = stepFeatured(next, 0, slots.length);
+    slots.forEach((slot, position) => {
+      slot.hidden = position !== index;
+    });
+    if (!announce || !status) return;
+    const heading = slots[index].querySelector("h2");
+    const name = heading ? heading.textContent.trim() : "";
+    status.textContent = name ? `${name}, ${index + 1} of ${slots.length}` : "";
+  };
+
+  show(index, false);
+
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-featured-step]");
+    if (!button || !root.contains(button)) return;
+    show(stepFeatured(index, Number(button.getAttribute("data-featured-step")), slots.length), true);
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest(".cover-arrow")) return;
+    event.preventDefault();
+    const delta = event.key === "ArrowLeft" ? -1 : 1;
+    show(stepFeatured(index, delta, slots.length), true);
   });
 }
 

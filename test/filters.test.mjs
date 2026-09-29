@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, featuredIndex, filtersFromParams, markerPopup, matches, spreadOverlaps } from "../site.js";
+import { describeFilters, featuredIndex, filtersFromParams, markerPopup, matches, spreadOverlaps, stepFeatured } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -90,6 +90,16 @@ test("featured cover rotates once per UTC day", () => {
   assert.notEqual(featuredIndex(4, Date.UTC(2026, 8, 29)), featuredIndex(4, Date.UTC(2026, 8, 30)));
   assert.equal(featuredIndex(1, 86400000 * 9), 0);
   assert.equal(featuredIndex(0, 86400000), 0);
+});
+
+test("featured arrows cycle every listing and wrap", () => {
+  assert.equal(stepFeatured(0, 1, 4), 1);
+  assert.equal(stepFeatured(3, 1, 4), 0);
+  assert.equal(stepFeatured(0, -1, 4), 3);
+  assert.equal(stepFeatured(2, -1, 4), 1);
+  assert.equal(stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29)), 1, 4), stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29, 18)), 1, 4));
+  assert.equal(stepFeatured(1, 0, 4), 1);
+  assert.equal(stepFeatured(0, 1, 0), 0);
 });
 
 test("filter label names the town", () => {
