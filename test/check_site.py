@@ -109,15 +109,25 @@ contact = (ROOT / "contact" / "index.html").read_text(encoding="utf-8")
 for banned in ("github.com", "GitHub", "restaurants.csv", "locations.csv", "README", "CSV", "Wix", "custom domain"):
     check(banned not in contact, f"contact page still mentions {banned}")
 check("Corrections and new listings" in contact, "contact page should keep the corrections heading")
-check("Marc reads these" in contact and "Send to Marc" in contact, "contact page should invite a note to Marc")
+check("Marc" not in contact, "contact page should not name a person")
+check("We read these and reply to the email you leave." in contact, "contact page should invite a note in the site voice")
+check(">Submit</button>" in contact, "contact submit button should say Submit")
+check("Send to Marc" not in contact and "Town / location" not in contact, "contact form should drop the personal send label and the town field")
 check('action="/api/listing"' in contact and 'data-listing' in contact, "contact form should post to the listing endpoint")
-check('name="restaurant"' in contact and 'name="town"' in contact and 'name="details"' in contact, "contact form is missing restaurant fields")
+check('name="restaurant"' in contact and 'name="details"' in contact, "contact form is missing restaurant fields")
+check('name="town"' not in contact, "contact form should not ask for a town")
 check('name="name"' in contact and 'name="email"' in contact, "contact form should ask for a reply name and email")
+contact_form = contact.split("<form", 1)[1].split("</form>", 1)[0]
+contact_fields = ["name", "email", "restaurant", "type", "details"]
+contact_order = [contact_form.find(f'name="{field}"') for field in contact_fields]
+check(all(index >= 0 for index in contact_order) and contact_order == sorted(contact_order), "contact fields should run name, email, restaurant, type, details")
 for request_type in ("update", "edit", "deletion", "new"):
     check(f'value="{request_type}"' in contact, f"contact form missing request type {request_type}")
 check('src="/listing.js"' in contact, "contact page should load the listing form script")
 listing_js = (ROOT / "listing.js").read_text(encoding="utf-8")
 check("/api/listing" in listing_js, "listing script should post to the worker")
+check("town" not in listing_js, "listing script should not send a town")
+check("Marc" not in listing_js and "Thanks. We have your note." in listing_js, "listing script should thank without a personal name")
 check(".listing-form" in styles and ".listing-status" in styles, "listing form should use the site styles")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
 check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
@@ -188,7 +198,9 @@ check("#map-list .map-hit" in styles and "#map-list .map-thumb" in styles, "map 
 check(".cover-arrow" in styles and "min-width: 44px" in styles, "featured arrows should stay large enough to tap")
 for slug in featured:
     check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")
-    check("Read the profile" in home, "featured cover should link to the profile")
+    check(f'href="/restaurants/{slug}/">View restaurant</a>' in home, f"featured cover for {slug} should say View restaurant")
+check("Read the profile" not in home, "featured cover should not put the profile URL in the label")
+check("View restaurant" in home, "featured cover CTA should say View restaurant")
 llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
 check("CSV" not in llms and "custom domain" not in llms, "llms.txt should stay visitor-facing")
 check("https://eatingon30a.352marc.workers.dev" in (ROOT / "site.config.json").read_text(encoding="utf-8"), "public origin should be the current workers.dev host")

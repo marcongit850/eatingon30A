@@ -13,7 +13,6 @@
     var type = data.get("type");
     return {
       restaurant: String(data.get("restaurant") || "").trim(),
-      town: String(data.get("town") || "").trim(),
       type: type ? String(type) : "",
       details: String(data.get("details") || "").trim(),
       name: String(data.get("name") || "").trim(),
@@ -22,15 +21,14 @@
   }
 
   function invalid(body) {
+    if (!body.name || body.name.length > 120) return { message: "Enter your name.", field: "name" };
+    if (!EMAIL.test(body.email) || body.email.length > 200) return { message: "Enter a valid email.", field: "email" };
     if (!body.restaurant || body.restaurant.length > 160) return { message: "Enter the restaurant name.", field: "restaurant" };
-    if (body.town.length > 120) return { message: "Town is too long.", field: "town" };
     if (body.type !== "update" && body.type !== "edit" && body.type !== "deletion" && body.type !== "new") {
       return { message: "Choose update, edit, deletion, or new listing.", field: "type" };
     }
     if (!body.details) return { message: "Tell us what should change.", field: "details" };
     if (body.details.length > 4000) return { message: "Keep the details under 4,000 characters.", field: "details" };
-    if (!body.name || body.name.length > 120) return { message: "Enter your name.", field: "name" };
-    if (!EMAIL.test(body.email) || body.email.length > 200) return { message: "Enter a valid email.", field: "email" };
     return null;
   }
 
@@ -66,9 +64,7 @@
             return;
           }
           form.reset();
-          status(form, result.data.delivered
-            ? "Thanks. Marc has your note and can reply to the email you gave."
-            : "Thanks. We have your note.", false);
+          status(form, "Thanks. We have your note.", false);
         })
         .catch(function () {
           status(form, "The request could not be sent. Try again in a moment.", true);
