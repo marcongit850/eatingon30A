@@ -1,6 +1,6 @@
 # Search and AI crawlers may read this site.
-# https://eatingon30a.delirious-roarer.workers.dev/llms.txt
-# https://eatingon30a.delirious-roarer.workers.dev/llms-full.txt
+# https://eatingon30a.352marc.workers.dev/llms.txt
+# https://eatingon30a.352marc.workers.dev/llms-full.txt
 
 User-agent: *
 Allow: /
@@ -44,4 +44,4 @@ Allow: /
 User-agent: FacebookBot
 Allow: /
 
-Sitemap: https://eatingon30a.delirious-roarer.workers.dev/sitemap.xml
+Sitemap: https://eatingon30a.352marc.workers.dev/sitemap.xml

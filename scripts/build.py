@@ -77,11 +77,14 @@ PHOTO_DIR = ROOT / "images" / "restaurants"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
 ABOUT = (
-    "Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton County, Florida. "
-    "From casual beachside bites and fresh Gulf seafood to upscale dining and local favorites, "
-    "the directory is meant to help you find a place by town, meal, or cuisine. "
-    "Browse Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, WaterColor, Seaside, Seagrove, "
-    "Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
+    "Eating on 30A is an editorial guide to dining along Scenic Highway 30A in South Walton. "
+    "Browse by breakfast, lunch, or dinner, or by town from Dune Allen to Inlet Beach, "
+    "and open any listing for the address, the hours, the vibe, and a map pin."
+)
+TOWNS = (
+    "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
+    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
+    "Inlet Beach, and Watersound Origins."
 )
 
 
@@ -1271,8 +1274,7 @@ def build_about() -> None:
         '<div class="wrap page-intro prose"><p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT)}</p>"
-        "<p>Start with breakfast, lunch, or dinner on the homepage, or pick a town. Those links open the directory with the filter already applied. The map uses the same filters and OpenStreetMap tiles.</p>"
-        "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. A card shows a photograph when the listing has one. Otherwise it keeps a monogram in a set frame.</p>"
+        f"<p>{e(TOWNS)}</p>"
         '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
     )
     write(
@@ -1425,7 +1427,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         "",
         ABOUT,
         "",
-        "Listings are edited in CSV files in the GitHub repository. The public preview does not use a custom domain.",
+        TOWNS,
         "",
         f"- [Home]({ORIGIN}/)",
         f"- [Restaurants]({ORIGIN}/restaurants/)",
@@ -1467,7 +1469,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         "",
         ABOUT,
         "",
-        "Each profile uses the street address and coordinates stored with that restaurant. A photograph appears when the listing has one.",
+        "Each profile gives the street address and a map pin. A photograph appears when the listing has one.",
         "",
         f"- [Home]({ORIGIN}/)",
         f"- [Restaurants]({ORIGIN}/restaurants/)",

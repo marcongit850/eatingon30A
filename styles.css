@@ -599,11 +599,11 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.leaflet-div-icon.pin {
+.leaflet-marker-icon.pin {
   background: var(--coral);
-  border: 2px solid #f7f2ea;
+  border: 3px solid #f7f2ea;
   border-radius: 50%;
-  box-shadow: 0 0 0 5px rgba(196, 120, 98, 0.22);
+  box-shadow: 0 0 0 6px rgba(196, 120, 98, 0.34), 0 1px 4px rgba(16, 40, 37, 0.45);
 }
 
 .site-footer {

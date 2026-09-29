@@ -10,9 +10,9 @@ The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or 
 
 Preview (workers.dev only):
 
-https://eatingon30a.delirious-roarer.workers.dev
+https://eatingon30a.352marc.workers.dev
 
-That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
+That hostname is the workers.dev preview. Do not attach a custom domain. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
 
 ## Preview locally
 

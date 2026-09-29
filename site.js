@@ -202,6 +202,17 @@ function escapeHtml(value) {
   ));
 }
 
+function restaurantPin() {
+  // Leaflet writes className onto .leaflet-marker-icon and drops the default
+  // leaflet-div-icon class, so the visible dot is .leaflet-marker-icon.pin.
+  return L.divIcon({
+    className: "pin",
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -14],
+  });
+}
+
 function bootMap() {
   const mapNode = document.querySelector("#map");
   const form = document.querySelector("#filters");
@@ -221,12 +232,7 @@ function bootMap() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
-  const icon = L.divIcon({
-    className: "pin",
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    popupAnchor: [0, -10],
-  });
+  const icon = restaurantPin();
 
   let markers = [];
   let restaurants = [];
@@ -317,11 +323,7 @@ function bootDetailMap() {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
-  const icon = L.divIcon({
-    className: "pin",
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  });
+  const icon = restaurantPin();
   L.marker([lat, lng], { icon }).addTo(map).bindPopup(markerPopup({
     slug: node.dataset.slug || "",
     name: node.dataset.name || "Restaurant",
