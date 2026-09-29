@@ -1016,8 +1016,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     cards = "".join(card(restaurant) for restaurant in restaurants)
     body = (
         '<div class="wrap page-intro"><p class="kicker">Directory</p>'
-        '<h1 id="listing-title">The table</h1>'
-        "<p class=\"lede\">Narrow the guide by town, meal, or a few words. Homepage shortcuts land here with the matching filter already on.</p>"
+        '<h1 id="listing-title">Where to eat</h1>'
+        "<p class=\"lede\">Filter by beach town, meal, or a few words.</p>"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'

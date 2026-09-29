@@ -77,6 +77,8 @@ test("map popups show the name, address, and profile", () => {
   assert.match(plainHtml, /class="popup-address"/);
   assert.doesNotMatch(plainHtml, /popup-photo/);
   assert.match(plainHtml, /href="\/restaurants\/steamboat-grill-30a-seagrove-beach\/"/);
+  assert.match(html, />View restaurant</);
+  assert.doesNotMatch(html, /View profile|https?:\/\//);
 });
 
 test("map list cards stay compact", () => {
@@ -136,6 +138,8 @@ test("filter label names the town", () => {
     { "inlet-beach": "Inlet Beach" }
   );
   assert.equal(label, "Breakfast in Inlet Beach");
+  assert.equal(describeFilters(blank, {}), "Where to eat");
+  assert.equal(describeFilters(blank, {}, "Along the coast"), "Along the coast");
 });
 
 test("public json does not carry place ids or owner ids", () => {
