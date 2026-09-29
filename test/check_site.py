@@ -96,7 +96,10 @@ check("editorial" not in home.lower() and "already filtered" not in home, "homep
 check("a feel for the place" in home, "homepage essay should use the visitor guide")
 areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
 check("<h1>Beach Towns of 30A</h1>" in areas_index, "towns page heading should name the beach towns")
-check("Open a town for the restaurants there" in areas_index, "towns page should point visitors to the restaurants there")
+check(
+    "From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one." in areas_index,
+    "towns page intro should invite visitors to the communities",
+)
 check("7 Restaurants" in areas_index and "7 places" not in areas_index, "town cards should count Restaurants")
 check("7 Restaurants" in home and re.search(r"\bplaces\b", home) is None, "homepage town counts should say Restaurants")
 check(build.restaurant_count_word(1, label=True) == "Restaurant", "a single listing is a Restaurant label")

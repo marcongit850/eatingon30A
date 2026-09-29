@@ -1245,7 +1245,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         )
     body = (
         '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
-        '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the restaurants there.</p>'
+        '<p class="lede">From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(
