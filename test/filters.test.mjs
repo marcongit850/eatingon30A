@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, filtersFromParams, matches, spreadOverlaps } from "../site.js";
+import { describeFilters, filtersFromParams, markerPopup, matches, spreadOverlaps } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -46,6 +46,31 @@ test("amenity filters require a yes flag", () => {
   assert.ok(outdoor.length > 0);
   assert.ok(outdoor.every((item) => item.outdoor));
   assert.ok(outdoor.length < restaurants.length);
+});
+
+test("every restaurant with coordinates gets its own map pin", () => {
+  assert.equal(restaurants.every((item) => typeof item.lat === "number" && typeof item.lng === "number"), true);
+  assert.equal(restaurants.every((item) => item.address), true);
+  const placed = spreadOverlaps(restaurants);
+  assert.equal(placed.length, restaurants.length);
+  assert.equal(new Set(placed.map((item) => item.slug)).size, restaurants.length);
+});
+
+test("map popups show the name, address, and profile", () => {
+  const stinkys = restaurants.find((item) => item.slug === "stinkys-fish-camp-dune-allen-beach");
+  const html = markerPopup(stinkys);
+  assert.match(html, /Stinky/);
+  assert.match(html, /5960 W County Hwy 30A/);
+  assert.match(html, /href="\/restaurants\/stinkys-fish-camp-dune-allen-beach\/"/);
+  assert.match(html, /class="popup-photo"/);
+  assert.match(html, /\/images\/restaurants\/stinkys-fish-camp\.jpg/);
+
+  const plain = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const plainHtml = markerPopup(plain);
+  assert.match(plainHtml, /O-Ku/);
+  assert.match(plainHtml, /class="popup-address"/);
+  assert.doesNotMatch(plainHtml, /popup-photo/);
+  assert.match(plainHtml, /href="\/restaurants\/o-ku-alys-beach\/"/);
 });
 
 test("stacked pins at the same coordinate are pulled apart", () => {

@@ -51,7 +51,7 @@ Columns that show up on the site:
 
 - `Restaurant Name`, `slug` (leave the slug blank and the build makes one from the old path plus the town if needed)
 - `map_area`, `map_area_slug`, `location_label`, `subarea`
-- `address` (JSON with `formatted` and `location.latitude` / `location.longitude`)
+- `address` (JSON with `formatted` and `location.latitude` / `location.longitude`). Every published row already has both, so the map does not geocode and does not invent coordinates. Pins that share one storefront are nudged apart on screen only.
 - `phone`, `website`, `price`, `notes`, `hours`
 - `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into `static.wixstatic.com` links)
 - `Cuisine Type`, `Meal Type`, `Food Type`, `Vibe`, `Category` (JSON arrays)
@@ -61,7 +61,7 @@ Columns that show up on the site:
 
 `data/locations.csv` supplies town names, short descriptions, and town photos. Towns that exist only on restaurants (Watersound and Watersound Origins) still appear.
 
-Only a couple of restaurants in the export have images. One list image is a black heart shape, so the build skips that file and uses the detail photo instead. That detail file is a very large PNG on Wix, so the page uses the compressed copy at `images/restaurants/stinkys-fish-camp.jpg`. Every other card without a working image URL gets a color block.
+Image columns are `List Image`, `Detail Image`, and `Logo`. In this export only Stinky’s Fish Camp has them filled. The list image is a black heart, so the build skips it. The detail photo and the logo are saved under `images/restaurants/` and used on the card, the profile, and the map popup. The other 113 listings keep a monogram. Town photos still come from `locations.csv` and use the Wix image URLs.
 
 The raw CSV is not uploaded with the site (see `.assetsignore`). It includes export columns such as owner ids and `googlePlaceId`. Those columns are not read into the public JSON and are not sent to Google.
 

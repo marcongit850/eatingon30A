@@ -66,6 +66,11 @@ for restaurant in restaurants:
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")
 check("User-agent: *" in robots and "Allow: /" in robots, "robots should allow crawlers")
+missing_coords = [item["slug"] for item in restaurants if not isinstance(item.get("lat"), (int, float)) or not isinstance(item.get("lng"), (int, float)) or not item.get("address")]
+check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
+photos = [item for item in restaurants if item.get("image")]
+check(len(photos) == 1 and photos[0]["slug"] == "stinkys-fish-camp-dune-allen-beach", f"expected one cached restaurant photo, got {[item['slug'] for item in photos]}")
+check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")
 check("leaflet.js" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing Leaflet")
@@ -81,6 +86,12 @@ if card:
 
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp.jpg" in stinkys, "Stinky's should use the compressed photo")
+check("/images/restaurants/stinkys-fish-camp-logo.jpg" in stinkys, "Stinky's logo should be a local file")
+check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
+oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
+oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check('class="ph"' in oku_hero and 'class="mono"' in oku_hero, "a listing without a photo should keep the monogram")
+check("<img" not in oku_hero, "O-Ku hero should stay a monogram")
 check("Black%20Heart" not in directory and "heart" not in stinkys.lower() or "stinkys-fish-camp.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
 

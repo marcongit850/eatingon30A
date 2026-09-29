@@ -67,6 +67,7 @@ SAMPLE_SLUGS = None
 # The same frame is committed as a compressed JPEG. The CSV stays the source.
 LOCAL_WIX_FILES = {
     "de29ed_1a5c50c91a154838816cc7ea7b48a6c6~mv2.png": "/images/restaurants/stinkys-fish-camp.jpg",
+    "de29ed_29920b8a7db54505a77b6a647ed4a343~mv2.jpg": "/images/restaurants/stinkys-fish-camp-logo.jpg",
 }
 
 ABOUT = (
@@ -843,7 +844,9 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     if restaurant["lat"] is not None and restaurant["lng"] is not None:
         map_html = (
             f'<div id="detail-map" data-lat="{restaurant["lat"]}" data-lng="{restaurant["lng"]}" '
-            f'data-name="{e(restaurant["name"])}" role="region" aria-label="Map"></div>'
+            f'data-name="{e(restaurant["name"])}" data-slug="{e(restaurant["slug"])}" '
+            f'data-area="{e(restaurant["area"])}" data-address="{e(restaurant["address"])}" '
+            f'data-image="{e(restaurant["heroImage"] or "")}" role="region" aria-label="Map"></div>'
             '<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">'
             '<script src="/vendor/leaflet/leaflet.js"></script>'
         )
@@ -930,7 +933,7 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro"><p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
-        "<p class=\"lede\">The same filters as the directory. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
+        "<p class=\"lede\">The same filters as the directory. Each pin uses the address and coordinates stored with that restaurant. Open a pin for the name, the street address, and the profile.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
