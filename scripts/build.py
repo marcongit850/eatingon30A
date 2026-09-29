@@ -78,6 +78,7 @@ LOCAL_WIX_FILES = {
 }
 
 PHOTO_DIR = ROOT / "images" / "restaurants"
+AREA_PHOTO_DIR = ROOT / "images" / "areas"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
 ABOUT = (
@@ -205,6 +206,26 @@ def listing_photos(slug: str) -> list[str]:
         return found
     single = local_listing_photo(slug)
     return [single] if single else []
+
+
+def local_area_photo(slug: str) -> str | None:
+    """Town card photo dropped in images/areas/<slug>.<ext>."""
+    for ext in PHOTO_EXTS:
+        if (AREA_PHOTO_DIR / f"{slug}{ext}").is_file():
+            return f"/images/areas/{slug}{ext}"
+    return None
+
+
+def area_photo(slug: str, raw: str) -> str | None:
+    """CSV image first, then a local file named for the town slug."""
+    raw = (raw or "").strip()
+    if raw.startswith("/images/"):
+        if (ROOT / raw.lstrip("/")).is_file():
+            return raw
+    remote = wix_to_url(raw, 1200, 800)
+    if remote:
+        return remote
+    return local_area_photo(slug)
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -428,7 +449,7 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
             "name": SHORT_NAMES.get(slug) or clean_text(row.get("area_name")).title(),
             "fullName": "",
             "description": clean_text(row.get("description")) or FALLBACK_COPY.get(slug, ""),
-            "image": wix_to_url(row.get("Location Image") or "", 1200, 800),
+            "image": area_photo(slug, row.get("Location Image") or ""),
         }
     for slug, copy in FALLBACK_COPY.items():
         by_slug.setdefault(
@@ -464,6 +485,8 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
         area["fullName"] = full_names.get(slug, area["name"])
         area["name"] = SHORT_NAMES.get(slug, area["fullName"])
         area["count"] = counts[slug]
+        if not area.get("image"):
+            area["image"] = local_area_photo(slug)
         ordered.append(area)
     return ordered
 
@@ -838,7 +861,7 @@ def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
         f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
         f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=eager, name=feature["name"])}'
         "</a><div class=\"cover-copy\">"
-        '<p class="kicker">From the guide</p>'
+        '<p class="kicker">Featured</p>'
         f"<h2>{e(feature['name'])}</h2>"
         f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
         f'<p class="meta">{e(meta)}</p>'
@@ -919,7 +942,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     if slots:
         controls = featured_controls() if len(featured) > 1 else ""
         cover = (
-            '<section class="section cover-section" id="from-the-guide" aria-label="From the guide">'
+            '<section class="section cover-section" id="from-the-guide" aria-label="Featured">'
             '<div class="wrap cover-stage">'
             f"{controls}{slots}</div>{FEATURED_ROTATION}</section>"
         )
@@ -1434,10 +1457,10 @@ def build_contact() -> None:
         '<div class="wrap page-intro">'
         '<div class="prose"><p class="kicker">Contact</p>'
         "<h1>Corrections and new listings</h1>"
-        "<p>Hours, phone numbers, and websites live on each restaurant page. "
-        "If a listing needs an update or an edit, if a restaurant should come off the guide, "
-        "or if one is missing, send a note. We read these and reply to the email you leave.</p>"
-        "<p>Name the restaurant and what should change.</p></div>"
+        "<p>Restaurant hours, phone numbers, websites, and other details are listed on each restaurant page. "
+        "If something needs to be updated, a restaurant has closed, or we’re missing a place you think should be included, let us know.</p>"
+        "<p>Just include the restaurant name and what needs to be changed or added. "
+        "We review every submission and can follow up using the email address you provide.</p></div>"
         '<form class="listing-form" action="/api/listing" method="post" data-listing>'
         "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
         '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
@@ -1451,7 +1474,6 @@ def build_contact() -> None:
         '<label class="listing-choice"><input type="radio" name="type" value="deletion"> <span>Deletion</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="new"> <span>New listing</span></label>'
         "</fieldset>"
-        '<p class="listing-hint">Update covers hours, phone, website, or address. Edit is for the wording. Deletion removes a restaurant. New listing adds one.</p>'
         "<label><span>Details <abbr title=\"required\">*</abbr></span>"
         '<textarea name="details" required maxlength="4000" rows="6"></textarea></label>'
         '<button type="submit">Submit</button>'

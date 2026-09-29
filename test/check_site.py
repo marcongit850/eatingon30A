@@ -114,8 +114,18 @@ contact = (ROOT / "contact" / "index.html").read_text(encoding="utf-8")
 for banned in ("github.com", "GitHub", "restaurants.csv", "locations.csv", "README", "CSV", "Wix", "custom domain"):
     check(banned not in contact, f"contact page still mentions {banned}")
 check("Corrections and new listings" in contact, "contact page should keep the corrections heading")
+check(
+    "Restaurant hours, phone numbers, websites, and other details are listed on each restaurant page." in contact
+    and "If something needs to be updated, a restaurant has closed, or we’re missing a place you think should be included, let us know." in contact,
+    "contact page should use Marc's first intro paragraph",
+)
+check(
+    "Just include the restaurant name and what needs to be changed or added. We review every submission and can follow up using the email address you provide." in contact,
+    "contact page should use Marc's second intro paragraph",
+)
+check("listing-hint" not in contact and "Update covers hours" not in contact, "contact page should not explain the request types")
+check("We read these" not in contact, "contact page should drop the previous intro")
 check("Marc" not in contact, "contact page should not name a person")
-check("We read these and reply to the email you leave." in contact, "contact page should invite a note in the site voice")
 check(">Submit</button>" in contact, "contact submit button should say Submit")
 check("Send to Marc" not in contact and "Town / location" not in contact, "contact form should drop the personal send label and the town field")
 check('action="/api/listing"' in contact and 'data-listing' in contact, "contact form should post to the listing endpoint")
@@ -184,16 +194,16 @@ config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 featured = config.get("featured") or []
 by_slug = {item["slug"]: item for item in restaurants}
 check(featured == [
-    "stinkys-fish-camp-dune-allen-beach",
-    "the-red-bar-grayton-beach",
-    "bud-and-alleys-seaside",
+    "fish-out-of-water-watercolor",
     "cafe-thirty-a-seagrove-beach",
-], "featured cover should keep Stinky's plus three other listings")
+    "shades-bar-and-grill-inlet-beach",
+], "featured cover should be Fish Out of Water, Café Thirty-A, then Shades")
 check(len(set(by_slug[slug]["areaSlug"] for slug in featured)) == len(featured), "featured listings should use different towns")
 check({"$$", "$$$"} <= {by_slug[slug]["price"] for slug in featured}, "featured mix should include casual and upscale")
 check(home.count('<div class="cover" data-featured') == len(featured), "homepage should render every featured cover")
 check("86400000" in home and "from-the-guide" in home, "homepage should rotate the cover by UTC day")
-check(home.count('class="kicker">From the guide') == len(featured), "each featured cover keeps the same kicker")
+check(home.count('class="kicker">Featured') == len(featured), "each featured cover uses the Featured kicker")
+check("From the guide" not in home, "homepage should not keep the old featured heading")
 check('aria-label="Previous featured"' in home and 'aria-label="Next featured"' in home, "featured arrows need accessible names")
 check('data-featured-step="-1"' in home and 'data-featured-step="1"' in home, "featured arrows should step through the list")
 check('class="cover-controls" hidden' in home, "featured arrows stay hidden until the page script runs")
@@ -236,6 +246,20 @@ check('class="ph"' in steam_hero and 'class="mono"' in steam_hero, "a listing wi
 check("<img" not in steam_hero and 'class="profile-film"' not in steam, "Steamboat should stay a monogram")
 check("Black%20Heart" not in directory and "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
+for town_slug, town_alt in (
+    ("watersound", "Watersound on Scenic Highway 30A"),
+    ("watersound-origins", "Watersound Origins on Scenic Highway 30A"),
+):
+    town_src = f"/images/areas/{town_slug}.jpg"
+    town_file = ROOT / town_src.lstrip("/")
+    check(town_file.is_file(), f"missing town photo {town_src}")
+    check(town_file.stat().st_size < 400_000, f"town photo too large for the web: {town_src}")
+    check(f'src="{town_src}"' in home and town_alt in home, f"homepage should show the {town_slug} photo")
+    check(f'src="{town_src}"' in areas_index, f"towns page should show the {town_slug} photo")
+    town_page = (ROOT / "areas" / town_slug / "index.html").read_text(encoding="utf-8")
+    check(f'src="{town_src}"' in town_page, f"{town_slug} page should use its town photo")
+    card = home.split(f'href="/restaurants/?area={town_slug}"', 1)[1].split("</a>", 1)[0]
+    check('class="ph"' not in card, f"{town_slug} homepage card should not keep the placeholder")
 
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
 shared_footer = (ROOT / "includes" / "footer.html").read_text(encoding="utf-8")

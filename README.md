@@ -49,7 +49,7 @@ Commit the CSV and the generated HTML, JSON, sitemap, and robots file together. 
 
 ## Featured cover
 
-The homepage “From the guide” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Previous and Next on that cover step through the same list, wrapping at either end, and the day still picks the first slide. Without JavaScript, the first slug stays on screen and the arrows stay hidden. The cover itself does not change: photo or monogram, name, lede, town and price line, and a profile link.
+The homepage “Featured” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Previous and Next on that cover step through the same list, wrapping at either end, and the day still picks the first slide. Without JavaScript, the first slug stays on screen and the arrows stay hidden. The cover itself does not change: photo or monogram, name, lede, town and price line, and a profile link.
 
 To add or remove a spot, edit that list and rebuild:
 
@@ -71,7 +71,7 @@ Columns that show up on the site:
 - `Facebook URL`, `Instagram`
 - `Status` must be `PUBLISHED`
 
-`data/locations.csv` supplies town names, short descriptions, and town photos. Towns that exist only on restaurants (Watersound and Watersound Origins) still appear.
+`data/locations.csv` supplies town names, short descriptions, and town photos. Towns that exist only on restaurants (Watersound and Watersound Origins) still appear. A `Location Image` that starts with `/images/` is a file in the repo. When that cell is empty, the build uses `images/areas/<slug>.jpg` if the file is there. Watersound is the boardwalk photo and Watersound Origins is the entrance sign.
 
 Image columns are `List Image`, `Detail Image`, and `Logo`. In this export, and on the live Wix site checked 29 Sep 2026, only Stinky’s Fish Camp has them filled. The list image is a black heart, so the build skips it. Stinky’s logo is still the local file from that export. Town photos still come from `locations.csv`.
 
