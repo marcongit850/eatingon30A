@@ -6,24 +6,24 @@ Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton Count
 
 Listings are edited in CSV files in the GitHub repository. The public preview does not use a custom domain.
 
-- [Home](https://eatingon30a.classy-scarer.workers.dev/)
-- [Restaurants](https://eatingon30a.classy-scarer.workers.dev/restaurants/)
-- [Map](https://eatingon30a.classy-scarer.workers.dev/map/)
-- [Towns](https://eatingon30a.classy-scarer.workers.dev/areas/)
-- [About](https://eatingon30a.classy-scarer.workers.dev/about/)
+- [Home](https://eatingon30a.delirious-roarer.workers.dev/)
+- [Restaurants](https://eatingon30a.delirious-roarer.workers.dev/restaurants/)
+- [Map](https://eatingon30a.delirious-roarer.workers.dev/map/)
+- [Towns](https://eatingon30a.delirious-roarer.workers.dev/areas/)
+- [About](https://eatingon30a.delirious-roarer.workers.dev/about/)
 
 ## Towns
 
-- [Dune Allen Beach](https://eatingon30a.classy-scarer.workers.dev/areas/dune-allen-beach/): Explore the full stretch of 30A, from laid-back beach towns to vibrant coastal communities, all in one place.
-- [Gulf Place](https://eatingon30a.classy-scarer.workers.dev/areas/gulf-place/): A vibrant hub on the west end of 30A with colorful architecture, local shops, live music, and easy beach access.
-- [Blue Mountain Beach](https://eatingon30a.classy-scarer.workers.dev/areas/blue-mountain-beach/): A relaxed beach town with local eats and a friendly community.
-- [Grayton Beach](https://eatingon30a.classy-scarer.workers.dev/areas/grayton-beach/): A laid-back, artsy beach town with pristine beaches and local flavor.
-- [WaterColor](https://eatingon30a.classy-scarer.workers.dev/areas/watercolor/): Upscale and family-friendly with beautiful beaches and scenic trails.
-- [Seaside](https://eatingon30a.classy-scarer.workers.dev/areas/seaside/): The iconic heart of 30A. Charming, walkable, and full of coastal character.
-- [Seagrove Beach](https://eatingon30a.classy-scarer.workers.dev/areas/seagrove-beach/): A laid-back, tree-lined beach community with a mix of old Florida charm and modern coastal living.
-- [Seacrest](https://eatingon30a.classy-scarer.workers.dev/areas/seacrest/): A peaceful retreat with sugar-white sands and easy access to fun.
-- [Watersound](https://eatingon30a.classy-scarer.workers.dev/areas/watersound/): A beach stretch east of Seagrove, with casual dining along County Highway 30A.
-- [Alys Beach](https://eatingon30a.classy-scarer.workers.dev/areas/alys-beach/): Striking architecture, upscale shopping, and a peaceful beachfront vibe.
-- [Rosemary Beach](https://eatingon30a.classy-scarer.workers.dev/areas/rosemary-beach/): European-inspired charm with cobblestone streets and a vibrant atmosphere.
-- [Inlet Beach](https://eatingon30a.classy-scarer.workers.dev/areas/inlet-beach/): Trendy, up-and-coming, and close to the action.
-- [Watersound Origins](https://eatingon30a.classy-scarer.workers.dev/areas/watersound-origins/): An inland town center north of 30A, with everyday restaurants around the square.
+- [Dune Allen Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/dune-allen-beach/): Explore the full stretch of 30A, from laid-back beach towns to vibrant coastal communities, all in one place.
+- [Gulf Place](https://eatingon30a.delirious-roarer.workers.dev/areas/gulf-place/): A vibrant hub on the west end of 30A with colorful architecture, local shops, live music, and easy beach access.
+- [Blue Mountain Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/blue-mountain-beach/): A relaxed beach town with local eats and a friendly community.
+- [Grayton Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/grayton-beach/): A laid-back, artsy beach town with pristine beaches and local flavor.
+- [WaterColor](https://eatingon30a.delirious-roarer.workers.dev/areas/watercolor/): Upscale and family-friendly with beautiful beaches and scenic trails.
+- [Seaside](https://eatingon30a.delirious-roarer.workers.dev/areas/seaside/): The iconic heart of 30A. Charming, walkable, and full of coastal character.
+- [Seagrove Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/seagrove-beach/): A laid-back, tree-lined beach community with a mix of old Florida charm and modern coastal living.
+- [Seacrest](https://eatingon30a.delirious-roarer.workers.dev/areas/seacrest/): A peaceful retreat with sugar-white sands and easy access to fun.
+- [Watersound](https://eatingon30a.delirious-roarer.workers.dev/areas/watersound/): A beach stretch east of Seagrove, with casual dining along County Highway 30A.
+- [Alys Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/alys-beach/): Striking architecture, upscale shopping, and a peaceful beachfront vibe.
+- [Rosemary Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/rosemary-beach/): European-inspired charm with cobblestone streets and a vibrant atmosphere.
+- [Inlet Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/inlet-beach/): Trendy, up-and-coming, and close to the action.
+- [Watersound Origins](https://eatingon30a.delirious-roarer.workers.dev/areas/watersound-origins/): An inland town center north of 30A, with everyday restaurants around the square.
