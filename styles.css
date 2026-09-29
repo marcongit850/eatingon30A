@@ -711,3 +711,6 @@ html.js-filter #cards .card { display: none; }
   .hero { min-height: 86vh; }
   .profile-hero { min-height: 320px; height: 58vh; }
 }
+@media (max-width: 360px) {
+  .hero h1 { font-size: clamp(3.2rem, 15vw, 3.45rem); }
+}

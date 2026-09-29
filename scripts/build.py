@@ -855,7 +855,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<div class="hero-copy"><div class="wrap">'
         '<p class="issue-line">A restaurant guide for the Emerald Coast.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
-        "<h1>The table<br> along 30A.</h1>"
+        "<h1>Where to eat<br> on 30A.</h1>"
         '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A — from Dune Allen to Inlet Beach.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
         '<label class="field"><span class="sr-only">Search restaurants</span>'
