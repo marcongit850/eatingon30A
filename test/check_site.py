@@ -87,6 +87,10 @@ check("See the restaurants" in about and "Open the directory" not in about, "abo
 check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
 check("editorial" not in home.lower() and "already filtered" not in home, "homepage should not sound like a product or an editorial")
 check("a feel for the place" in home, "homepage essay should use the visitor guide")
+areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
+check("Towns along the highway" in areas_index, "towns page heading should introduce the coast")
+check("Open a town for the places to eat there" in areas_index, "towns page should point visitors to places to eat")
+check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
 config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 featured = config.get("featured") or []
 by_slug = {item["slug"]: item for item in restaurants}
