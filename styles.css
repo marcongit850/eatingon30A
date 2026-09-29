@@ -737,8 +737,6 @@ html.js-filter #cards .card { display: none; }
   .meal-index a { border-top: 0; border-left: 1px solid var(--line); padding: 1.45rem 1.15rem 1.55rem; flex-direction: column; align-items: flex-start; gap: 0.85rem; }
   .meal-index a:first-child { border-left: 0; }
   .town-grid { grid-template-columns: repeat(4, 1fr); }
-  .town:first-child { grid-column: span 2; }
-  .town:first-child .town-frame { aspect-ratio: 16 / 10; }
   .card-grid { grid-template-columns: repeat(3, 1fr); gap: 2.2rem 1.25rem; }
   .filters { grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr)); align-items: end; }
   .checks, .filter-actions { grid-column: 1 / -1; }
