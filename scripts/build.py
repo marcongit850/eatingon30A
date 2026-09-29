@@ -66,10 +66,10 @@ MEAL_ORDER = ["Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"]
 # Set this to a list of slugs only when a design sample is needed again.
 SAMPLE_SLUGS = None
 
-# The Wix export's detail photo for this restaurant is a multi-megabyte PNG.
-# The same frame is committed as a compressed JPEG. The CSV stays the source.
+# The Wix export's detail photo for Stinky's is a multi-megabyte PNG.
+# The cover now comes from the supplied photo set. The logo stays a local file.
 LOCAL_WIX_FILES = {
-    "de29ed_1a5c50c91a154838816cc7ea7b48a6c6~mv2.png": "/images/restaurants/stinkys-fish-camp.jpg",
+    "de29ed_1a5c50c91a154838816cc7ea7b48a6c6~mv2.png": "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg",
     "de29ed_29920b8a7db54505a77b6a647ed4a343~mv2.jpg": "/images/restaurants/stinkys-fish-camp-logo.jpg",
 }
 
@@ -168,12 +168,31 @@ def parse_address(raw: str) -> dict:
     }
 
 
+PHOTO_FRAMES = ("01", "02", "03", "04", "05")
+
+
 def local_listing_photo(slug: str) -> str | None:
-    """Use images/restaurants/<slug>.<ext> when someone drops a photo in that folder."""
+    """Use images/restaurants/<slug>.<ext> when someone drops a single cover in that folder."""
     for ext in PHOTO_EXTS:
         if (PHOTO_DIR / f"{slug}{ext}").is_file():
             return f"/images/restaurants/{slug}{ext}"
     return None
+
+
+def listing_photos(slug: str) -> list[str]:
+    """Photos for one listing. 01 is the cover; later frames are extras on the profile."""
+    folder = PHOTO_DIR / slug
+    found: list[str] = []
+    if folder.is_dir():
+        for stem in PHOTO_FRAMES:
+            for ext in PHOTO_EXTS:
+                if (folder / f"{stem}{ext}").is_file():
+                    found.append(f"/images/restaurants/{slug}/{stem}{ext}")
+                    break
+    if found:
+        return found
+    single = local_listing_photo(slug)
+    return [single] if single else []
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -297,7 +316,8 @@ def load_restaurants() -> list[dict]:
         list_image = wix_to_url(row.get("List Image") or "", 960, 600)
         detail_image = wix_to_url(row.get("Detail Image") or "", 1400, 780)
         logo = wix_to_url(row.get("Logo") or "", 400, 300)
-        dropped = local_listing_photo(slug)
+        photos = listing_photos(slug)
+        dropped = photos[0] if photos else None
         card_image = dropped or list_image or detail_image
         hero_image = dropped or detail_image or list_image
         search = " ".join(
@@ -351,6 +371,7 @@ def load_restaurants() -> list[dict]:
                 "instagram": website_href(row.get("Instagram") or ""),
                 "cardImage": card_image,
                 "heroImage": hero_image,
+                "photos": photos,
                 "logo": logo,
                 "tone": tone_for(cuisines, foods, category),
                 "search": search,
@@ -469,6 +490,17 @@ def placeholder(tone: str, label: str, name: str = "", hidden: bool = False) -> 
         f'<span class="mono" aria-hidden="true">{e(mark)}</span>'
         f'<span class="ph-label">{e(label)}</span></div>'
     )
+
+
+def filmstrip(restaurant: dict) -> str:
+    extras = (restaurant.get("photos") or [])[1:]
+    if not extras:
+        return ""
+    frames = "".join(
+        f'<img src="{e(src)}" alt="{e(photo_alt(restaurant))}" loading="lazy">'
+        for src in extras
+    )
+    return f'<div class="profile-film" data-count="{len(extras)}">{frames}</div>'
 
 
 def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool = False, name: str = "") -> str:
@@ -1096,6 +1128,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     body = (
         '<article class="profile">'
         f'<div class="profile-hero">{media_block(restaurant["heroImage"], photo_alt(restaurant), restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
+        f"{filmstrip(restaurant)}"
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'

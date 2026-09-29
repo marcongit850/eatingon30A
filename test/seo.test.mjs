@@ -102,11 +102,15 @@ assert.equal(typeof restaurant.geo.latitude, "number");
 assert.equal(typeof restaurant.geo.longitude, "number");
 assert.ok(restaurant.telephone);
 assert.equal(profile["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
-assert.equal(JSON.stringify(restaurant).includes("image"), false);
+assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$/);
+
+const steam = jsonLd(read("restaurants/steamboat-grill-30a-seagrove-beach/index.html"));
+const steamRestaurant = steam["@graph"].find((node) => node["@type"] === "Restaurant");
+assert.equal(JSON.stringify(steamRestaurant).includes("image"), false);
 
 const stinkys = jsonLd(read("restaurants/stinkys-fish-camp-dune-allen-beach/index.html"));
 const stinkysRestaurant = stinkys["@graph"].find((node) => node["@type"] === "Restaurant");
-assert.match(stinkysRestaurant.image, /\/images\/restaurants\/stinkys-fish-camp\.jpg$/);
+assert.match(stinkysRestaurant.image, /\/images\/restaurants\/stinkys-fish-camp-dune-allen-beach\/01\.jpg$/);
 
 const town = jsonLd(read("areas/seaside/index.html"));
 assert.equal(town["@graph"].some((node) => node["@type"] === "ItemList"), true);

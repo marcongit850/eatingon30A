@@ -63,14 +63,20 @@ test("map popups show the name, address, and profile", () => {
   assert.match(html, /5960 W County Hwy 30A/);
   assert.match(html, /href="\/restaurants\/stinkys-fish-camp-dune-allen-beach\/"/);
   assert.match(html, /class="popup-photo"/);
-  assert.match(html, /\/images\/restaurants\/stinkys-fish-camp\.jpg/);
+  assert.match(html, /\/images\/restaurants\/stinkys-fish-camp-dune-allen-beach\/01\.jpg/);
 
-  const plain = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const oku = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const okuHtml = markerPopup(oku);
+  assert.match(okuHtml, /O-Ku/);
+  assert.match(okuHtml, /class="popup-photo"/);
+  assert.match(okuHtml, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg/);
+
+  const plain = restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach");
   const plainHtml = markerPopup(plain);
-  assert.match(plainHtml, /O-Ku/);
+  assert.match(plainHtml, /Steamboat/);
   assert.match(plainHtml, /class="popup-address"/);
   assert.doesNotMatch(plainHtml, /popup-photo/);
-  assert.match(plainHtml, /href="\/restaurants\/o-ku-alys-beach\/"/);
+  assert.match(plainHtml, /href="\/restaurants\/steamboat-grill-30a-seagrove-beach\/"/);
 });
 
 test("map list cards stay compact", () => {
@@ -80,15 +86,18 @@ test("map list cards stay compact", () => {
   const stinkys = restaurants.find((item) => item.slug === "stinkys-fish-camp-dune-allen-beach");
   const photo = mapListCard(stinkys);
   assert.match(photo, /class="map-thumb"/);
-  assert.match(photo, /stinkys-fish-camp\.jpg/);
+  assert.match(photo, /stinkys-fish-camp-dune-allen-beach\/01\.jpg/);
   assert.match(photo, /<strong>Stinky’s Fish Camp<\/strong>/);
   assert.match(photo, /class="map-meta">Dune Allen Beach · \$\$/);
   assert.match(photo, /class="map-address">5960 W County Hwy 30A/);
-  const plain = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const okuCard = mapListCard(restaurants.find((item) => item.slug === "o-ku-alys-beach"));
+  assert.match(okuCard, /o-ku-alys-beach\/01\.jpg/);
+  assert.doesNotMatch(okuCard, /class="map-thumb ph"/);
+  const plain = restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach");
   const mark = mapListCard(plain);
   assert.match(mark, /class="map-thumb ph"/);
-  assert.match(mark, /aria-hidden="true">OK</);
-  assert.match(mark, /Alys Beach · /);
+  assert.match(mark, /aria-hidden="true">SG</);
+  assert.match(mark, /Seagrove Beach · /);
   assert.doesNotMatch(mark, /<img/);
 });
 

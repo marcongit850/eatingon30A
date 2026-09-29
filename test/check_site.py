@@ -69,10 +69,31 @@ check("User-agent: *" in robots and "Allow: /" in robots, "robots should allow c
 missing_coords = [item["slug"] for item in restaurants if not isinstance(item.get("lat"), (int, float)) or not isinstance(item.get("lng"), (int, float)) or not item.get("address")]
 check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
 photos = [item for item in restaurants if item.get("image")]
-check(len(photos) == 1 and photos[0]["slug"] == "stinkys-fish-camp-dune-allen-beach", f"expected one cached restaurant photo, got {[item['slug'] for item in photos]}")
-check(build.local_listing_photo("o-ku-alys-beach") is None, "a slug without a dropped file should stay a monogram")
+missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
+check(missing_photos == ["steamboat-grill-30a-seagrove-beach"], f"only Steamboat Grill should keep a monogram, got {missing_photos}")
+check(len(photos) == 113, f"expected 113 restaurant photos, got {len(photos)}")
+check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
+check(build.listing_photos("steamboat-grill-30a-seagrove-beach") == [], "Steamboat has no photo folder")
+oku_photo = build.listing_photos("o-ku-alys-beach")
+check(oku_photo and oku_photo[0].endswith("/o-ku-alys-beach/01.jpg"), f"O-Ku cover should be 01, got {oku_photo}")
+by_slug_early = {item["slug"]: item for item in restaurants}
+for left, right in (
+    ("amavida-coffee-roasters-seaside", "amavida-coffee-roasters-rosemary-beach"),
+    ("canopy-road-cafe-inlet-beach", "canopy-road-cafe-seagrove-beach"),
+    ("pizza-by-the-sea-watercolor", "pizza-by-the-sea-gulf-place"),
+    ("the-perfect-pig-seagrove-beach", "the-perfect-pig-gulf-place"),
+    ("cowgirl-kitchen-blue-mountain-beach", "cowgirl-kitchen-rosemary-beach"),
+    ("goatfeathers-seafood-market-inlet-beach", "goatfeathers-seafood-market-east-location-seagrove-beach"),
+):
+    check(by_slug_early[left]["image"] and by_slug_early[left]["image"] != by_slug_early[right]["image"], f"{left} and {right} should use different photos")
+for item in photos:
+    path = ROOT / item["image"].lstrip("/")
+    check(path.is_file(), f"missing photo file {item['image']}")
+    check(item["image"].endswith("/01.jpg"), f"cover should be 01.jpg for {item['slug']}")
+    check(path.stat().st_size < 500_000, f"photo too large for the web: {item['image']}")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
-check("re-export the Wix CMS" in readme and "images/restaurants/" in readme, "README should say how to add the missing photos")
+check("images/restaurants/" in readme and "`01` is the cover" in readme, "README should say how restaurant photos are stored")
+check("does not call Google Places" in readme, "README should keep Google Places off")
 check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
 pin_rule = styles.split(".leaflet-marker-icon.pin", 1)
 check(len(pin_rule) == 2 and "background:" in pin_rule[1][:400], "map pins must paint a fill on Leaflet's marker class")
@@ -147,14 +168,18 @@ if card:
     check("Breakfast" in tag and "Lunch" in tag, "Big Bad Breakfast meal data")
 
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
-check("/images/restaurants/stinkys-fish-camp.jpg" in stinkys, "Stinky's should use the compressed photo")
+check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "Stinky's should use the supplied cover")
 check("/images/restaurants/stinkys-fish-camp-logo.jpg" in stinkys, "Stinky's logo should be a local file")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
-oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
-check('class="ph"' in oku_hero and 'class="mono"' in oku_hero, "a listing without a photo should keep the monogram")
-check("<img" not in oku_hero, "O-Ku hero should stay a monogram")
-check("Black%20Heart" not in directory and "heart" not in stinkys.lower() or "stinkys-fish-camp.jpg" in stinkys, "heart placeholder should not be the photo")
+oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check("/images/restaurants/o-ku-alys-beach/01.jpg" in oku_hero, "O-Ku hero should be the supplied cover")
+check('class="profile-film"' in oku and "/images/restaurants/o-ku-alys-beach/02.jpg" in oku, "O-Ku profile should show the extra photos")
+steam = (ROOT / "restaurants" / "steamboat-grill-30a-seagrove-beach" / "index.html").read_text(encoding="utf-8")
+steam_hero = steam.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check('class="ph"' in steam_hero and 'class="mono"' in steam_hero, "a listing without a photo should keep the monogram")
+check("<img" not in steam_hero and 'class="profile-film"' not in steam, "Steamboat should stay a monogram")
+check("Black%20Heart" not in directory and "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
 
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
