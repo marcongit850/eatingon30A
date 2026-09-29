@@ -965,7 +965,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         f"{cover}"
         '<section class="section band"><div class="wrap">'
         '<div class="section-head"><div><p class="kicker">West to east</p><h2>The towns</h2></div>'
-        "<p>Each town opens the directory with that stretch of 30A already selected.</p></div>"
+        "<p>Select a community to explore restaurants along that stretch of 30A.</p></div>"
         f'<div class="town-grid">{"".join(towns)}</div>'
         '<p class="section-links"><a class="text-link" href="/areas/">Town notes</a><a class="text-link" href="/map/">The map</a></p>'
         "</div></section>"
