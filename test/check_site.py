@@ -70,6 +70,9 @@ missing_coords = [item["slug"] for item in restaurants if not isinstance(item.ge
 check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
 photos = [item for item in restaurants if item.get("image")]
 check(len(photos) == 1 and photos[0]["slug"] == "stinkys-fish-camp-dune-allen-beach", f"expected one cached restaurant photo, got {[item['slug'] for item in photos]}")
+check(build.local_listing_photo("o-ku-alys-beach") is None, "a slug without a dropped file should stay a monogram")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+check("re-export the Wix CMS" in readme and "images/restaurants/" in readme, "README should say how to add the missing photos")
 check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")

@@ -70,6 +70,9 @@ LOCAL_WIX_FILES = {
     "de29ed_29920b8a7db54505a77b6a647ed4a343~mv2.jpg": "/images/restaurants/stinkys-fish-camp-logo.jpg",
 }
 
+PHOTO_DIR = ROOT / "images" / "restaurants"
+PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
+
 ABOUT = (
     "Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton County, Florida. "
     "From casual beachside bites and fresh Gulf seafood to upscale dining and local favorites, "
@@ -156,6 +159,14 @@ def parse_address(raw: str) -> dict:
         "street": line,
         "region": clean_text(data.get("subdivision") or "") or "FL",
     }
+
+
+def local_listing_photo(slug: str) -> str | None:
+    """Use images/restaurants/<slug>.<ext> when someone drops a photo in that folder."""
+    for ext in PHOTO_EXTS:
+        if (PHOTO_DIR / f"{slug}{ext}").is_file():
+            return f"/images/restaurants/{slug}{ext}"
+    return None
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -279,8 +290,9 @@ def load_restaurants() -> list[dict]:
         list_image = wix_to_url(row.get("List Image") or "", 960, 600)
         detail_image = wix_to_url(row.get("Detail Image") or "", 1400, 780)
         logo = wix_to_url(row.get("Logo") or "", 400, 300)
-        card_image = list_image or detail_image
-        hero_image = detail_image or list_image
+        dropped = local_listing_photo(slug)
+        card_image = dropped or list_image or detail_image
+        hero_image = dropped or detail_image or list_image
         search = " ".join(
             [
                 name,

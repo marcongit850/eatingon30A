@@ -53,7 +53,7 @@ Columns that show up on the site:
 - `map_area`, `map_area_slug`, `location_label`, `subarea`
 - `address` (JSON with `formatted` and `location.latitude` / `location.longitude`). Every published row already has both, so the map does not geocode and does not invent coordinates. Pins that share one storefront are nudged apart on screen only.
 - `phone`, `website`, `price`, `notes`, `hours`
-- `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into `static.wixstatic.com` links)
+- `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into local files or `static.wixstatic.com` links)
 - `Cuisine Type`, `Meal Type`, `Food Type`, `Vibe`, `Category` (JSON arrays)
 - `Outdoor Dining`, `Kid Friendly`, `Live Music`, `Happy Hour (drinks)`, `Happy Hour (food)`, `Reservations`
 - `Facebook URL`, `Instagram`
@@ -61,7 +61,9 @@ Columns that show up on the site:
 
 `data/locations.csv` supplies town names, short descriptions, and town photos. Towns that exist only on restaurants (Watersound and Watersound Origins) still appear.
 
-Image columns are `List Image`, `Detail Image`, and `Logo`. In this export only Stinky’s Fish Camp has them filled. The list image is a black heart, so the build skips it. The detail photo and the logo are saved under `images/restaurants/` and used on the card, the profile, and the map popup. The other 113 listings keep a monogram. Town photos still come from `locations.csv` and use the Wix image URLs.
+Image columns are `List Image`, `Detail Image`, and `Logo`. In this export, and on the live Wix site checked 29 Sep 2026, only Stinky’s Fish Camp has them filled. The restaurant sitemap, the directory dataset, and a sample profile page (`/restaurants/big-bad-breakfast` plus `/restaurants1/`) expose the same collection. Those pages have no per-restaurant `og:image`, and the only `wix:image://` values in the collection are Stinky’s. The list image is a black heart, so the build skips it. The detail photo and the logo are saved under `images/restaurants/` and used on the card, the profile, and the map popup. The other 113 listings keep a monogram. Town photos still come from `locations.csv`.
+
+There is no other free photo source on eatingon30a.com to cache. To add the rest, either re-export the Wix CMS with `List Image` and `Detail Image` filled and rebuild, or drop a file in `images/restaurants/` named with the site slug (`o-ku-alys-beach.jpg`, `.jpeg`, `.webp`, or `.png`) and rebuild. A file in that folder is used for the card, the profile, and the map popup.
 
 The raw CSV is not uploaded with the site (see `.assetsignore`). It includes export columns such as owner ids and `googlePlaceId`. Those columns are not read into the public JSON and are not sent to Google.
 
