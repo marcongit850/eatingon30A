@@ -1,5 +1,11 @@
 {
-  "origin": "https://eatingon30a.delirious-roarer.workers.dev",
+  "origin": "https://eatingon30a.352marc.workers.dev",
   "name": "Eating on 30A",
-  "worker": "eatingon30a"
+  "worker": "eatingon30a",
+  "featured": [
+    "stinkys-fish-camp-dune-allen-beach",
+    "the-red-bar-grayton-beach",
+    "bud-and-alleys-seaside",
+    "cafe-thirty-a-seagrove-beach"
+  ]
 }

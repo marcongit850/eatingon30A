@@ -74,6 +74,48 @@ check(build.local_listing_photo("o-ku-alys-beach") is None, "a slug without a dr
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 check("re-export the Wix CMS" in readme and "images/restaurants/" in readme, "README should say how to add the missing photos")
 check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
+pin_rule = styles.split(".leaflet-marker-icon.pin", 1)
+check(len(pin_rule) == 2 and "background:" in pin_rule[1][:400], "map pins must paint a fill on Leaflet's marker class")
+check(".leaflet-div-icon.pin" not in styles, "pin styles must not depend on the class Leaflet drops")
+about = (ROOT / "about" / "index.html").read_text(encoding="utf-8")
+for banned in ("CSV files", "Google Places", "OpenStreetMap tiles", "monogram in a set frame"):
+    check(banned not in about, f"about page still mentions {banned}")
+check("editorial" not in about.lower(), "about should not call the site an editorial guide")
+check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" not in about, "about should stay free of build talk")
+check("a feel for the place" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
+check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
+check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
+check("editorial" not in home.lower() and "already filtered" not in home, "homepage should not sound like a product or an editorial")
+check("a feel for the place" in home, "homepage essay should use the visitor guide")
+areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
+check("Towns along the highway" in areas_index, "towns page heading should introduce the coast")
+check("Open a town for the places to eat there" in areas_index, "towns page should point visitors to places to eat")
+check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
+for area_page in (ROOT / "areas").glob("*/index.html"):
+    text = area_page.read_text(encoding="utf-8")
+    check("Watch a short clip" not in text, f"{area_page.parent.name} still has a clip sentence")
+    check("youtube.com" not in text and "youtu.be" not in text, f"{area_page.parent.name} still links to YouTube")
+    check("<h1>" in text and 'class="lede"' in text and 'class="card-grid"' in text, f"{area_page.parent.name} lost the town page")
+config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
+featured = config.get("featured") or []
+by_slug = {item["slug"]: item for item in restaurants}
+check(featured == [
+    "stinkys-fish-camp-dune-allen-beach",
+    "the-red-bar-grayton-beach",
+    "bud-and-alleys-seaside",
+    "cafe-thirty-a-seagrove-beach",
+], "featured cover should keep Stinky's plus three other listings")
+check(len(set(by_slug[slug]["areaSlug"] for slug in featured)) == len(featured), "featured listings should use different towns")
+check({"$$", "$$$"} <= {by_slug[slug]["price"] for slug in featured}, "featured mix should include casual and upscale")
+check(home.count('<div class="wrap cover" data-featured') == len(featured), "homepage should render every featured cover")
+check("86400000" in home and "from-the-guide" in home, "homepage should rotate the cover by UTC day")
+check(home.count('class="kicker">From the guide') == len(featured), "each featured cover keeps the same kicker")
+for slug in featured:
+    check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")
+    check("Read the profile" in home, "featured cover should link to the profile")
+llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
+check("CSV" not in llms and "custom domain" not in llms, "llms.txt should stay visitor-facing")
+check("https://eatingon30a.352marc.workers.dev" in (ROOT / "site.config.json").read_text(encoding="utf-8"), "public origin should be the current workers.dev host")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")
 check("leaflet.js" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing Leaflet")

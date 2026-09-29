@@ -77,11 +77,14 @@ PHOTO_DIR = ROOT / "images" / "restaurants"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
 ABOUT = (
-    "Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton County, Florida. "
-    "From casual beachside bites and fresh Gulf seafood to upscale dining and local favorites, "
-    "the directory is meant to help you find a place by town, meal, or cuisine. "
-    "Browse Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, WaterColor, Seaside, Seagrove, "
-    "Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
+    "Eating on 30A is a restaurant guide for Scenic Highway 30A in South Walton. "
+    "Find breakfast, lunch, and dinner from Dune Allen to Inlet Beach, "
+    "with the address, the hours, and a feel for the place."
+)
+TOWNS = (
+    "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
+    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
+    "Inlet Beach, and Watersound Origins."
 )
 
 
@@ -393,7 +396,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
             "fullName": "",
             "description": clean_text(row.get("description")) or FALLBACK_COPY.get(slug, ""),
             "image": wix_to_url(row.get("Location Image") or "", 1200, 800),
-            "video": clean_text(row.get("VideoURL")),
         }
     for slug, copy in FALLBACK_COPY.items():
         by_slug.setdefault(
@@ -404,7 +406,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
                 "fullName": "",
                 "description": copy,
                 "image": None,
-                "video": "",
             },
         )
     counts: dict[str, int] = {}
@@ -419,7 +420,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
                 "fullName": restaurant["area"],
                 "description": FALLBACK_COPY.get(restaurant["areaSlug"], ""),
                 "image": None,
-                "video": "",
             }
     ordered = []
     seen = set()
@@ -744,6 +744,48 @@ def public_record(restaurant: dict) -> dict:
     }
 
 
+def select_featured(restaurants: list[dict]) -> list[dict]:
+    """Homepage cover order. Slugs live in site.config.json so a paid spot is a config edit."""
+    by_slug = {item["slug"]: item for item in restaurants}
+    slugs = CONFIG.get("featured") or []
+    if not isinstance(slugs, list) or not slugs:
+        fallback = next((item for item in restaurants if item["heroImage"] or item["cardImage"]), None)
+        return [fallback] if fallback else []
+    missing = [str(slug) for slug in slugs if str(slug) not in by_slug]
+    if missing:
+        raise SystemExit("featured slugs are not published listings: " + ", ".join(missing))
+    if len(slugs) != len(set(slugs)):
+        raise SystemExit("featured slugs must be unique")
+    return [by_slug[str(slug)] for slug in slugs]
+
+
+def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
+    image = feature["heroImage"] or feature["cardImage"]
+    meta = " · ".join(
+        bit for bit in (feature["label"] or feature["area"], feature["price"], ", ".join(feature["cuisines"])) if bit
+    )
+    flag = " hidden" if hidden else ""
+    return (
+        f'<div class="wrap cover" data-featured{flag}>'
+        f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
+        f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=eager, name=feature["name"])}'
+        "</a><div class=\"cover-copy\">"
+        '<p class="kicker">From the guide</p>'
+        f"<h2>{e(feature['name'])}</h2>"
+        f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
+        f'<p class="meta">{e(meta)}</p>'
+        f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
+        "</div></div>"
+    )
+
+
+FEATURED_ROTATION = (
+    "<script>!function(){var nodes=document.querySelectorAll('#from-the-guide [data-featured]');"
+    "if(nodes.length<2)return;var index=Math.floor(Date.now()/86400000)%nodes.length;"
+    "for(var i=0;i<nodes.length;i++)nodes[i].hidden=i!==index;}();</script>"
+)
+
+
 def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> None:
     meal_counts = []
     for meal in MEAL_ORDER:
@@ -767,24 +809,16 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             f'<span class="town-copy"><strong>{e(area["name"])}</strong><small>{area["count"]} {word}</small></span>'
             "</a>"
         )
-    feature = next((item for item in restaurants if item["heroImage"] or item["cardImage"]), None)
+    featured = select_featured(restaurants)
+    slots = "".join(
+        cover_slot(feature, hidden=index != 0, eager=index == 0)
+        for index, feature in enumerate(featured)
+    )
     cover = ""
-    if feature:
-        image = feature["heroImage"] or feature["cardImage"]
-        meta = " · ".join(
-            bit for bit in (feature["label"] or feature["area"], feature["price"], ", ".join(feature["cuisines"])) if bit
-        )
+    if slots:
         cover = (
-            '<section class="section cover-section"><div class="wrap cover">'
-            f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
-            f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=True, name=feature["name"])}'
-            "</a><div class=\"cover-copy\">"
-            '<p class="kicker">From the guide</p>'
-            f"<h2>{e(feature['name'])}</h2>"
-            f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
-            f'<p class="meta">{e(meta)}</p>'
-            f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
-            "</div></div></section>"
+            '<section class="section cover-section" id="from-the-guide" aria-label="From the guide">'
+            f"{slots}{FEATURED_ROTATION}</section>"
         )
     hero_html = (
         f'<img class="hero-photo" src="{e(hero)}" alt="{e(SHARE_ALT)}" width="1800" height="1200">'
@@ -799,7 +833,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p class="issue-line">A restaurant guide for the Emerald Coast.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>The table<br> along 30A.</h1>"
-        '<p class="lede">An editorial guide to dining on Florida’s Emerald Coast. Choose a meal or a town and the directory opens already filtered.</p>'
+        '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A — from Dune Allen to Inlet Beach.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
         '<label class="field"><span class="sr-only">Search restaurants</span>'
         '<input name="q" type="search" placeholder="Oysters, coffee, a town…"></label>'
@@ -1156,8 +1190,8 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
-        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along 30A</h1>'
-        '<p class="lede">Short notes for each community. To filter the full directory, use the town names on the homepage or the town menu inside Restaurants.</p>'
+        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along the highway</h1>'
+        '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the places to eat there.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(
@@ -1197,9 +1231,6 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     )
     for area in areas:
         group = [restaurant for restaurant in restaurants if restaurant["areaSlug"] == area["slug"]]
-        video = ""
-        if "watch?v=" in area["video"] or "youtu.be/" in area["video"]:
-            video = f'<p><a href="{e(area["video"])}">Watch a short clip of {e(area["name"])}</a></p>'
         photo = ""
         if area["image"]:
             photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
@@ -1212,7 +1243,6 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<p class="lede">{e(area["description"])}</p>'
             f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} in the directory</a> '
             f'<a class="button secondary" href="/map/?area={e(area["slug"])}">Map this town</a></p>'
-            f"{video}"
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
             "</div></article>"
         )
@@ -1271,15 +1301,14 @@ def build_about() -> None:
         '<div class="wrap page-intro prose"><p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT)}</p>"
-        "<p>Start with breakfast, lunch, or dinner on the homepage, or pick a town. Those links open the directory with the filter already applied. The map uses the same filters and OpenStreetMap tiles.</p>"
-        "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. A card shows a photograph when the listing has one. Otherwise it keeps a monogram in a set frame.</p>"
-        '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
+        f"<p>{e(TOWNS)}</p>"
+        '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
     )
     write(
         ROOT / "about" / "index.html",
         layout(
             "About the Eating on 30A restaurant guide",
-            "How the Eating on 30A restaurant guide is organized along Scenic Highway 30A in Walton County, Florida. One profile covers every listing.",
+            "Find breakfast, lunch, and dinner on Scenic Highway 30A in Walton County, Florida, from Dune Allen to Inlet Beach.",
             "/about/",
             "about",
             body,
@@ -1425,13 +1454,13 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         "",
         ABOUT,
         "",
-        "Listings are edited in CSV files in the GitHub repository. The public preview does not use a custom domain.",
+        TOWNS,
         "",
         f"- [Home]({ORIGIN}/)",
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
-        f"- [About]({ORIGIN}/about/): How the guide is organized.",
+        f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): How to correct a listing.",
         "",
         "## Towns",
@@ -1467,7 +1496,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         "",
         ABOUT,
         "",
-        "Each profile uses the street address and coordinates stored with that restaurant. A photograph appears when the listing has one.",
+        "Each profile gives the street address and a map pin. A photograph appears when the listing has one.",
         "",
         f"- [Home]({ORIGIN}/)",
         f"- [Restaurants]({ORIGIN}/restaurants/)",

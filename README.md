@@ -10,9 +10,9 @@ The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or 
 
 Preview (workers.dev only):
 
-https://eatingon30a.delirious-roarer.workers.dev
+https://eatingon30a.352marc.workers.dev
 
-That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
+That hostname is the workers.dev preview. Do not attach a custom domain. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
 
 ## Preview locally
 
@@ -46,6 +46,18 @@ python3 scripts/build.py
 ```
 
 Commit the CSV and the generated HTML, JSON, sitemap, and robots file together. The build does not call a network API.
+
+## Featured cover
+
+The homepage “From the guide” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Without JavaScript, the first slug stays on screen. The layout does not change: photo or monogram, name, lede, town and price line, and a profile link.
+
+To add or remove a spot, edit that list and rebuild:
+
+```bash
+python3 scripts/build.py
+```
+
+Each value must be the slug of a `PUBLISHED` restaurant. Order is the rotation order. A paid placement is the same edit: put its slug in `featured`, rebuild, and commit `site.config.json` with the new homepage.
 
 Columns that show up on the site:
 

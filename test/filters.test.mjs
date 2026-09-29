@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, filtersFromParams, markerPopup, matches, spreadOverlaps } from "../site.js";
+import { describeFilters, featuredIndex, filtersFromParams, markerPopup, matches, spreadOverlaps } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -80,6 +80,16 @@ test("stacked pins at the same coordinate are pulled apart", () => {
   ]);
   assert.equal(placed.length, 2);
   assert.notEqual(placed[0].pinLat, placed[1].pinLat);
+});
+
+test("featured cover rotates once per UTC day", () => {
+  assert.equal(featuredIndex(4, 0), 0);
+  assert.equal(featuredIndex(4, 86400000), 1);
+  assert.equal(featuredIndex(4, 86400000 * 5 + 3600000), 1);
+  assert.equal(featuredIndex(4, Date.UTC(2026, 8, 29, 0, 30)), featuredIndex(4, Date.UTC(2026, 8, 29, 23, 30)));
+  assert.notEqual(featuredIndex(4, Date.UTC(2026, 8, 29)), featuredIndex(4, Date.UTC(2026, 8, 30)));
+  assert.equal(featuredIndex(1, 86400000 * 9), 0);
+  assert.equal(featuredIndex(0, 86400000), 0);
 });
 
 test("filter label names the town", () => {
