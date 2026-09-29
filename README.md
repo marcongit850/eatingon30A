@@ -16,7 +16,7 @@ The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or 
 
 Preview (workers.dev only):
 
-https://eatingon30a.mud-cormorant.workers.dev
+https://eatingon30a.classy-scarer.workers.dev
 
 That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links and the sitemap. Do not point the sitemap at the Wix domain.
 

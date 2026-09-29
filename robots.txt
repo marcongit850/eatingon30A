@@ -34,4 +34,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://eatingon30a.mud-cormorant.workers.dev/sitemap.xml
+Sitemap: https://eatingon30a.classy-scarer.workers.dev/sitemap.xml
