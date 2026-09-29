@@ -246,6 +246,20 @@ check('class="ph"' in steam_hero and 'class="mono"' in steam_hero, "a listing wi
 check("<img" not in steam_hero and 'class="profile-film"' not in steam, "Steamboat should stay a monogram")
 check("Black%20Heart" not in directory and "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
+for town_slug, town_alt in (
+    ("watersound", "Watersound on Scenic Highway 30A"),
+    ("watersound-origins", "Watersound Origins on Scenic Highway 30A"),
+):
+    town_src = f"/images/areas/{town_slug}.jpg"
+    town_file = ROOT / town_src.lstrip("/")
+    check(town_file.is_file(), f"missing town photo {town_src}")
+    check(town_file.stat().st_size < 400_000, f"town photo too large for the web: {town_src}")
+    check(f'src="{town_src}"' in home and town_alt in home, f"homepage should show the {town_slug} photo")
+    check(f'src="{town_src}"' in areas_index, f"towns page should show the {town_slug} photo")
+    town_page = (ROOT / "areas" / town_slug / "index.html").read_text(encoding="utf-8")
+    check(f'src="{town_src}"' in town_page, f"{town_slug} page should use its town photo")
+    card = home.split(f'href="/restaurants/?area={town_slug}"', 1)[1].split("</a>", 1)[0]
+    check('class="ph"' not in card, f"{town_slug} homepage card should not keep the placeholder")
 
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
 shared_footer = (ROOT / "includes" / "footer.html").read_text(encoding="utf-8")

@@ -78,6 +78,7 @@ LOCAL_WIX_FILES = {
 }
 
 PHOTO_DIR = ROOT / "images" / "restaurants"
+AREA_PHOTO_DIR = ROOT / "images" / "areas"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
 ABOUT = (
@@ -205,6 +206,26 @@ def listing_photos(slug: str) -> list[str]:
         return found
     single = local_listing_photo(slug)
     return [single] if single else []
+
+
+def local_area_photo(slug: str) -> str | None:
+    """Town card photo dropped in images/areas/<slug>.<ext>."""
+    for ext in PHOTO_EXTS:
+        if (AREA_PHOTO_DIR / f"{slug}{ext}").is_file():
+            return f"/images/areas/{slug}{ext}"
+    return None
+
+
+def area_photo(slug: str, raw: str) -> str | None:
+    """CSV image first, then a local file named for the town slug."""
+    raw = (raw or "").strip()
+    if raw.startswith("/images/"):
+        if (ROOT / raw.lstrip("/")).is_file():
+            return raw
+    remote = wix_to_url(raw, 1200, 800)
+    if remote:
+        return remote
+    return local_area_photo(slug)
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -428,7 +449,7 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
             "name": SHORT_NAMES.get(slug) or clean_text(row.get("area_name")).title(),
             "fullName": "",
             "description": clean_text(row.get("description")) or FALLBACK_COPY.get(slug, ""),
-            "image": wix_to_url(row.get("Location Image") or "", 1200, 800),
+            "image": area_photo(slug, row.get("Location Image") or ""),
         }
     for slug, copy in FALLBACK_COPY.items():
         by_slug.setdefault(
@@ -464,6 +485,8 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
         area["fullName"] = full_names.get(slug, area["name"])
         area["name"] = SHORT_NAMES.get(slug, area["fullName"])
         area["count"] = counts[slug]
+        if not area.get("image"):
+            area["image"] = local_area_photo(slug)
         ordered.append(area)
     return ordered
 

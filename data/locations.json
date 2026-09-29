@@ -69,7 +69,7 @@
     "shortName": "Watersound",
     "description": "A beach stretch east of Seagrove, with casual dining along County Highway 30A.",
     "count": 2,
-    "image": null
+    "image": "/images/areas/watersound.jpg"
   },
   {
     "slug": "alys-beach",
@@ -101,6 +101,6 @@
     "shortName": "Watersound Origins",
     "description": "An inland town center north of 30A, with everyday restaurants around the square.",
     "count": 4,
-    "image": null
+    "image": "/images/areas/watersound-origins.jpg"
   }
 ]
