@@ -747,6 +747,48 @@ def public_record(restaurant: dict) -> dict:
     }
 
 
+def select_featured(restaurants: list[dict]) -> list[dict]:
+    """Homepage cover order. Slugs live in site.config.json so a paid spot is a config edit."""
+    by_slug = {item["slug"]: item for item in restaurants}
+    slugs = CONFIG.get("featured") or []
+    if not isinstance(slugs, list) or not slugs:
+        fallback = next((item for item in restaurants if item["heroImage"] or item["cardImage"]), None)
+        return [fallback] if fallback else []
+    missing = [str(slug) for slug in slugs if str(slug) not in by_slug]
+    if missing:
+        raise SystemExit("featured slugs are not published listings: " + ", ".join(missing))
+    if len(slugs) != len(set(slugs)):
+        raise SystemExit("featured slugs must be unique")
+    return [by_slug[str(slug)] for slug in slugs]
+
+
+def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
+    image = feature["heroImage"] or feature["cardImage"]
+    meta = " · ".join(
+        bit for bit in (feature["label"] or feature["area"], feature["price"], ", ".join(feature["cuisines"])) if bit
+    )
+    flag = " hidden" if hidden else ""
+    return (
+        f'<div class="wrap cover" data-featured{flag}>'
+        f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
+        f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=eager, name=feature["name"])}'
+        "</a><div class=\"cover-copy\">"
+        '<p class="kicker">From the guide</p>'
+        f"<h2>{e(feature['name'])}</h2>"
+        f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
+        f'<p class="meta">{e(meta)}</p>'
+        f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
+        "</div></div>"
+    )
+
+
+FEATURED_ROTATION = (
+    "<script>!function(){var nodes=document.querySelectorAll('#from-the-guide [data-featured]');"
+    "if(nodes.length<2)return;var index=Math.floor(Date.now()/86400000)%nodes.length;"
+    "for(var i=0;i<nodes.length;i++)nodes[i].hidden=i!==index;}();</script>"
+)
+
+
 def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> None:
     meal_counts = []
     for meal in MEAL_ORDER:
@@ -770,24 +812,16 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             f'<span class="town-copy"><strong>{e(area["name"])}</strong><small>{area["count"]} {word}</small></span>'
             "</a>"
         )
-    feature = next((item for item in restaurants if item["heroImage"] or item["cardImage"]), None)
+    featured = select_featured(restaurants)
+    slots = "".join(
+        cover_slot(feature, hidden=index != 0, eager=index == 0)
+        for index, feature in enumerate(featured)
+    )
     cover = ""
-    if feature:
-        image = feature["heroImage"] or feature["cardImage"]
-        meta = " · ".join(
-            bit for bit in (feature["label"] or feature["area"], feature["price"], ", ".join(feature["cuisines"])) if bit
-        )
+    if slots:
         cover = (
-            '<section class="section cover-section"><div class="wrap cover">'
-            f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
-            f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=True, name=feature["name"])}'
-            "</a><div class=\"cover-copy\">"
-            '<p class="kicker">From the guide</p>'
-            f"<h2>{e(feature['name'])}</h2>"
-            f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
-            f'<p class="meta">{e(meta)}</p>'
-            f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
-            "</div></div></section>"
+            '<section class="section cover-section" id="from-the-guide" aria-label="From the guide">'
+            f"{slots}{FEATURED_ROTATION}</section>"
         )
     hero_html = (
         f'<img class="hero-photo" src="{e(hero)}" alt="{e(SHARE_ALT)}" width="1800" height="1200">'

@@ -47,6 +47,18 @@ python3 scripts/build.py
 
 Commit the CSV and the generated HTML, JSON, sitemap, and robots file together. The build does not call a network API.
 
+## Featured cover
+
+The homepage “From the guide” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Without JavaScript, the first slug stays on screen. The layout does not change: photo or monogram, name, lede, town and price line, and a profile link.
+
+To add or remove a spot, edit that list and rebuild:
+
+```bash
+python3 scripts/build.py
+```
+
+Each value must be the slug of a `PUBLISHED` restaurant. Order is the rotation order. A paid placement is the same edit: put its slug in `featured`, rebuild, and commit `site.config.json` with the new homepage.
+
 Columns that show up on the site:
 
 - `Restaurant Name`, `slug` (leave the slug blank and the build makes one from the old path plus the town if needed)

@@ -80,6 +80,13 @@ export function markerPopup(item) {
   );
 }
 
+export function featuredIndex(count, now = Date.now()) {
+  const total = Number(count) || 0;
+  if (total <= 1) return 0;
+  const day = Math.floor(Number(now) / 86400000);
+  return ((day % total) + total) % total;
+}
+
 export function describeFilters(filters, areaNames, emptyLabel = "The table") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
@@ -333,7 +340,17 @@ function bootDetailMap() {
   }), { maxWidth: 280 });
 }
 
+function bootFeatured() {
+  const slots = [...document.querySelectorAll("#from-the-guide [data-featured]")];
+  if (slots.length < 2) return;
+  const index = featuredIndex(slots.length);
+  slots.forEach((slot, position) => {
+    slot.hidden = position !== index;
+  });
+}
+
 function boot() {
+  bootFeatured();
   if (document.querySelector("#cards") && document.querySelector("#filters")) bootDirectory();
   if (document.querySelector("#map")) bootMap();
   if (document.querySelector("#detail-map")) bootDetailMap();

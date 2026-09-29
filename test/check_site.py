@@ -82,6 +82,23 @@ for banned in ("CSV files", "Google Places", "OpenStreetMap tiles", "monogram in
     check(banned not in about, f"about page still mentions {banned}")
 check("the hours, the vibe, and a map pin" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
 check("the hours, the vibe, and a map pin" in home, "homepage essay should use the visitor guide")
+config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
+featured = config.get("featured") or []
+by_slug = {item["slug"]: item for item in restaurants}
+check(featured == [
+    "stinkys-fish-camp-dune-allen-beach",
+    "the-red-bar-grayton-beach",
+    "bud-and-alleys-seaside",
+    "cafe-thirty-a-seagrove-beach",
+], "featured cover should keep Stinky's plus three other listings")
+check(len(set(by_slug[slug]["areaSlug"] for slug in featured)) == len(featured), "featured listings should use different towns")
+check({"$$", "$$$"} <= {by_slug[slug]["price"] for slug in featured}, "featured mix should include casual and upscale")
+check(home.count('<div class="wrap cover" data-featured') == len(featured), "homepage should render every featured cover")
+check("86400000" in home and "from-the-guide" in home, "homepage should rotate the cover by UTC day")
+check(home.count('class="kicker">From the guide') == len(featured), "each featured cover keeps the same kicker")
+for slug in featured:
+    check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")
+    check("Read the profile" in home, "featured cover should link to the profile")
 llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
 check("CSV" not in llms and "custom domain" not in llms, "llms.txt should stay visitor-facing")
 check("https://eatingon30a.352marc.workers.dev" in (ROOT / "site.config.json").read_text(encoding="utf-8"), "public origin should be the current workers.dev host")
