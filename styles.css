@@ -91,8 +91,6 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
   flex-wrap: wrap;
 }
 .brand {
-  display: inline-flex;
-  align-items: center;
   font-family: var(--serif);
   font-size: 1.85rem;
   font-weight: 500;
@@ -100,12 +98,6 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
   text-decoration: none;
   line-height: 1;
   color: var(--ink);
-}
-.brand-logo {
-  display: block;
-  width: auto;
-  height: 52px;
-  max-width: none;
 }
 .brand em { font-style: italic; }
 .nav { display: flex; gap: 0.4rem 1.35rem; flex-wrap: wrap; }
@@ -129,10 +121,6 @@ body.home #site-header {
   backdrop-filter: none;
 }
 body.home .brand,
-.site-footer .brand {
-  background: var(--paper);
-  padding: 0.32rem 0.48rem 0.22rem;
-}
 body.home .nav a { color: #f7f2ea; }
 body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242, 234, 0.8); }
 
