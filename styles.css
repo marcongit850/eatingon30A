@@ -72,14 +72,16 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
   text-transform: uppercase;
 }
 
-.site-header {
+#site-header {
   position: sticky;
   top: 0;
   z-index: 20;
+  min-height: 4.6rem;
   background: rgba(251, 247, 241, 0.94);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
 }
+.site-header { background: transparent; border: 0; }
 .header-inner {
   display: flex;
   align-items: center;
@@ -110,7 +112,7 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
 }
 .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 var(--coral); }
 
-body.home .site-header {
+body.home #site-header {
   position: absolute;
   left: 0;
   right: 0;

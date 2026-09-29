@@ -37,6 +37,10 @@ npm test
 
 That rebuilds the site, checks the generated pages, and checks the filter rules.
 
+## Edit the header and footer
+
+`includes/header.html` and `includes/footer.html` are the shared navigation, the same pattern as Friends of Scenic 30A. Every page mounts them with `header.js` and `footer.js`. Change a link in those two files and it shows on every page. The build does not copy the nav into each HTML file.
+
 ## Edit the directory
 
 `data/restaurants.csv` and `data/locations.csv` are the source of truth. The build currently publishes only the slugs in `SAMPLE_SLUGS`. Edit the CSVs whenever you like; the rest of the file is kept for phase 2 and does not appear on the site until that list is cleared. Then regenerate:

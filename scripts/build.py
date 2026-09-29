@@ -511,44 +511,11 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     )
 
 
-def header(active: str) -> str:
-    items = [
-        ("restaurants", "/restaurants/", "Restaurants"),
-        ("map", "/map/", "Map"),
-        ("areas", "/areas/", "Towns"),
-        ("about", "/about/", "About"),
-    ]
-    links = []
-    for key, href, label in items:
-        current = ' aria-current="page"' if key == active else ""
-        links.append(f'<a href="{href}"{current}>{label}</a>')
-    return (
-        '<a class="skip" href="#main">Skip to content</a>'
-        '<header class="site-header"><div class="wrap header-inner">'
-        '<a class="brand" href="/"><em>Eating</em> on 30A</a>'
-        f'<nav class="nav" aria-label="Primary">{"".join(links)}</nav>'
-        "</div></header>"
-    )
-
-
-def footer() -> str:
-    return (
-        '<footer class="site-footer"><div class="wrap footer-grid">'
-        '<div><p class="footer-mark"><em>Eating</em> on 30A</p>'
-        "<p>A restaurant guide for Scenic Highway 30A, Walton County, Florida.</p></div>"
-        '<nav aria-label="Footer">'
-        '<a href="/restaurants/">Restaurants</a>'
-        '<a href="/map/">Map</a>'
-        '<a href="/areas/">Towns</a>'
-        '<a href="/about/">About</a>'
-        '<a href="/contact/">Contact</a>'
-        "</nav></div></footer>"
-    )
-
-
 def layout(title: str, description: str, path: str, active: str, body: str, extra_head: str = "", include_js: bool = True) -> str:
     canonical = ORIGIN + path
-    scripts = '<script type="module" src="/site.js"></script>' if include_js else ""
+    scripts = '<script src="/header.js"></script>\n<script src="/footer.js"></script>\n'
+    if include_js:
+        scripts += '<script type="module" src="/site.js"></script>'
     body_attr = ' class="home"' if active == "home" else ""
     banner = "" if active == "home" else sample_banner()
     return (
@@ -573,12 +540,12 @@ def layout(title: str, description: str, path: str, active: str, body: str, extr
         '<meta name="twitter:card" content="summary_large_image">\n'
         + extra_head
         + f"</head>\n<body{body_attr}>\n"
-        + header(active)
+        + '<div id="site-header"></div>\n'
         + banner
         + '<main id="main">\n'
         + body
         + "</main>\n"
-        + footer()
+        + '<div id="site-footer"></div>\n'
         + scripts
         + "\n</body>\n</html>\n"
     )

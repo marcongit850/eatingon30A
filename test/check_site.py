@@ -80,6 +80,26 @@ check("/images/restaurants/stinkys-fish-camp.jpg" in stinkys, "Stinky's should u
 check("Black%20Heart" not in directory and "heart" not in stinkys.lower() or "stinkys-fish-camp.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
 
+shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
+shared_footer = (ROOT / "includes" / "footer.html").read_text(encoding="utf-8")
+check('href="/restaurants/"' in shared_header and 'href="/map/"' in shared_header, "shared header is missing nav links")
+check('href="/areas/"' in shared_header and 'href="/about/"' in shared_header, "shared header is missing town or about links")
+check('href="/contact/"' in shared_footer and "site-footer" in shared_footer, "shared footer is missing links")
+html_pages = [
+    path
+    for path in ROOT.rglob("*.html")
+    if ".wrangler" not in path.parts and "includes" not in path.parts
+]
+check(html_pages, "no html pages to check for shared chrome")
+for page in html_pages:
+    text = page.read_text(encoding="utf-8")
+    rel = page.relative_to(ROOT).as_posix()
+    check('id="site-header"' in text, f"{rel} does not mount the shared header")
+    check('id="site-footer"' in text, f"{rel} does not mount the shared footer")
+    check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")
+    check("<header class=\"site-header\">" not in text, f"{rel} still inlines the header")
+    check("footer-mark" not in text, f"{rel} still inlines the footer")
+
 blob = "\n".join([home, directory, site_js, styles, (ROOT / "map" / "index.html").read_text(encoding="utf-8")])
 for banned in ("maps.googleapis", "places.googleapis", "airtable.com", "maps.google.com"):
     check(banned not in blob, f"found banned dependency {banned}")
