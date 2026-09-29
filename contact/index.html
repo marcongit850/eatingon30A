@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contact Eating on 30A about a listing</title>
-<meta name="description" content="How to correct a restaurant listing in the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
+<meta name="description" content="Request an update, edit, deletion, or new restaurant listing on the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
 <link rel="canonical" href="https://eatingon30a.352marc.workers.dev/contact/">
 <meta property="og:title" content="Contact Eating on 30A about a listing">
-<meta property="og:description" content="How to correct a restaurant listing in the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
+<meta property="og:description" content="Request an update, edit, deletion, or new restaurant listing on the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
 <meta property="og:url" content="https://eatingon30a.352marc.workers.dev/contact/">
 <meta property="og:image" content="https://eatingon30a.352marc.workers.dev/images/og-scenic-30a.jpg">
 <meta property="og:image:alt" content="Gulf water and white sand along Scenic Highway 30A in Walton County, Florida.">
@@ -19,7 +19,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contact Eating on 30A about a listing">
-<meta name="twitter:description" content="How to correct a restaurant listing in the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
+<meta name="twitter:description" content="Request an update, edit, deletion, or new restaurant listing on the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.">
 <meta name="twitter:image" content="https://eatingon30a.352marc.workers.dev/images/og-scenic-30a.jpg">
 <meta name="twitter:image:alt" content="Gulf water and white sand along Scenic Highway 30A in Walton County, Florida.">
 <meta name="theme-color" content="#102825">
@@ -36,10 +36,11 @@
 <body>
 <div id="site-header"></div>
 <main id="main">
-<div class="wrap page-intro prose"><p class="kicker">Contact</p><h1>Corrections and new listings</h1><p>Hours, phone numbers, and websites live on each restaurant page. For a correction to this guide, edit the CSV that feeds the site and rebuild. The README in the project explains the columns.</p><p>The source files are <code>data/restaurants.csv</code> and <code>data/locations.csv</code>. This preview does not attach a custom domain and does not send the old Wix coupon form anywhere.</p><p><a href="https://github.com/marcongit850/eatingon30A">eatingon30A on GitHub</a></p></div></main>
+<div class="wrap page-intro"><div class="prose"><p class="kicker">Contact</p><h1>Corrections and new listings</h1><p>Hours, phone numbers, and websites live on each restaurant page. If a listing needs an update or an edit, if a restaurant should come off the guide, or if one is missing, send a note. Marc reads these and replies to the email you leave.</p><p>Name the restaurant, the town if you know it, and what should change.</p></div><form class="listing-form" action="/api/listing" method="post" data-listing><label><span>Restaurant name <abbr title="required">*</abbr></span><input name="restaurant" type="text" required maxlength="160" autocomplete="organization"></label><label><span>Town / location</span><input name="town" type="text" maxlength="120" autocomplete="off"></label><fieldset><legend>Request type <abbr title="required">*</abbr></legend><label class="listing-choice"><input type="radio" name="type" value="update" required> <span>Update</span></label><label class="listing-choice"><input type="radio" name="type" value="edit"> <span>Edit</span></label><label class="listing-choice"><input type="radio" name="type" value="deletion"> <span>Deletion</span></label><label class="listing-choice"><input type="radio" name="type" value="new"> <span>New listing</span></label></fieldset><p class="listing-hint">Update covers hours, phone, website, or address. Edit is for the wording. Deletion removes a restaurant. New listing adds one.</p><label><span>Details <abbr title="required">*</abbr></span><textarea name="details" required maxlength="4000" rows="6"></textarea></label><label><span>Your name <abbr title="required">*</abbr></span><input name="name" type="text" required maxlength="120" autocomplete="name"></label><label><span>Email <abbr title="required">*</abbr></span><input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label><button type="submit">Send to Marc</button><p class="listing-status" role="status" aria-live="polite"></p></form></div></main>
 <div id="site-footer"></div>
 <script src="/header.js"></script>
 <script src="/footer.js"></script>
+<script src="/listing.js"></script>
 
 </body>
 </html>
