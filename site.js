@@ -66,6 +66,43 @@ export function spreadOverlaps(items) {
   return placed;
 }
 
+const MONOGRAM_SKIP = new Set(["the", "and", "at", "of", "a", "an", "by", "for", "on", "in"]);
+
+export function monogram(name) {
+  const cleaned = String(name || "").replace(/[’']/g, "").replace(/&/g, " ");
+  let words = (cleaned.match(/[A-Za-z0-9]+/g) || []).filter((word) => !MONOGRAM_SKIP.has(word.toLowerCase()));
+  if (!words.length) words = String(name || "").match(/[A-Za-z0-9]+/g) || ["E"];
+  return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
+}
+
+function listTone(item) {
+  const blob = [...(item.cuisines || []), ...(item.foods || [])].join(" ").toLowerCase();
+  if (/coffee|cafe|donut/.test(blob)) return "coffee";
+  if (/dessert|ice cream|chocolate|sweet/.test(blob)) return "sweet";
+  if (/pizza|italian/.test(blob)) return "italian";
+  if (/sushi|japanese/.test(blob)) return "sushi";
+  if (/seafood|oyster|fish/.test(blob)) return "seafood";
+  if (/burger/.test(blob)) return "burger";
+  if (/mexican|taco|latin/.test(blob)) return "spice";
+  if (/wine|bar/.test(blob)) return "wine";
+  return "gulf";
+}
+
+export function mapListCard(item) {
+  const href = `/restaurants/${encodeURIComponent(item.slug || "")}/`;
+  const meta = [item.area, item.price].filter(Boolean).join(" · ");
+  const media = item.image
+    ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name || "Restaurant")}">`
+    : `<span class="map-thumb ph" data-tone="${escapeHtml(listTone(item))}"><span class="mono" aria-hidden="true">${escapeHtml(monogram(item.name))}</span></span>`;
+  const thumb = item.image ? `<span class="map-thumb">${media}</span>` : media;
+  const address = item.address ? `<span class="map-address">${escapeHtml(item.address)}</span>` : "";
+  return (
+    `<a class="map-hit" href="${href}">${thumb}<span class="map-copy">` +
+    `<strong>${escapeHtml(item.name || "")}</strong>` +
+    `<span class="map-meta">${escapeHtml(meta)}</span>${address}</span></a>`
+  );
+}
+
 export function markerPopup(item) {
   const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
   const photo = item.image
@@ -85,6 +122,14 @@ export function featuredIndex(count, now = Date.now()) {
   if (total <= 1) return 0;
   const day = Math.floor(Number(now) / 86400000);
   return ((day % total) + total) % total;
+}
+
+export function stepFeatured(index, delta, count) {
+  const total = Number(count) || 0;
+  if (total <= 0) return 0;
+  const current = Math.trunc(Number(index) || 0);
+  const move = Math.trunc(Number(delta) || 0);
+  return ((current + move) % total + total) % total;
 }
 
 export function describeFilters(filters, areaNames, emptyLabel = "The table") {
@@ -252,26 +297,16 @@ function bootMap() {
     const bounds = [];
     for (const item of visible) {
       const marker = L.marker([item.pinLat, item.pinLng], { icon }).addTo(map);
-      const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
       marker.bindPopup(markerPopup(item), { maxWidth: 280 });
       markers.push(marker);
       bounds.push([item.pinLat, item.pinLng]);
       if (list) {
-        const link = document.createElement("a");
-        link.href = href;
-        link.className = "map-hit";
-        const name = document.createElement("strong");
-        name.textContent = item.name;
-        const meta = document.createElement("span");
-        meta.textContent = [item.area, item.price].filter(Boolean).join(" · ");
-        link.append(name, meta);
-        if (item.address) {
-          const address = document.createElement("span");
-          address.className = "map-address";
-          address.textContent = item.address;
-          link.append(address);
-        }
-        link.addEventListener("mouseenter", () => marker.openPopup());
+        const holder = document.createElement("div");
+        holder.innerHTML = mapListCard(item);
+        const link = holder.firstElementChild;
+        const open = () => marker.openPopup();
+        link.addEventListener("mouseenter", open);
+        link.addEventListener("focus", open);
         list.append(link);
       }
     }
@@ -341,11 +376,46 @@ function bootDetailMap() {
 }
 
 function bootFeatured() {
-  const slots = [...document.querySelectorAll("#from-the-guide [data-featured]")];
+  const root = document.querySelector("#from-the-guide");
+  if (!root || root.dataset.featuredBound === "true") return;
+  const slots = [...root.querySelectorAll("[data-featured]")];
   if (slots.length < 2) return;
-  const index = featuredIndex(slots.length);
-  slots.forEach((slot, position) => {
-    slot.hidden = position !== index;
+  root.dataset.featuredBound = "true";
+  let index = slots.findIndex((slot) => !slot.hidden);
+  if (index < 0) index = featuredIndex(slots.length);
+  const status = root.querySelector("[data-featured-status]");
+  const controls = root.querySelector(".cover-controls");
+  if (controls) controls.hidden = false;
+
+  const show = (next, announce) => {
+    index = stepFeatured(next, 0, slots.length);
+    slots.forEach((slot, position) => {
+      slot.hidden = position !== index;
+    });
+    if (!announce || !status) return;
+    const heading = slots[index].querySelector("h2");
+    const name = heading ? heading.textContent.trim() : "";
+    status.textContent = name ? `${name}, ${index + 1} of ${slots.length}` : "";
+  };
+
+  show(index, false);
+
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-featured-step]");
+    if (!button || !root.contains(button)) return;
+    show(stepFeatured(index, Number(button.getAttribute("data-featured-step")), slots.length), true);
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest(".cover-arrow")) return;
+    event.preventDefault();
+    const delta = event.key === "ArrowLeft" ? -1 : 1;
+    show(stepFeatured(index, delta, slots.length), true);
   });
 }
 

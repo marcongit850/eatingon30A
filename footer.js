@@ -9,5 +9,8 @@
     })
     .then(function (html) {
       mount.innerHTML = html;
+      var script = document.createElement("script");
+      script.src = "/subscribe.js";
+      document.body.appendChild(script);
     });
 })();

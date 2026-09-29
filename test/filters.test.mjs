@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, featuredIndex, filtersFromParams, markerPopup, matches, spreadOverlaps } from "../site.js";
+import { describeFilters, featuredIndex, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -73,6 +73,25 @@ test("map popups show the name, address, and profile", () => {
   assert.match(plainHtml, /href="\/restaurants\/o-ku-alys-beach\/"/);
 });
 
+test("map list cards stay compact", () => {
+  assert.equal(monogram("The Red Bar"), "RB");
+  assert.equal(monogram("O-Ku"), "OK");
+  assert.equal(monogram("Bud & Alley’s"), "BA");
+  const stinkys = restaurants.find((item) => item.slug === "stinkys-fish-camp-dune-allen-beach");
+  const photo = mapListCard(stinkys);
+  assert.match(photo, /class="map-thumb"/);
+  assert.match(photo, /stinkys-fish-camp\.jpg/);
+  assert.match(photo, /<strong>Stinky’s Fish Camp<\/strong>/);
+  assert.match(photo, /class="map-meta">Dune Allen Beach · \$\$/);
+  assert.match(photo, /class="map-address">5960 W County Hwy 30A/);
+  const plain = restaurants.find((item) => item.slug === "o-ku-alys-beach");
+  const mark = mapListCard(plain);
+  assert.match(mark, /class="map-thumb ph"/);
+  assert.match(mark, /aria-hidden="true">OK</);
+  assert.match(mark, /Alys Beach · /);
+  assert.doesNotMatch(mark, /<img/);
+});
+
 test("stacked pins at the same coordinate are pulled apart", () => {
   const placed = spreadOverlaps([
     { slug: "a", lat: 30.35, lng: -86.25 },
@@ -90,6 +109,16 @@ test("featured cover rotates once per UTC day", () => {
   assert.notEqual(featuredIndex(4, Date.UTC(2026, 8, 29)), featuredIndex(4, Date.UTC(2026, 8, 30)));
   assert.equal(featuredIndex(1, 86400000 * 9), 0);
   assert.equal(featuredIndex(0, 86400000), 0);
+});
+
+test("featured arrows cycle every listing and wrap", () => {
+  assert.equal(stepFeatured(0, 1, 4), 1);
+  assert.equal(stepFeatured(3, 1, 4), 0);
+  assert.equal(stepFeatured(0, -1, 4), 3);
+  assert.equal(stepFeatured(2, -1, 4), 1);
+  assert.equal(stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29)), 1, 4), stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29, 18)), 1, 4));
+  assert.equal(stepFeatured(1, 0, 4), 1);
+  assert.equal(stepFeatured(0, 1, 0), 0);
 });
 
 test("filter label names the town", () => {
