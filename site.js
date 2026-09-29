@@ -312,7 +312,7 @@ function bootMap() {
     }
     const label = describeFilters(filters, areaNames, "Along the coast");
     if (title) title.textContent = label;
-    if (count) count.textContent = visible.length === 1 ? "1 place on the map" : `${visible.length} places on the map`;
+    if (count) count.textContent = visible.length === 1 ? "1 restaurant on the map" : `${visible.length} restaurants on the map`;
     if (note) {
       note.hidden = visible.length !== 0;
       note.textContent = visible.length === 0 ? "No restaurants match these filters." : "";

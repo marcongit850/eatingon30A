@@ -800,6 +800,18 @@ def featured_controls() -> str:
     )
 
 
+def restaurant_count_word(count: int, label: bool = False) -> str:
+    """Visitor noun for a restaurant count.
+
+    Badges and other noun labels use a capital R ("7 Restaurants").
+    Counts inside a sentence stay lowercase ("7 restaurants"), the same
+    way the directory result line is written.
+    """
+    if count == 1:
+        return "Restaurant" if label else "restaurant"
+    return "Restaurants" if label else "restaurants"
+
+
 FEATURED_ROTATION = (
     "<script>!function(){var nodes=document.querySelectorAll('#from-the-guide [data-featured]');"
     "if(nodes.length<2)return;var index=Math.floor(Date.now()/86400000)%nodes.length;"
@@ -823,7 +835,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
         else:
             photo = placeholder("gulf", area["name"], area["name"])
-        word = "place" if area["count"] == 1 else "places"
+        word = restaurant_count_word(area["count"], label=True)
         towns.append(
             f'<a class="town" href="/restaurants/?area={e(area["slug"])}">'
             f'<span class="town-frame">{photo}</span>'
@@ -1207,14 +1219,14 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             if area["image"]
             else placeholder("gulf", area["name"], area["name"])
         )
-        word = "place" if area["count"] == 1 else "places"
+        word = restaurant_count_word(area["count"], label=True)
         cards.append(
             f'<a class="town" href="/areas/{e(area["slug"])}/"><span class="town-frame">{photo}</span>'
             f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
         '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along the highway</h1>'
-        '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the places to eat there.</p>'
+        '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the restaurants there.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(
@@ -1264,7 +1276,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<p class="crumbs"><a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
             f"<h1>{e(area['fullName'])}</h1>"
             f'<p class="lede">{e(area["description"])}</p>'
-            f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} in the directory</a> '
+            f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} {restaurant_count_word(area["count"], label=True)}</a> '
             f'<a class="button secondary" href="/map/?area={e(area["slug"])}">Map this town</a></p>'
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
             "</div></article>"
