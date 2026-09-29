@@ -10,7 +10,8 @@ Listings are edited in CSV files in the GitHub repository. The public preview do
 - [Restaurants](https://eatingon30a.delirious-roarer.workers.dev/restaurants/)
 - [Map](https://eatingon30a.delirious-roarer.workers.dev/map/)
 - [Towns](https://eatingon30a.delirious-roarer.workers.dev/areas/)
-- [About](https://eatingon30a.delirious-roarer.workers.dev/about/)
+- [About](https://eatingon30a.delirious-roarer.workers.dev/about/): How the guide is organized.
+- [Contact](https://eatingon30a.delirious-roarer.workers.dev/contact/): How to correct a listing.
 
 ## Towns
 
@@ -27,3 +28,125 @@ Listings are edited in CSV files in the GitHub repository. The public preview do
 - [Rosemary Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/rosemary-beach/): European-inspired charm with cobblestone streets and a vibrant atmosphere.
 - [Inlet Beach](https://eatingon30a.delirious-roarer.workers.dev/areas/inlet-beach/): Trendy, up-and-coming, and close to the action.
 - [Watersound Origins](https://eatingon30a.delirious-roarer.workers.dev/areas/watersound-origins/): An inland town center north of 30A, with everyday restaurants around the square.
+
+## Restaurants
+
+- [3rd Cup](https://eatingon30a.delirious-roarer.workers.dev/restaurants/3rd-cup-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [87 Central Square](https://eatingon30a.delirious-roarer.workers.dev/restaurants/87-central-square-seaside/): Seaside on Scenic Highway 30A.
+- [Aja 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/aja-30a-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [AJ’s Grayton Beach](https://eatingon30a.delirious-roarer.workers.dev/restaurants/ajs-grayton-beach-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Amavida Coffee Roasters](https://eatingon30a.delirious-roarer.workers.dev/restaurants/amavida-coffee-roasters-seaside/): Seaside on Scenic Highway 30A.
+- [Amavida Coffee Roasters](https://eatingon30a.delirious-roarer.workers.dev/restaurants/amavida-coffee-roasters-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Ambrosia](https://eatingon30a.delirious-roarer.workers.dev/restaurants/ambrosia-watersound-origins/): Watersound Origins on Scenic Highway 30A.
+- [Amici 30A Italian Kitchen](https://eatingon30a.delirious-roarer.workers.dev/restaurants/amici-30a-italian-kitchen-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Amigos 30A Mexican Kitchen](https://eatingon30a.delirious-roarer.workers.dev/restaurants/amigos-30a-mexican-kitchen-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Angelina’s Pizzeria & Pasta](https://eatingon30a.delirious-roarer.workers.dev/restaurants/angelinas-pizzeria-and-pasta-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Barefoot BBQ](https://eatingon30a.delirious-roarer.workers.dev/restaurants/barefoot-bbq-seaside/): Seaside on Scenic Highway 30A.
+- [Basmati’s Asian Cuisine](https://eatingon30a.delirious-roarer.workers.dev/restaurants/basmatis-asian-cuisine-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Beach & Brew on 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/beach-and-brew-on-30a-seacrest/): Seacrest on Scenic Highway 30A.
+- [Beach Happy Cafe](https://eatingon30a.delirious-roarer.workers.dev/restaurants/beach-happy-cafe-watercolor/): WaterColor on Scenic Highway 30A.
+- [Big Bad Breakfast](https://eatingon30a.delirious-roarer.workers.dev/restaurants/big-bad-breakfast-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Black Bear Bread Co.](https://eatingon30a.delirious-roarer.workers.dev/restaurants/black-bear-bread-co-seaside/): Seaside on Scenic Highway 30A.
+- [Blue Mountain Bakery](https://eatingon30a.delirious-roarer.workers.dev/restaurants/blue-mountain-bakery-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Blue Mountain Beach Creamery](https://eatingon30a.delirious-roarer.workers.dev/restaurants/blue-mountain-beach-creamery-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Borago](https://eatingon30a.delirious-roarer.workers.dev/restaurants/borago-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Brozinni Pizzeria](https://eatingon30a.delirious-roarer.workers.dev/restaurants/brozinni-pizzeria-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Bruno’s Pizza](https://eatingon30a.delirious-roarer.workers.dev/restaurants/brunos-pizza-watersound/): Watersound on Scenic Highway 30A.
+- [Bud & Alley’s](https://eatingon30a.delirious-roarer.workers.dev/restaurants/bud-and-alleys-seaside/): Seaside on Scenic Highway 30A.
+- [Bud & Alley’s Taco Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/bud-and-alleys-taco-bar-seaside/): Seaside on Scenic Highway 30A.
+- [Buddys Seafood Market](https://eatingon30a.delirious-roarer.workers.dev/restaurants/buddys-seafood-market/): Seagrove Beach on Scenic Highway 30A.
+- [Café Thirty-A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/cafe-thirty-a-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Canopy Road Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/canopy-road-cafe-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Canopy Road Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/canopy-road-cafe-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Charlies Delights](https://eatingon30a.delirious-roarer.workers.dev/restaurants/charlies-delights/): Alys Beach on Scenic Highway 30A.
+- [Charlie’s Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/charlies-cafe-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Chiringo](https://eatingon30a.delirious-roarer.workers.dev/restaurants/chiringo-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Cowgirl Kitchen](https://eatingon30a.delirious-roarer.workers.dev/restaurants/cowgirl-kitchen-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Cowgirl Kitchen (Blue Mountain)](https://eatingon30a.delirious-roarer.workers.dev/restaurants/cowgirl-kitchen-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Crabby Steve’s](https://eatingon30a.delirious-roarer.workers.dev/restaurants/crabby-steves-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Crackings](https://eatingon30a.delirious-roarer.workers.dev/restaurants/crackings-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Crepes du Soleil](https://eatingon30a.delirious-roarer.workers.dev/restaurants/crepes-du-soleil-seaside/): Seaside on Scenic Highway 30A.
+- [Cuvee 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/cuvee-30a-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Edward’s Fine Food & Wine](https://eatingon30a.delirious-roarer.workers.dev/restaurants/edwards-fine-food-and-wine-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Fish Out of Water](https://eatingon30a.delirious-roarer.workers.dev/restaurants/fish-out-of-water-watercolor/): WaterColor on Scenic Highway 30A.
+- [Fonville Press Market & Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/fonville-press-market-and-cafe-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [Friends 30A Burger Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/friends-30a-burger-bar-watersound-origins/): Watersound Origins on Scenic Highway 30A.
+- [Frost Bites](https://eatingon30a.delirious-roarer.workers.dev/restaurants/frost-bites-seaside/): Seaside on Scenic Highway 30A.
+- [Gallion’s](https://eatingon30a.delirious-roarer.workers.dev/restaurants/gallions-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [George’s at Alys Beach](https://eatingon30a.delirious-roarer.workers.dev/restaurants/georges-at-alys-beach-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [Goatfeathers Seafood Market](https://eatingon30a.delirious-roarer.workers.dev/restaurants/goatfeathers-seafood-market-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Goatfeathers Seafood Market (East)](https://eatingon30a.delirious-roarer.workers.dev/restaurants/goatfeathers-seafood-market-east-location-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Goatfeathers Seafood Restaurant](https://eatingon30a.delirious-roarer.workers.dev/restaurants/goatfeathers-seafood-restaurant-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Grayton Seafood Co.](https://eatingon30a.delirious-roarer.workers.dev/restaurants/grayton-seafood-co-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Great American Cookies](https://eatingon30a.delirious-roarer.workers.dev/restaurants/great-american-cookies-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Great Southern Cafe](https://eatingon30a.delirious-roarer.workers.dev/restaurants/great-southern-cafe-seaside/): Seaside on Scenic Highway 30A.
+- [Growler Garage 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/growler-garage-30a-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Havana Beach Bar & Grill](https://eatingon30a.delirious-roarer.workers.dev/restaurants/havana-beach-bar-and-grill-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Heavenly’s Shortcakes & Ice Cream](https://eatingon30a.delirious-roarer.workers.dev/restaurants/heavenlys-shortcakes-and-ice-cream-seaside/): Seaside on Scenic Highway 30A.
+- [Hurricane Oyster Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/hurricane-oyster-bar-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [Idyll Hounds Proper](https://eatingon30a.delirious-roarer.workers.dev/restaurants/idyll-hounds-proper-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Johnny McTighe’s Irish Pub](https://eatingon30a.delirious-roarer.workers.dev/restaurants/johnny-mctighes-irish-pub-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Kilwins](https://eatingon30a.delirious-roarer.workers.dev/restaurants/kilwins-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [La Cocina](https://eatingon30a.delirious-roarer.workers.dev/restaurants/la-cocina-seacrest/): Seacrest on Scenic Highway 30A.
+- [La Crema Tapas & Chocolate](https://eatingon30a.delirious-roarer.workers.dev/restaurants/la-crema-tapas-and-chocolate-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Local Cantina](https://eatingon30a.delirious-roarer.workers.dev/restaurants/local-cantina/): Seagrove Beach on Scenic Highway 30A.
+- [Local Catch Bar & Grill](https://eatingon30a.delirious-roarer.workers.dev/restaurants/local-catch-bar-and-grill-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Lola Coastal Italian](https://eatingon30a.delirious-roarer.workers.dev/restaurants/lola-coastal-italian-seacrest/): Seacrest on Scenic Highway 30A.
+- [Marble Slab Creamery](https://eatingon30a.delirious-roarer.workers.dev/restaurants/marble-slab-creamery-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Meltdown on 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/meltdown-on-30a-seaside/): Seaside on Scenic Highway 30A.
+- [Mi Casita Mexican Grill](https://eatingon30a.delirious-roarer.workers.dev/restaurants/mi-casita-mexican-grill-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Mimmo’s 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/mimmos-30a-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Modica Market](https://eatingon30a.delirious-roarer.workers.dev/restaurants/modica-market-seaside/): Seaside on Scenic Highway 30A.
+- [Mr. Gyro Hero](https://eatingon30a.delirious-roarer.workers.dev/restaurants/mr-gyro-hero-seaside/): Seaside on Scenic Highway 30A.
+- [Neat Bottle Shop & Tasting Room](https://eatingon30a.delirious-roarer.workers.dev/restaurants/neat-bottle-shop-and-tasting-room-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [O-Ku](https://eatingon30a.delirious-roarer.workers.dev/restaurants/o-ku-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [Obscure Wine Company](https://eatingon30a.delirious-roarer.workers.dev/restaurants/obscure-wine-company-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Old Florida Fish House](https://eatingon30a.delirious-roarer.workers.dev/restaurants/old-florida-fish-house-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Papa Surf Burger Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/papa-surf-burger-bar-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [Pecan Jacks](https://eatingon30a.delirious-roarer.workers.dev/restaurants/pecan-jacks-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [Pescado Seafood Grill & Rooftop Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/pescado-seafood-grill-and-rooftop-bar-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Pickle’s Burger and Shake](https://eatingon30a.delirious-roarer.workers.dev/restaurants/pickles-burger-and-shake-seaside/): Seaside on Scenic Highway 30A.
+- [Pizza by the Sea](https://eatingon30a.delirious-roarer.workers.dev/restaurants/pizza-by-the-sea-watercolor/): WaterColor on Scenic Highway 30A.
+- [Pizza by the Sea](https://eatingon30a.delirious-roarer.workers.dev/restaurants/pizza-by-the-sea-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [Playa Bowls](https://eatingon30a.delirious-roarer.workers.dev/restaurants/playa-bowls-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Prema Organic Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/prema-organic-cafe-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Raw & Juicy](https://eatingon30a.delirious-roarer.workers.dev/restaurants/raw-and-juicy-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [Red Fish Taco](https://eatingon30a.delirious-roarer.workers.dev/restaurants/red-fish-taco-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
+- [Renaissance French Restaurant](https://eatingon30a.delirious-roarer.workers.dev/restaurants/renaissance-french-restaurant-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [Restaurant Paradis](https://eatingon30a.delirious-roarer.workers.dev/restaurants/restaurant-paradis-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Salty Butcher](https://eatingon30a.delirious-roarer.workers.dev/restaurants/salty-butcher/): Seagrove Beach on Scenic Highway 30A.
+- [Scout Sports Tavern](https://eatingon30a.delirious-roarer.workers.dev/restaurants/scout-sports-tavern-watersound-origins/): Watersound Origins on Scenic Highway 30A.
+- [Scratch Biscuit Kitchen](https://eatingon30a.delirious-roarer.workers.dev/restaurants/scratch-biscuit-kitchen-watercolor/): WaterColor on Scenic Highway 30A.
+- [Seacrest Sundries](https://eatingon30a.delirious-roarer.workers.dev/restaurants/seacrest-sundries-seacrest/): Seacrest on Scenic Highway 30A.
+- [Seagrove Coffee & Donuts](https://eatingon30a.delirious-roarer.workers.dev/restaurants/seagrove-coffee-and-donuts-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Seagrove Village Market Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/seagrove-village-market-cafe-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Shades Bar & Grill](https://eatingon30a.delirious-roarer.workers.dev/restaurants/shades-bar-and-grill-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Shaka Sushi](https://eatingon30a.delirious-roarer.workers.dev/restaurants/shaka-sushi-and-noodle-bar-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [Shunk Gulley Oyster Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/shunk-gulley-oyster-bar-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [South of Philly](https://eatingon30a.delirious-roarer.workers.dev/restaurants/south-of-philly-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [Steamboat Grill 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/steamboat-grill-30a-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [Stinky’s Bait Shack](https://eatingon30a.delirious-roarer.workers.dev/restaurants/stinkys-bait-shack-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Stinky’s Fish Camp](https://eatingon30a.delirious-roarer.workers.dev/restaurants/stinkys-fish-camp-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Sugar Shak](https://eatingon30a.delirious-roarer.workers.dev/restaurants/sugar-shak-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Surfing Deer](https://eatingon30a.delirious-roarer.workers.dev/restaurants/surfing-deer-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [The Big Chill](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-big-chill-watersound/): Watersound on Scenic Highway 30A.
+- [The Citizen](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-citizen-alys-beach/): Alys Beach on Scenic Highway 30A.
+- [The Daytrader Tiki Bar & Restaurant](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-daytrader-tiki-bar-and-restaurant-seaside/): Seaside on Scenic Highway 30A.
+- [The Donut Hole](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-donut-hole-inlet-beach/): Inlet Beach on Scenic Highway 30A.
+- [The Perfect Pig](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-perfect-pig-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
+- [The Perfect Pig](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-perfect-pig-gulf-place/): Gulf Place on Scenic Highway 30A.
+- [The Red Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-red-bar-grayton-beach/): Grayton Beach on Scenic Highway 30A.
+- [The Shrimp Shack](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-shrimp-shack-seaside/): Seaside on Scenic Highway 30A.
+- [The Summer Kitchen Café](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-summer-kitchen-cafe-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [The Wine Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/the-wine-bar-watercolor/): WaterColor on Scenic Highway 30A.
+- [Ticheli’s Pizza](https://eatingon30a.delirious-roarer.workers.dev/restaurants/tichelis-pizza-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Turbo Coffee](https://eatingon30a.delirious-roarer.workers.dev/restaurants/turbo-coffee/): Seagrove Beach on Scenic Highway 30A.
+- [Village Market Café + Bar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/village-market-cafe-bar-watersound-origins/): Watersound Origins on Scenic Highway 30A.
+- [Vue on 30A](https://eatingon30a.delirious-roarer.workers.dev/restaurants/vue-on-30a-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Wild Bill’s Beach Dogs](https://eatingon30a.delirious-roarer.workers.dev/restaurants/wild-bills-beach-dogs-seaside/): Seaside on Scenic Highway 30A.
+- [Wild Nectar](https://eatingon30a.delirious-roarer.workers.dev/restaurants/wild-nectar-seaside/): Seaside on Scenic Highway 30A.
+
+## Optional
+
+- [Extended guide for language models](https://eatingon30a.delirious-roarer.workers.dev/llms-full.txt): The same pages, with a short note for each restaurant.
+- [Sitemap](https://eatingon30a.delirious-roarer.workers.dev/sitemap.xml): Every public page on this site.

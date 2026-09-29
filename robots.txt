@@ -1,3 +1,7 @@
+# Search and AI crawlers may read this site.
+# https://eatingon30a.delirious-roarer.workers.dev/llms.txt
+# https://eatingon30a.delirious-roarer.workers.dev/llms-full.txt
+
 User-agent: *
 Allow: /
 
@@ -32,6 +36,12 @@ User-agent: Bytespider
 Allow: /
 
 User-agent: CCBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: FacebookBot
 Allow: /
 
 Sitemap: https://eatingon30a.delirious-roarer.workers.dev/sitemap.xml

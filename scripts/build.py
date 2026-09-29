@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import html
 import json
+import os
 import re
 import shutil
 import unicodedata
@@ -18,7 +19,9 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 CONFIG = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
-ORIGIN = CONFIG["origin"].rstrip("/")
+ORIGIN = os.environ.get("SITE_ORIGIN", CONFIG["origin"]).rstrip("/")
+SHARE_IMAGE = "/images/og-scenic-30a.jpg"
+SHARE_ALT = "Gulf water and white sand along Scenic Highway 30A in Walton County, Florida."
 
 WEST_TO_EAST = [
     "dune-allen-beach",
@@ -125,7 +128,7 @@ def clean_hours(raw: str) -> str:
 
 
 def parse_address(raw: str) -> dict:
-    empty = {"formatted": "", "lat": None, "lng": None, "postal": "", "street": "", "region": "FL"}
+    empty = {"formatted": "", "lat": None, "lng": None, "postal": "", "street": "", "region": "FL", "city": ""}
     raw = (raw or "").strip()
     if not raw:
         return empty
@@ -158,6 +161,7 @@ def parse_address(raw: str) -> dict:
         "postal": clean_text(data.get("postalCode") or ""),
         "street": line,
         "region": clean_text(data.get("subdivision") or "") or "FL",
+        "city": clean_text(data.get("city") or ""),
     }
 
 
@@ -320,6 +324,7 @@ def load_restaurants() -> list[dict]:
                 "street": address["street"],
                 "postal": address["postal"],
                 "region": address["region"],
+                "city": address["city"],
                 "lat": address["lat"],
                 "lng": address["lng"],
                 "phone": phone,
@@ -505,20 +510,147 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     note_html = f'<p class="note">{e(note)}</p>' if note else ""
     return (
         f'<a {attrs}>'
-        f'<div class="card-media">{media_block(restaurant["cardImage"], restaurant["name"], restaurant["tone"], label, name=restaurant["name"])}</div>'
+        f'<div class="card-media">{media_block(restaurant["cardImage"], photo_alt(restaurant), restaurant["tone"], label, name=restaurant["name"])}</div>'
         f'<div class="card-body"><p class="card-area">{e(area_line)}</p>'
         f'<{heading}>{e(restaurant["name"])}</{heading}>'
         f'<p class="meta">{e(" · ".join(bits))}</p>{note_html}</div></a>'
     )
 
 
-def layout(title: str, description: str, path: str, active: str, body: str, extra_head: str = "", include_js: bool = True) -> str:
+def photo_alt(restaurant: dict) -> str:
+    return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
+
+
+def fit_meta(lead: str, identity: str) -> str:
+    """Build a unique description in the same length range as the other 30A sites."""
+    lead = clean_text(lead).rstrip(".")
+    identity = clean_text(identity)
+    text = f"{lead}. {identity}" if lead else identity
+    if len(text) > 165:
+        room = 165 - len(identity) - 2
+        cut = lead[:room].rsplit(" ", 1)[0].rstrip(".,;:") if room > 24 else ""
+        text = f"{cut}. {identity}" if cut else identity
+    if len(text) < 110:
+        text = f"{text} Hours, address, and map are on the profile."
+    if len(text) > 165:
+        text = text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
+    return text
+
+
+def listing_description(restaurant: dict) -> str:
+    identity = f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A, Walton County, Florida."
+    return fit_meta(restaurant["notes"], identity)
+
+
+def local_image_info(path: Path) -> tuple[int, int, str] | None:
+    if not path.is_file():
+        return None
+    data = path.read_bytes()
+    if data.startswith(b"\x89PNG") and len(data) >= 24:
+        return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"), "image/png"
+    if data[:2] != b"\xff\xd8":
+        return None
+    index = 2
+    while index < len(data) - 8:
+        if data[index] != 0xFF:
+            index += 1
+            continue
+        marker = data[index + 1]
+        if marker in (0xC0, 0xC1, 0xC2):
+            height = int.from_bytes(data[index + 5 : index + 7], "big")
+            width = int.from_bytes(data[index + 7 : index + 9], "big")
+            return width, height, "image/jpeg"
+        if marker in (0xD8, 0xD9):
+            index += 2
+            continue
+        if index + 4 > len(data):
+            break
+        length = int.from_bytes(data[index + 2 : index + 4], "big")
+        if length < 2:
+            break
+        index += 2 + length
+    return None
+
+
+def image_facts(url: str | None) -> dict:
+    src = url or SHARE_IMAGE
+    absolute = src if src.startswith(("http://", "https://")) else ORIGIN + src
+    facts = {"url": absolute}
+    info = None
+    if src.startswith("/"):
+        info = local_image_info(ROOT / src.lstrip("/"))
+    else:
+        match = re.search(r"w_(\d+),h_(\d+)", src)
+        if match:
+            kind = "image/png" if ".png" in src.lower() else "image/jpeg"
+            info = (int(match.group(1)), int(match.group(2)), kind)
+    if info:
+        facts["width"], facts["height"], facts["type"] = info
+    return facts
+
+
+def social_tags(title: str, description: str, canonical: str, image: str | None, image_alt: str) -> str:
+    facts = image_facts(image)
+    alt = image_alt or SHARE_ALT
+    tags = [
+        f'<meta property="og:title" content="{e(title)}">',
+        f'<meta property="og:description" content="{e(description)}">',
+        f'<meta property="og:url" content="{e(canonical)}">',
+        f'<meta property="og:image" content="{e(facts["url"])}">',
+        f'<meta property="og:image:alt" content="{e(alt)}">',
+    ]
+    if "width" in facts:
+        tags.append(f'<meta property="og:image:width" content="{facts["width"]}">')
+        tags.append(f'<meta property="og:image:height" content="{facts["height"]}">')
+        tags.append(f'<meta property="og:image:type" content="{facts["type"]}">')
+    tags.extend(
+        [
+            '<meta property="og:type" content="website">',
+            '<meta property="og:site_name" content="Eating on 30A">',
+            '<meta property="og:locale" content="en_US">',
+            '<meta name="twitter:card" content="summary_large_image">',
+            f'<meta name="twitter:title" content="{e(title)}">',
+            f'<meta name="twitter:description" content="{e(description)}">',
+            f'<meta name="twitter:image" content="{e(facts["url"])}">',
+            f'<meta name="twitter:image:alt" content="{e(alt)}">',
+        ]
+    )
+    return "\n".join(tags) + "\n"
+
+
+def breadcrumbs(crumbs: list[tuple[str, str]]) -> dict:
+    return {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": index, "name": name, "item": ORIGIN + path}
+            for index, (name, path) in enumerate(crumbs, start=1)
+        ],
+    }
+
+
+def graph(*nodes: dict) -> dict:
+    return {"@context": "https://schema.org", "@graph": list(nodes)}
+
+
+def layout(
+    title: str,
+    description: str,
+    path: str,
+    active: str,
+    body: str,
+    extra_head: str = "",
+    include_js: bool = True,
+    image: str | None = None,
+    image_alt: str = "",
+    noindex: bool = False,
+) -> str:
     canonical = ORIGIN + path
     scripts = '<script src="/header.js"></script>\n<script src="/footer.js"></script>\n'
     if include_js:
         scripts += '<script type="module" src="/site.js"></script>'
     body_attr = ' class="home"' if active == "home" else ""
     banner = "" if active == "home" else sample_banner()
+    robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n'
@@ -527,18 +659,14 @@ def layout(title: str, description: str, path: str, active: str, body: str, extr
         f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
         f'<link rel="canonical" href="{e(canonical)}">\n'
-        '<meta name="theme-color" content="#102825">\n'
+        + robots
+        + social_tags(title, description, canonical, image, image_alt)
+        + '<meta name="theme-color" content="#102825">\n'
         '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">\n'
         '<link rel="stylesheet" href="/styles.css">\n'
-        '<meta property="og:site_name" content="Eating on 30A">\n'
-        '<meta property="og:type" content="website">\n'
-        f'<meta property="og:title" content="{e(title)}">\n'
-        f'<meta property="og:description" content="{e(description)}">\n'
-        f'<meta property="og:url" content="{e(canonical)}">\n'
-        '<meta name="twitter:card" content="summary_large_image">\n'
         + extra_head
         + f"</head>\n<body{body_attr}>\n"
         + '<div id="site-header"></div>\n'
@@ -629,7 +757,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     towns = []
     for area in areas:
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="" loading="lazy">'
+            photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
         else:
             photo = placeholder("gulf", area["name"], area["name"])
         word = "place" if area["count"] == 1 else "places"
@@ -649,7 +777,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         cover = (
             '<section class="section cover-section"><div class="wrap cover">'
             f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
-            f'{media_block(image, feature["name"], feature["tone"], shot_label(feature), eager=True, name=feature["name"])}'
+            f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=True, name=feature["name"])}'
             "</a><div class=\"cover-copy\">"
             '<p class="kicker">From the guide</p>'
             f"<h2>{e(feature['name'])}</h2>"
@@ -659,7 +787,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             "</div></div></section>"
         )
     hero_html = (
-        f'<img class="hero-photo" src="{e(hero)}" alt="Turquoise Gulf water and white sand along Scenic Highway 30A" width="1800" height="1200">'
+        f'<img class="hero-photo" src="{e(hero)}" alt="{e(SHARE_ALT)}" width="1800" height="1200">'
         if hero
         else ""
     )
@@ -691,48 +819,57 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p><a class="button" href="/restaurants/">Browse the directory</a></p></div>'
         "</div></section>"
     )
+    description = "Find restaurants along Scenic Highway 30A in Walton County, Florida, by meal, town, or cuisine, with a directory and a map."
     extra = json_ld(
-        {
-            "@context": "https://schema.org",
-            "@graph": [
-                {
-                    "@type": "WebSite",
-                    "name": "Eating on 30A",
-                    "url": ORIGIN + "/",
-                    "description": ABOUT,
-                    "potentialAction": {
-                        "@type": "SearchAction",
-                        "target": ORIGIN + "/restaurants/?q={search_term_string}",
-                        "query-input": "required name=search_term_string",
-                    },
+        graph(
+            {
+                "@type": "Organization",
+                "@id": ORIGIN + "/#organization",
+                "name": "Eating on 30A",
+                "url": ORIGIN + "/",
+                "description": ABOUT,
+            },
+            {
+                "@type": "WebSite",
+                "@id": ORIGIN + "/#website",
+                "name": "Eating on 30A",
+                "url": ORIGIN + "/",
+                "description": description,
+                "inLanguage": "en",
+                "publisher": {"@id": ORIGIN + "/#organization"},
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": ORIGIN + "/restaurants/?q={search_term_string}",
+                    "query-input": "required name=search_term_string",
                 },
-                {
-                    "@type": "ItemList",
-                    "name": "Towns along 30A",
-                    "itemListElement": [
-                        {
-                            "@type": "ListItem",
-                            "position": index,
-                            "name": area["fullName"],
-                            "url": f"{ORIGIN}/restaurants/?area={area['slug']}",
-                        }
-                        for index, area in enumerate(areas, start=1)
-                    ],
-                },
-            ],
-        }
+            },
+            {
+                "@type": "ItemList",
+                "name": "Towns along 30A",
+                "numberOfItems": len(areas),
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": index,
+                        "name": area["fullName"],
+                        "url": f"{ORIGIN}/areas/{area['slug']}/",
+                    }
+                    for index, area in enumerate(areas, start=1)
+                ],
+            },
+        )
     )
-    if hero:
-        extra += f'<meta property="og:image" content="{e(hero)}">\n'
     write(
         ROOT / "index.html",
         layout(
             "Eating on 30A | Restaurant guide for Scenic Highway 30A",
-            "Find restaurants along Scenic Highway 30A by meal, town, or cuisine. Breakfast, lunch, dinner, and the map.",
+            description,
             "/",
             "home",
             body,
             extra,
+            image=hero,
+            image_alt=SHARE_ALT,
         ),
     )
 
@@ -754,27 +891,37 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         f'<div id="cards" class="card-grid">{cards}</div></div>'
     )
     extra = pending + json_ld(
-        {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            "name": "Restaurants along 30A",
-            "numberOfItems": len(restaurants),
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": index,
-                    "name": restaurant["name"],
-                    "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
-                }
-                for index, restaurant in enumerate(restaurants, start=1)
-            ],
-        }
+        graph(
+            {
+                "@type": "CollectionPage",
+                "@id": ORIGIN + "/restaurants/#page",
+                "name": "Restaurants along 30A",
+                "url": ORIGIN + "/restaurants/",
+                "isPartOf": {"@id": ORIGIN + "/#website"},
+                "description": "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. All 114 listings are here.",
+            },
+            {
+                "@type": "ItemList",
+                "name": "Restaurants along 30A",
+                "numberOfItems": len(restaurants),
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": index,
+                        "name": restaurant["name"],
+                        "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
+                    }
+                    for index, restaurant in enumerate(restaurants, start=1)
+                ],
+            },
+            breadcrumbs([("Home", "/"), ("Restaurants", "/restaurants/")]),
+        )
     )
     write(
         ROOT / "restaurants" / "index.html",
         layout(
             "Restaurants along 30A | Eating on 30A",
-            "Search restaurants on Scenic Highway 30A by town, meal, and cuisine.",
+            "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. All 114 listings are here.",
             "/restaurants/",
             "restaurants",
             body,
@@ -879,7 +1026,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         )
     body = (
         '<article class="profile">'
-        f'<div class="profile-hero">{media_block(restaurant["heroImage"], restaurant["name"], restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
+        f'<div class="profile-hero">{media_block(restaurant["heroImage"], photo_alt(restaurant), restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
@@ -893,23 +1040,25 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         f"{map_block}{more}"
         "</article>"
     )
-    description = snippet(restaurant["notes"], 155) or f'{restaurant["name"]} in {restaurant["area"]} on Scenic Highway 30A.'
+    description = listing_description(restaurant)
+    page_url = f"{ORIGIN}/restaurants/{restaurant['slug']}/"
     same_as = [url for url in (restaurant["website"], restaurant["instagram"], restaurant["facebook"]) if url]
     schema = {
-        "@context": "https://schema.org",
         "@type": "Restaurant",
+        "@id": page_url + "#restaurant",
         "name": restaurant["name"],
-        "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
-        "description": restaurant["notes"],
+        "url": page_url,
+        "description": restaurant["notes"] or description,
         "servesCuisine": restaurant["cuisines"],
         "address": {
             "@type": "PostalAddress",
             "streetAddress": restaurant["street"] or restaurant["address"],
-            "addressLocality": restaurant["area"],
-            "addressRegion": "FL",
+            "addressLocality": restaurant["city"] or restaurant["area"],
+            "addressRegion": restaurant["region"] or "FL",
             "postalCode": restaurant["postal"],
             "addressCountry": "US",
         },
+        "isPartOf": {"@id": ORIGIN + "/#website"},
     }
     if restaurant["price"]:
         schema["priceRange"] = restaurant["price"]
@@ -919,24 +1068,35 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         schema["geo"] = {"@type": "GeoCoordinates", "latitude": restaurant["lat"], "longitude": restaurant["lng"]}
     if restaurant["heroImage"]:
         image = restaurant["heroImage"]
-        schema["image"] = image if image.startswith("http") else ORIGIN + image
+        schema["image"] = image if image.startswith(("http://", "https://")) else ORIGIN + image
     if same_as:
         schema["sameAs"] = same_as
-    extra = json_ld(schema)
-    if restaurant["heroImage"]:
-        image = restaurant["heroImage"]
-        if not image.startswith("http"):
-            image = ORIGIN + image
-        extra += f'<meta property="og:image" content="{e(image)}">\n'
+    extra = json_ld(
+        graph(
+            schema,
+            breadcrumbs(
+                [
+                    ("Home", "/"),
+                    ("Restaurants", "/restaurants/"),
+                    (restaurant["name"], f"/restaurants/{restaurant['slug']}/"),
+                ]
+            ),
+        )
+    )
+    title = f'{restaurant["name"]} · {restaurant["area"]} | Eating on 30A'
+    if len(title) > 70:
+        title = f'{restaurant["name"]} | Eating on 30A'
     write(
         ROOT / "restaurants" / restaurant["slug"] / "index.html",
         layout(
-            f'{restaurant["name"]} · {restaurant["area"]} | Eating on 30A',
+            title,
             description,
             f'/restaurants/{restaurant["slug"]}/',
             "restaurants",
             body,
             extra,
+            image=restaurant["heroImage"],
+            image_alt=photo_alt(restaurant) if restaurant["heroImage"] else SHARE_ALT,
         ),
     )
 
@@ -955,12 +1115,25 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
     extra = (
         '<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">\n'
         '<script src="/vendor/leaflet/leaflet.js"></script>\n'
+        + json_ld(
+            graph(
+                {
+                    "@type": "WebPage",
+                    "@id": ORIGIN + "/map/#page",
+                    "name": "Restaurant map along 30A",
+                    "url": ORIGIN + "/map/",
+                    "isPartOf": {"@id": ORIGIN + "/#website"},
+                    "description": "Map of restaurants along Scenic Highway 30A in Walton County, Florida.",
+                },
+                breadcrumbs([("Home", "/"), ("Map", "/map/")]),
+            )
+        )
     )
     write(
         ROOT / "map" / "index.html",
         layout(
             "Restaurant map along 30A | Eating on 30A",
-            "Map of restaurants along Scenic Highway 30A using OpenStreetMap.",
+            "Map of restaurants along Scenic Highway 30A in Walton County, Florida, using each listing’s address on OpenStreetMap.",
             "/map/",
             "map",
             body,
@@ -973,7 +1146,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     cards = []
     for area in areas:
         photo = (
-            f'<img src="{e(area["image"])}" alt="" loading="lazy">'
+            f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
             if area["image"]
             else placeholder("gulf", area["name"], area["name"])
         )
@@ -991,10 +1164,35 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         ROOT / "areas" / "index.html",
         layout(
             "Towns along 30A | Eating on 30A",
-            "Restaurant towns along Scenic Highway 30A, from Dune Allen to Inlet Beach.",
+            "Restaurant towns along Scenic Highway 30A in Walton County, Florida, from Dune Allen Beach east to Inlet Beach.",
             "/areas/",
             "areas",
             body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "CollectionPage",
+                        "name": "Towns along 30A",
+                        "url": ORIGIN + "/areas/",
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                    },
+                    {
+                        "@type": "ItemList",
+                        "name": "Towns along 30A",
+                        "numberOfItems": len(areas),
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": index,
+                                "name": area["fullName"],
+                                "url": f"{ORIGIN}/areas/{area['slug']}/",
+                            }
+                            for index, area in enumerate(areas, start=1)
+                        ],
+                    },
+                    breadcrumbs([("Home", "/"), ("Towns", "/areas/")]),
+                )
+            ),
         ),
     )
     for area in areas:
@@ -1018,23 +1216,52 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
             "</div></article>"
         )
+        description = fit_meta(
+            area["description"],
+            f"Restaurants in {area['fullName']} on Scenic Highway 30A, Walton County, Florida.",
+        )
         write(
             ROOT / "areas" / area["slug"] / "index.html",
             layout(
                 f'{area["fullName"]} restaurants | Eating on 30A',
-                snippet(area["description"], 155) or f'Restaurants in {area["fullName"]} on Scenic Highway 30A.',
+                description,
                 f'/areas/{area["slug"]}/',
                 "areas",
                 body,
                 json_ld(
-                    {
-                        "@context": "https://schema.org",
-                        "@type": "CollectionPage",
-                        "name": f'{area["fullName"]} restaurants',
-                        "url": f'{ORIGIN}/areas/{area["slug"]}/',
-                        "description": area["description"],
-                    }
+                    graph(
+                        {
+                            "@type": "CollectionPage",
+                            "name": f'{area["fullName"]} restaurants',
+                            "url": f'{ORIGIN}/areas/{area["slug"]}/',
+                            "description": description,
+                            "isPartOf": {"@id": ORIGIN + "/#website"},
+                        },
+                        {
+                            "@type": "ItemList",
+                            "name": f'Restaurants in {area["fullName"]}',
+                            "numberOfItems": len(group),
+                            "itemListElement": [
+                                {
+                                    "@type": "ListItem",
+                                    "position": index,
+                                    "name": restaurant["name"],
+                                    "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
+                                }
+                                for index, restaurant in enumerate(group, start=1)
+                            ],
+                        },
+                        breadcrumbs(
+                            [
+                                ("Home", "/"),
+                                ("Towns", "/areas/"),
+                                (area["fullName"], f"/areas/{area['slug']}/"),
+                            ]
+                        ),
+                    )
                 ),
+                image=area["image"],
+                image_alt=f'{area["fullName"]} on Scenic Highway 30A' if area["image"] else SHARE_ALT,
             ),
         )
 
@@ -1051,11 +1278,23 @@ def build_about() -> None:
     write(
         ROOT / "about" / "index.html",
         layout(
-            "About | Eating on 30A",
-            "How the Eating on 30A restaurant guide is organized along Scenic Highway 30A.",
+            "About the Eating on 30A restaurant guide",
+            "How the Eating on 30A restaurant guide is organized along Scenic Highway 30A in Walton County, Florida. One profile covers every listing.",
             "/about/",
             "about",
             body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "AboutPage",
+                        "name": "About Eating on 30A",
+                        "url": ORIGIN + "/about/",
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                        "description": ABOUT,
+                    },
+                    breadcrumbs([("Home", "/"), ("About", "/about/")]),
+                )
+            ),
             include_js=False,
         ),
     )
@@ -1073,11 +1312,22 @@ def build_contact() -> None:
     write(
         ROOT / "contact" / "index.html",
         layout(
-            "Contact | Eating on 30A",
-            "How to correct a restaurant listing in the Eating on 30A guide.",
+            "Contact Eating on 30A about a listing",
+            "How to correct a restaurant listing in the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.",
             "/contact/",
             "",
             body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "ContactPage",
+                        "name": "Contact Eating on 30A",
+                        "url": ORIGIN + "/contact/",
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                    },
+                    breadcrumbs([("Home", "/"), ("Contact", "/contact/")]),
+                )
+            ),
             include_js=False,
         ),
     )
@@ -1089,7 +1339,27 @@ def build_404() -> None:
         '<p>Try the restaurant directory or the map.</p>'
         '<p><a class="button" href="/restaurants/">Browse restaurants</a></p></div>'
     )
-    write(ROOT / "404.html", layout("Page not found | Eating on 30A", "That page is not on the Eating on 30A guide.", "/404.html", "", body, include_js=False))
+    write(
+        ROOT / "404.html",
+        layout(
+            "Page not found | Eating on 30A",
+            "That page is not on the Eating on 30A guide to restaurants along Scenic Highway 30A in Walton County, Florida.",
+            "/404.html",
+            "",
+            body,
+            json_ld(
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Page not found",
+                    "url": ORIGIN + "/404.html",
+                    "isPartOf": {"@id": ORIGIN + "/#website"},
+                }
+            ),
+            include_js=False,
+            noindex=True,
+        ),
+    )
 
 
 def build_sitemap(restaurants: list[dict], areas: list[dict]) -> None:
@@ -1133,8 +1403,16 @@ def build_robots() -> None:
         "Applebot-Extended",
         "Bytespider",
         "CCBot",
+        "meta-externalagent",
+        "FacebookBot",
     ]
-    blocks = [f"User-agent: {agent}\nAllow: /\n" for agent in agents]
+    blocks = [
+        "# Search and AI crawlers may read this site.",
+        f"# {ORIGIN}/llms.txt",
+        f"# {ORIGIN}/llms-full.txt",
+        "",
+    ]
+    blocks.extend(f"User-agent: {agent}\nAllow: /\n" for agent in agents)
     text = "\n".join(blocks) + f"\nSitemap: {ORIGIN}/sitemap.xml\n"
     write(ROOT / "robots.txt", text)
 
@@ -1153,21 +1431,66 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
-        f"- [About]({ORIGIN}/about/)",
+        f"- [About]({ORIGIN}/about/): How the guide is organized.",
+        f"- [Contact]({ORIGIN}/contact/): How to correct a listing.",
         "",
         "## Towns",
         "",
     ]
     for area in areas:
         lines.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']}")
+    lines.extend(
+        [
+            "",
+            "## Restaurants",
+            "",
+        ]
+    )
+    for restaurant in restaurants:
+        lines.append(
+            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {restaurant['area']} on Scenic Highway 30A."
+        )
+    lines.extend(
+        [
+            "",
+            "## Optional",
+            "",
+            f"- [Extended guide for language models]({ORIGIN}/llms-full.txt): The same pages, with a short note for each restaurant.",
+            f"- [Sitemap]({ORIGIN}/sitemap.xml): Every public page on this site.",
+        ]
+    )
     write(ROOT / "llms.txt", "\n".join(lines) + "\n")
-    full = lines + ["", "## Restaurants", ""]
+    full = [
+        "# Eating on 30A",
+        "",
+        "> Restaurant guide for Scenic Highway 30A in Walton County, Florida.",
+        "",
+        ABOUT,
+        "",
+        "Each profile uses the street address and coordinates stored with that restaurant. A photograph appears when the listing has one.",
+        "",
+        f"- [Home]({ORIGIN}/)",
+        f"- [Restaurants]({ORIGIN}/restaurants/)",
+        f"- [Map]({ORIGIN}/map/)",
+        f"- [Towns]({ORIGIN}/areas/)",
+        f"- [About]({ORIGIN}/about/)",
+        f"- [Contact]({ORIGIN}/contact/)",
+        f"- [Short index]({ORIGIN}/llms.txt)",
+        f"- [Sitemap]({ORIGIN}/sitemap.xml)",
+        "",
+        "## Restaurants",
+        "",
+    ]
     for restaurant in restaurants:
         bits = ", ".join(restaurant["cuisines"]) or restaurant["category"] or "Restaurant"
         meals = ", ".join(restaurant["meals"])
+        address = restaurant["address"] or restaurant["area"]
         full.append(
-            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/) — {restaurant['area']}; {bits}; {meals}. {snippet(restaurant['notes'], 180)}"
+            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {address}. {bits}; {meals}. {snippet(restaurant['notes'], 180)}"
         )
+    full.extend(["", "## Towns", ""])
+    for area in areas:
+        full.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']}")
     write(ROOT / "llms-full.txt", "\n".join(full) + "\n")
 
 

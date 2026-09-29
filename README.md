@@ -12,7 +12,7 @@ Preview (workers.dev only):
 
 https://eatingon30a.delirious-roarer.workers.dev
 
-That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links and the sitemap. Do not point the sitemap at the Wix domain.
+That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
 
 ## Preview locally
 

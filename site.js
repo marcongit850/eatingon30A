@@ -69,7 +69,7 @@ export function spreadOverlaps(items) {
 export function markerPopup(item) {
   const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
   const photo = item.image
-    ? `<img class="popup-photo" src="${escapeHtml(item.image)}" alt="">`
+    ? `<img class="popup-photo" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name || "Restaurant")}">`
     : "";
   const area = item.area ? `<p class="popup-kicker">${escapeHtml(item.area)}</p>` : "";
   const address = item.address ? `<p class="popup-address">${escapeHtml(item.address)}</p>` : "";
