@@ -1244,7 +1244,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
-        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along the highway</h1>'
+        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
         '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the restaurants there.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
