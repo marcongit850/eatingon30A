@@ -22,6 +22,10 @@ CONFIG = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 ORIGIN = os.environ.get("SITE_ORIGIN", CONFIG["origin"]).rstrip("/")
 SHARE_IMAGE = "/images/og-scenic-30a.jpg"
 SHARE_ALT = "Gulf water and white sand along Scenic Highway 30A in Walton County, Florida."
+# Local homepage hero. Replaces the Wix photo on the "all of 30A" location row.
+HERO_IMAGE = "/images/hero-beachside-dining.jpg"
+HERO_WEBP = "/images/hero-beachside-dining.webp"
+HERO_ALT = "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background."
 
 WEST_TO_EAST = [
     "dune-allen-beach",
@@ -457,10 +461,29 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
 
 
 def hero_image() -> str | None:
+    if (ROOT / HERO_IMAGE.lstrip("/")).is_file():
+        return HERO_IMAGE
     for row in load_rows(DATA / "locations.csv"):
         if slugify(row.get("area_slug") or "") == "30a":
             return wix_to_url(row.get("Location Image") or "", 1800, 1200)
     return None
+
+
+def hero_markup(hero: str | None) -> tuple[str, str]:
+    if not hero:
+        return "", SHARE_ALT
+    alt = HERO_ALT if hero == HERO_IMAGE else SHARE_ALT
+    width, height = 1800, 1200
+    if hero.startswith("/"):
+        info = local_image_info(ROOT / hero.lstrip("/"))
+        if info:
+            width, height = info[0], info[1]
+    img = (
+        f'<img class="hero-photo" src="{e(hero)}" alt="{e(alt)}" width="{width}" height="{height}">'
+    )
+    if hero == HERO_IMAGE and (ROOT / HERO_WEBP.lstrip("/")).is_file():
+        img = f'<picture><source srcset="{e(HERO_WEBP)}" type="image/webp">{img}</picture>'
+    return img, alt
 
 
 MONOGRAM_SKIP = {"the", "and", "at", "of", "a", "an", "by", "for", "on", "in"}
@@ -890,11 +913,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             '<div class="wrap cover-stage">'
             f"{controls}{slots}</div>{FEATURED_ROTATION}</section>"
         )
-    hero_html = (
-        f'<img class="hero-photo" src="{e(hero)}" alt="{e(SHARE_ALT)}" width="1800" height="1200">'
-        if hero
-        else ""
-    )
+    hero_html, hero_alt = hero_markup(hero)
     body = (
         '<section class="hero">'
         f"{hero_html}"
@@ -973,7 +992,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             body,
             extra,
             image=hero,
-            image_alt=SHARE_ALT,
+            image_alt=hero_alt,
         ),
     )
 
@@ -1261,8 +1280,8 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
-        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along the highway</h1>'
-        '<p class="lede">They run from Dune Allen to Inlet Beach. Open a town for the restaurants there.</p>'
+        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
+        '<p class="lede">From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(

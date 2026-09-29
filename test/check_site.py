@@ -106,11 +106,34 @@ check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" no
 check("a feel for the place" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
 check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
+check('src="/images/hero-beachside-dining.jpg"' in home, "homepage hero should use the beachside dining photo")
+check('srcset="/images/hero-beachside-dining.webp"' in home, "homepage hero should offer the WebP photo")
+check(
+    "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background." in home,
+    "homepage hero alt should describe beachside dining",
+)
+check("de29ed_1473adbe1b4b4c068a746d2bd7c0fc46" not in home, "homepage should drop the old Wix hero")
+check(
+    'property="og:image" content="https://eatingon30a.352marc.workers.dev/images/hero-beachside-dining.jpg"' in home,
+    "homepage share image should be the beachside dining photo",
+)
+for hero_name in ("images/hero-beachside-dining.jpg", "images/hero-beachside-dining.webp"):
+    hero_path = ROOT / hero_name
+    check(hero_path.is_file(), f"missing hero photo {hero_name}")
+    check(hero_path.stat().st_size < 400_000, f"hero photo too large for the web: {hero_name}")
 check("editorial" not in home.lower() and "already filtered" not in home, "homepage should not sound like a product or an editorial")
 check("a feel for the place" in home, "homepage essay should use the visitor guide")
 areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
-check("Towns along the highway" in areas_index, "towns page heading should introduce the coast")
-check("Open a town for the restaurants there" in areas_index, "towns page should point visitors to the restaurants there")
+check("<h1>Beach Towns of 30A</h1>" in areas_index, "towns page heading should name the beach towns")
+check(
+    "From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one." in areas_index,
+    "towns page intro should invite visitors to the communities",
+)
+town_count = styles.split(".town small {", 1)
+check(
+    len(town_count) == 2 and "white-space: nowrap" in town_count[1][:500],
+    "town restaurant counts should stay on one line",
+)
 check("7 Restaurants" in areas_index and "7 places" not in areas_index, "town cards should count Restaurants")
 check("7 Restaurants" in home and re.search(r"\bplaces\b", home) is None, "homepage town counts should say Restaurants")
 check(build.restaurant_count_word(1, label=True) == "Restaurant", "a single listing is a Restaurant label")
