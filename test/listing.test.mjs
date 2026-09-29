@@ -4,7 +4,6 @@ import worker, { deliverListing, handleListing, parseListing } from "../worker.j
 
 const note = {
   restaurant: "Bud & Alley's",
-  town: "Seaside",
   type: "update",
   details: "The phone number on the page is out of date.",
   name: "Jamie Cook",
@@ -19,8 +18,9 @@ test("parseListing requires a restaurant, a known request type, details, a name,
   assert.equal(parseListing({ restaurant: "Cafe", type: "edit", details: "Hours" }).error, "Enter your name.");
   assert.equal(parseListing({ restaurant: "Cafe", type: "new", details: "Add it", name: "Jamie", email: "nope" }).error, "Enter a valid email.");
   assert.equal(parseListing({ ...note, details: "x".repeat(4001) }).error, "Keep the details under 4,000 characters.");
+  assert.deepEqual(parseListing(note).value, { ...note, town: "" });
   assert.deepEqual(parseListing({ ...note, town: "" }).value, { ...note, town: "" });
-  assert.deepEqual(parseListing(note).value, note);
+  assert.deepEqual(parseListing({ ...note, town: "Seaside" }).value, { ...note, town: "Seaside" });
 });
 
 test("missing secrets accept the listing note and do not call Resend", async () => {

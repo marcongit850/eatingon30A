@@ -113,7 +113,7 @@ export function markerPopup(item) {
   return (
     `<div class="map-popup">${photo}${area}` +
     `<strong>${escapeHtml(item.name || "")}</strong>` +
-    `${address}<p><a href="${href}">View profile</a></p></div>`
+    `${address}<p><a href="${href}">View restaurant</a></p></div>`
   );
 }
 
@@ -132,7 +132,7 @@ export function stepFeatured(index, delta, count) {
   return ((current + move) % total + total) % total;
 }
 
-export function describeFilters(filters, areaNames, emptyLabel = "The table") {
+export function describeFilters(filters, areaNames, emptyLabel = "Where to eat") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
   if (filters.cuisine) parts.push(filters.cuisine);
