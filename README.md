@@ -1,14 +1,8 @@
 # Eating on 30A
 
-A static restaurant guide for Scenic Highway 30A in Walton County, Florida. The current site is a **design shell** for approval of the look and the filters. It is not the full catalog.
+A static restaurant guide for Scenic Highway 30A in Walton County, Florida. Every `PUBLISHED` row in `data/restaurants.csv` is on the site: one profile page each, plus the directory and the map.
 
-## Phase 1 (this preview)
-
-The homepage, directory, filters, detail template, and map are live and wired up. The visual direction is an editorial coastal guide: full-bleed hero, serif display type, and monogram frames where a listing has no photograph. Pages show a sample of 10 restaurants from a few towns (Dune Allen, Grayton, WaterColor, Seaside, Inlet Beach, Alys Beach, and Rosemary Beach), including the one listing that has a real photo. Meal, town, cuisine, and search filters work on that sample. The map uses the same sample.
-
-## Phase 2 (after visual sign-off)
-
-The full export stays committed at `data/restaurants.csv` (114 published rows) and `data/locations.csv`. It is **not** generated into pages yet. After the shell is approved, set `SAMPLE_SLUGS` to `None` in `scripts/build.py` and run `python3 scripts/build.py`. That publishes every `PUBLISHED` row: one detail page each, and the full directory and map.
+The visual direction is an editorial coastal guide: full-bleed hero, serif display type, and monogram frames where a listing has no photograph. Meal, town, cuisine, and search filters work across the full directory. The map uses the same listings.
 
 There is no Airtable base and no Google Places or Google Maps API.
 
@@ -16,9 +10,9 @@ The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or 
 
 Preview (workers.dev only):
 
-https://eatingon30a.classy-scarer.workers.dev
+https://eatingon30a.delirious-roarer.workers.dev
 
-That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links and the sitemap. Do not point the sitemap at the Wix domain.
+That hostname is the preview from `npx wrangler deploy --temporary`. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
 
 ## Preview locally
 
@@ -37,13 +31,15 @@ npm test
 
 That rebuilds the site, checks the generated pages, and checks the filter rules.
 
-## Edit the header and footer
+## One profile template
 
-`includes/header.html` and `includes/footer.html` are the shared navigation, the same pattern as Friends of Scenic 30A. Every page mounts them with `header.js` and `footer.js`. Change a link in those two files and it shows on every page. The build does not copy the nav into each HTML file.
+`build_detail()` in `scripts/build.py` is the only restaurant profile template. `card()` is the only directory card. `includes/header.html` and `includes/footer.html` are the shared navigation, loaded by every page through `header.js` and `footer.js`. Change a link in those two files and it shows on every page. The build does not copy the nav into each HTML file.
+
+`SAMPLE_SLUGS` in `scripts/build.py` is `None`, so the build publishes every `PUBLISHED` row.
 
 ## Edit the directory
 
-`data/restaurants.csv` and `data/locations.csv` are the source of truth. The build currently publishes only the slugs in `SAMPLE_SLUGS`. Edit the CSVs whenever you like; the rest of the file is kept for phase 2 and does not appear on the site until that list is cleared. Then regenerate:
+`data/restaurants.csv` and `data/locations.csv` are the source of truth. Edit the CSVs, then regenerate:
 
 ```bash
 python3 scripts/build.py
@@ -55,9 +51,9 @@ Columns that show up on the site:
 
 - `Restaurant Name`, `slug` (leave the slug blank and the build makes one from the old path plus the town if needed)
 - `map_area`, `map_area_slug`, `location_label`, `subarea`
-- `address` (JSON with `formatted` and `location.latitude` / `location.longitude`)
+- `address` (JSON with `formatted` and `location.latitude` / `location.longitude`). Every published row already has both, so the map does not geocode and does not invent coordinates. Pins that share one storefront are nudged apart on screen only.
 - `phone`, `website`, `price`, `notes`, `hours`
-- `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into `static.wixstatic.com` links)
+- `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into local files or `static.wixstatic.com` links)
 - `Cuisine Type`, `Meal Type`, `Food Type`, `Vibe`, `Category` (JSON arrays)
 - `Outdoor Dining`, `Kid Friendly`, `Live Music`, `Happy Hour (drinks)`, `Happy Hour (food)`, `Reservations`
 - `Facebook URL`, `Instagram`
@@ -65,7 +61,9 @@ Columns that show up on the site:
 
 `data/locations.csv` supplies town names, short descriptions, and town photos. Towns that exist only on restaurants (Watersound and Watersound Origins) still appear.
 
-Only a couple of restaurants in the export have images. One list image is a black heart shape, so the build skips that file and uses the detail photo instead. That detail file is a very large PNG on Wix, so the page uses the compressed copy at `images/restaurants/stinkys-fish-camp.jpg`. Every other card without a working image URL gets a color block.
+Image columns are `List Image`, `Detail Image`, and `Logo`. In this export, and on the live Wix site checked 29 Sep 2026, only Stinky’s Fish Camp has them filled. The restaurant sitemap, the directory dataset, and a sample profile page (`/restaurants/big-bad-breakfast` plus `/restaurants1/`) expose the same collection. Those pages have no per-restaurant `og:image`, and the only `wix:image://` values in the collection are Stinky’s. The list image is a black heart, so the build skips it. The detail photo and the logo are saved under `images/restaurants/` and used on the card, the profile, and the map popup. The other 113 listings keep a monogram. Town photos still come from `locations.csv`.
+
+There is no other free photo source on eatingon30a.com to cache. To add the rest, either re-export the Wix CMS with `List Image` and `Detail Image` filled and rebuild, or drop a file in `images/restaurants/` named with the site slug (`o-ku-alys-beach.jpg`, `.jpeg`, `.webp`, or `.png`) and rebuild. A file in that folder is used for the card, the profile, and the map popup.
 
 The raw CSV is not uploaded with the site (see `.assetsignore`). It includes export columns such as owner ids and `googlePlaceId`. Those columns are not read into the public JSON and are not sent to Google.
 

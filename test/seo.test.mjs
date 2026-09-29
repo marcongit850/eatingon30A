@@ -1,0 +1,170 @@
+import assert from "node:assert/strict";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+const config = JSON.parse(readFileSync(join(root, "site.config.json"), "utf8"));
+const ORIGIN = config.origin.replace(/\/$/, "");
+
+function read(rel) {
+  return readFileSync(join(root, rel), "utf8");
+}
+
+function decode(value) {
+  return value
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&#x27;", "'");
+}
+
+function attr(html, pattern) {
+  const match = html.match(pattern);
+  assert.ok(match, pattern.toString());
+  return decode(match[1]);
+}
+
+function jsonLd(html) {
+  const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  assert.equal(blocks.length, 1, "expected one JSON-LD block");
+  return JSON.parse(blocks[0][1]);
+}
+
+function walk(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    if (name === "node_modules" || name === ".git" || name === "vendor" || name === ".wrangler") continue;
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) walk(path, out);
+    else out.push(path);
+  }
+  return out;
+}
+
+const htmlPages = walk(root).filter((path) => path.endsWith(".html") && !path.includes(`${join(root, "includes")}`));
+const titles = new Set();
+const descriptions = new Set();
+
+for (const path of htmlPages) {
+  const html = readFileSync(path, "utf8");
+  const rel = path.slice(root.length);
+  const title = attr(html, /<title>([^<]+)<\/title>/);
+  const description = attr(html, /<meta name="description" content="([^"]+)">/);
+  assert.equal(titles.has(title), false, "duplicate title " + title);
+  assert.equal(descriptions.has(description), false, "duplicate description " + description);
+  titles.add(title);
+  descriptions.add(description);
+  assert.ok(title.length >= 20 && title.length <= 70, rel + " title length " + title.length + " " + title);
+  assert.ok(description.length >= 110 && description.length <= 165, rel + " description length " + description.length);
+  assert.match(description, /30A/);
+  assert.match(description, /Walton County/);
+  const canonical = attr(html, /<link rel="canonical" href="([^"]+)">/);
+  assert.ok(canonical.startsWith(ORIGIN), rel + " canonical " + canonical);
+  assert.equal(canonical.includes("eatingon30a.com"), false);
+  assert.equal(attr(html, /<meta property="og:title" content="([^"]+)">/), title);
+  assert.equal(attr(html, /<meta property="og:description" content="([^"]+)">/), description);
+  assert.equal(attr(html, /<meta property="og:url" content="([^"]+)">/), canonical);
+  assert.equal(attr(html, /<meta property="og:site_name" content="([^"]+)">/), "Eating on 30A");
+  assert.equal(attr(html, /<meta property="og:locale" content="([^"]+)">/), "en_US");
+  assert.equal(attr(html, /<meta property="og:type" content="([^"]+)">/), "website");
+  const image = attr(html, /<meta property="og:image" content="([^"]+)">/);
+  assert.ok(image.startsWith("https://"), rel);
+  assert.equal(attr(html, /<meta name="twitter:card" content="([^"]+)">/), "summary_large_image");
+  assert.equal(attr(html, /<meta name="twitter:title" content="([^"]+)">/), title);
+  assert.equal(attr(html, /<meta name="twitter:description" content="([^"]+)">/), description);
+  assert.equal(attr(html, /<meta name="twitter:image" content="([^"]+)">/), image);
+  const imageAlt = attr(html, /<meta property="og:image:alt" content="([^"]+)">/);
+  assert.ok(imageAlt.length > 10, rel);
+  assert.equal(attr(html, /<meta name="twitter:image:alt" content="([^"]+)">/), imageAlt);
+  assert.ok(attr(html, /<meta property="og:image:width" content="([^"]+)">/));
+  const data = jsonLd(html);
+  assert.equal(data["@context"], "https://schema.org");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  assert.equal(h1s.length, 1, rel + " h1 count");
+}
+
+const home = jsonLd(read("index.html"));
+assert.deepEqual(home["@graph"].map((node) => node["@type"]), ["Organization", "WebSite", "ItemList"]);
+assert.equal(home["@graph"][1].publisher["@id"], `${ORIGIN}/#organization`);
+
+const directory = jsonLd(read("restaurants/index.html"));
+const list = directory["@graph"].find((node) => node["@type"] === "ItemList");
+assert.equal(list.numberOfItems, 114);
+assert.equal(directory["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+
+const profile = jsonLd(read("restaurants/o-ku-alys-beach/index.html"));
+const restaurant = profile["@graph"].find((node) => node["@type"] === "Restaurant");
+assert.equal(restaurant.name, "O-Ku");
+assert.equal(restaurant.url, `${ORIGIN}/restaurants/o-ku-alys-beach/`);
+assert.equal(restaurant.address.addressCountry, "US");
+assert.ok(restaurant.address.streetAddress);
+assert.equal(typeof restaurant.geo.latitude, "number");
+assert.equal(typeof restaurant.geo.longitude, "number");
+assert.ok(restaurant.telephone);
+assert.equal(profile["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+assert.equal(JSON.stringify(restaurant).includes("image"), false);
+
+const stinkys = jsonLd(read("restaurants/stinkys-fish-camp-dune-allen-beach/index.html"));
+const stinkysRestaurant = stinkys["@graph"].find((node) => node["@type"] === "Restaurant");
+assert.match(stinkysRestaurant.image, /\/images\/restaurants\/stinkys-fish-camp\.jpg$/);
+
+const town = jsonLd(read("areas/seaside/index.html"));
+assert.equal(town["@graph"].some((node) => node["@type"] === "ItemList"), true);
+assert.equal(town["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+
+const missing = read("404.html");
+assert.match(missing, /noindex/);
+assert.equal(read("index.html").includes("noindex"), false);
+
+const robots = read("robots.txt");
+assert.match(robots, /User-agent: \*\nAllow: \/\n/);
+assert.equal(robots.includes("Disallow"), false);
+assert.match(robots, new RegExp(`Sitemap: ${ORIGIN.replaceAll(".", "\\.")}/sitemap\\.xml`));
+assert.match(robots, new RegExp(`${ORIGIN.replaceAll(".", "\\.")}/llms\\.txt`));
+assert.match(robots, new RegExp(`${ORIGIN.replaceAll(".", "\\.")}/llms-full\\.txt`));
+for (const agent of [
+  "Googlebot",
+  "Bingbot",
+  "GPTBot",
+  "ChatGPT-User",
+  "Google-Extended",
+  "ClaudeBot",
+  "anthropic-ai",
+  "PerplexityBot",
+  "Applebot-Extended",
+  "Bytespider",
+  "CCBot",
+  "meta-externalagent",
+  "FacebookBot",
+]) {
+  assert.match(robots, new RegExp(`User-agent: ${agent}\\nAllow: /\\n`), agent);
+}
+
+const sitemap = read("sitemap.xml");
+const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+assert.equal(locs.includes(`${ORIGIN}/`), true);
+assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
+assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
+assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
+assert.equal(locs.length, 6 + 13 + 114);
+
+const llms = read("llms.txt");
+const llmsFull = read("llms-full.txt");
+assert.ok(llmsFull.length > llms.length);
+for (const url of [`${ORIGIN}/`, `${ORIGIN}/restaurants/`, `${ORIGIN}/map/`, `${ORIGIN}/areas/`, `${ORIGIN}/about/`, `${ORIGIN}/contact/`, `${ORIGIN}/sitemap.xml`, `${ORIGIN}/restaurants/o-ku-alys-beach/`]) {
+  assert.ok(llms.includes(url), "llms.txt missing " + url);
+  assert.ok(llmsFull.includes(url), "llms-full.txt missing " + url);
+}
+assert.equal(llms.includes("<"), false);
+assert.equal(llmsFull.includes("<"), false);
+
+for (const path of walk(root)) {
+  if (!path.endsWith(".html") && path !== join(root, "site.js")) continue;
+  const html = readFileSync(path, "utf8");
+  for (const match of html.matchAll(/<img\b[^>]*>/g)) {
+    const tag = match[0];
+    const alt = tag.match(/\salt="([^"]*)"/);
+    assert.ok(alt, "missing alt " + path);
+    assert.ok(alt[1].trim().length > 0, "empty alt " + path);
+  }
+}

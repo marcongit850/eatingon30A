@@ -4,15 +4,31 @@
     "name": "Dune Allen Beach",
     "shortName": "Dune Allen",
     "description": "Explore the full stretch of 30A, from laid-back beach towns to vibrant coastal communities, all in one place.",
-    "count": 1,
+    "count": 7,
     "image": "https://static.wixstatic.com/media/de29ed_b3b04e935e6e42aba727fc0541790055~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/dune-allen.jpg"
+  },
+  {
+    "slug": "gulf-place",
+    "name": "Gulf Place",
+    "shortName": "Gulf Place",
+    "description": "A vibrant hub on the west end of 30A with colorful architecture, local shops, live music, and easy beach access.",
+    "count": 7,
+    "image": "https://static.wixstatic.com/media/de29ed_eae4b4b4e89c453d8a67a90eab88552a~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/gulf-place.jpg"
+  },
+  {
+    "slug": "blue-mountain-beach",
+    "name": "Blue Mountain Beach",
+    "shortName": "Blue Mountain",
+    "description": "A relaxed beach town with local eats and a friendly community.",
+    "count": 6,
+    "image": "https://static.wixstatic.com/media/de29ed_b5793e285dad435a9cbc6ea79e17e468~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/blue-mountain-beach.jpg"
   },
   {
     "slug": "grayton-beach",
     "name": "Grayton Beach",
     "shortName": "Grayton",
     "description": "A laid-back, artsy beach town with pristine beaches and local flavor.",
-    "count": 2,
+    "count": 7,
     "image": "https://static.wixstatic.com/media/de29ed_a9ea3f98c2d34bcaa531ed557eff0d31~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/grayton.jpg"
   },
   {
@@ -20,7 +36,7 @@
     "name": "WaterColor",
     "shortName": "WaterColor",
     "description": "Upscale and family-friendly with beautiful beaches and scenic trails.",
-    "count": 1,
+    "count": 5,
     "image": "https://static.wixstatic.com/media/de29ed_bc93553801d640c0b57627b763df64b6~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/watercolor.jpg"
   },
   {
@@ -28,15 +44,39 @@
     "name": "Seaside",
     "shortName": "Seaside",
     "description": "The iconic heart of 30A. Charming, walkable, and full of coastal character.",
-    "count": 2,
+    "count": 18,
     "image": "https://static.wixstatic.com/media/de29ed_36620ca1f57f4406ad00476bb2bf7104~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seaside.jpg"
+  },
+  {
+    "slug": "seagrove-beach",
+    "name": "Seagrove Beach",
+    "shortName": "Seagrove",
+    "description": "A laid-back, tree-lined beach community with a mix of old Florida charm and modern coastal living.",
+    "count": 17,
+    "image": "https://static.wixstatic.com/media/de29ed_f033c0318f90442e8e45d9c98635f745~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seagrove-beach.jpg"
+  },
+  {
+    "slug": "seacrest",
+    "name": "Seacrest",
+    "shortName": "Seacrest",
+    "description": "A peaceful retreat with sugar-white sands and easy access to fun.",
+    "count": 4,
+    "image": "https://static.wixstatic.com/media/de29ed_3729645be8c74e1e94846037e3096436~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seacrest.jpg"
+  },
+  {
+    "slug": "watersound",
+    "name": "Watersound",
+    "shortName": "Watersound",
+    "description": "A beach stretch east of Seagrove, with casual dining along County Highway 30A.",
+    "count": 2,
+    "image": null
   },
   {
     "slug": "alys-beach",
     "name": "Alys Beach",
     "shortName": "Alys Beach",
     "description": "Striking architecture, upscale shopping, and a peaceful beachfront vibe.",
-    "count": 2,
+    "count": 7,
     "image": "https://static.wixstatic.com/media/de29ed_3f0f4d942a8245418ed6960c0602630b~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/alys-beach.jpg"
   },
   {
@@ -44,7 +84,7 @@
     "name": "Rosemary Beach",
     "shortName": "Rosemary",
     "description": "European-inspired charm with cobblestone streets and a vibrant atmosphere.",
-    "count": 1,
+    "count": 16,
     "image": "https://static.wixstatic.com/media/de29ed_6547f451f1724414a1818e5363af6527~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/rosemary.jpg"
   },
   {
@@ -52,7 +92,15 @@
     "name": "Inlet Beach",
     "shortName": "Inlet Beach",
     "description": "Trendy, up-and-coming, and close to the action.",
-    "count": 1,
+    "count": 14,
     "image": "https://static.wixstatic.com/media/de29ed_d11419477d3a4cc8abc868c5abbdef5a~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/inlet-beach.jpg"
+  },
+  {
+    "slug": "watersound-origins",
+    "name": "Watersound Origins",
+    "shortName": "Watersound Origins",
+    "description": "An inland town center north of 30A, with everyday restaurants around the square.",
+    "count": 4,
+    "image": null
   }
 ]

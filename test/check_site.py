@@ -32,12 +32,15 @@ def check(condition: bool, message: str) -> None:
 
 shown = build.published_restaurants()
 check(len(source) == 114, f"full CSV should stay at 114 published rows, got {len(source)}")
-check(len(restaurants) == len(shown), "public json should match the sample, not the full CSV")
-check(6 <= len(restaurants) <= 12, f"shell should publish 6–12 restaurants, got {len(restaurants)}")
+check(len(restaurants) == len(shown) == 114, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
-check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} sample rows")
-check("Design preview" in home, "homepage should say this is a design preview")
-check("full restaurant CSV" in home or "full catalog" in home.lower() or "not on the site yet" in home, "homepage should say the full import is later")
+check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
+check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
+check("full restaurant CSV" not in home.lower(), "homepage should not say the CSV is withheld")
+check("The table" in home, "homepage headline should stay")
+build_src = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
+check(build_src.count("def build_detail(") == 1, "restaurant profiles should come from one template function")
+check(build_src.count("def card(") == 1, "directory cards should come from one template function")
 check('"name": "eatingon30a"' in wrangler, "worker name must stay eatingon30a")
 check("eatingon30a.com" not in wrangler, "wrangler must not attach the vanity domain")
 check("routes" not in wrangler, "wrangler must not declare custom routes")
@@ -46,7 +49,7 @@ for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
     check(f'href="/restaurants/?meal={meal}"' in home, f"homepage missing meal link {meal}")
 
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
-check(1 <= len(areas) <= 8, f"sample should cover a few towns, got {len(areas)}")
+check(len(areas) == len({item["areaSlug"] for item in restaurants}), f"town pages should match listed areas, got {len(areas)}")
 for area in areas:
     check(f'href="/restaurants/?area={area["slug"]}"' in home, f"homepage missing area filter {area['slug']}")
     check((ROOT / "areas" / area["slug"] / "index.html").exists(), f"missing town page {area['slug']}")
@@ -58,10 +61,19 @@ for restaurant in restaurants:
     check(f"{build.ORIGIN}/restaurants/{restaurant['slug']}/" in sitemap, f"sitemap missing {restaurant['slug']}")
     page = path.read_text(encoding="utf-8")
     check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 missing {restaurant['name']}")
+    check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
     check("maps.googleapis" not in page and "airtable" not in page.lower(), f"detail page calls a paid API {restaurant['slug']}")
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")
 check("User-agent: *" in robots and "Allow: /" in robots, "robots should allow crawlers")
+missing_coords = [item["slug"] for item in restaurants if not isinstance(item.get("lat"), (int, float)) or not isinstance(item.get("lng"), (int, float)) or not item.get("address")]
+check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
+photos = [item for item in restaurants if item.get("image")]
+check(len(photos) == 1 and photos[0]["slug"] == "stinkys-fish-camp-dune-allen-beach", f"expected one cached restaurant photo, got {[item['slug'] for item in photos]}")
+check(build.local_listing_photo("o-ku-alys-beach") is None, "a slug without a dropped file should stay a monogram")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+check("re-export the Wix CMS" in readme and "images/restaurants/" in readme, "README should say how to add the missing photos")
+check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")
 check("leaflet.js" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing Leaflet")
@@ -77,6 +89,12 @@ if card:
 
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp.jpg" in stinkys, "Stinky's should use the compressed photo")
+check("/images/restaurants/stinkys-fish-camp-logo.jpg" in stinkys, "Stinky's logo should be a local file")
+check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
+oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
+oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check('class="ph"' in oku_hero and 'class="mono"' in oku_hero, "a listing without a photo should keep the monogram")
+check("<img" not in oku_hero, "O-Ku hero should stay a monogram")
 check("Black%20Heart" not in directory and "heart" not in stinkys.lower() or "stinkys-fish-camp.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
 

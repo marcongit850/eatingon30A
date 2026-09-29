@@ -66,6 +66,20 @@ export function spreadOverlaps(items) {
   return placed;
 }
 
+export function markerPopup(item) {
+  const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
+  const photo = item.image
+    ? `<img class="popup-photo" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name || "Restaurant")}">`
+    : "";
+  const area = item.area ? `<p class="popup-kicker">${escapeHtml(item.area)}</p>` : "";
+  const address = item.address ? `<p class="popup-address">${escapeHtml(item.address)}</p>` : "";
+  return (
+    `<div class="map-popup">${photo}${area}` +
+    `<strong>${escapeHtml(item.name || "")}</strong>` +
+    `${address}<p><a href="${href}">View profile</a></p></div>`
+  );
+}
+
 export function describeFilters(filters, areaNames, emptyLabel = "The table") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
@@ -226,11 +240,7 @@ function bootMap() {
     for (const item of visible) {
       const marker = L.marker([item.pinLat, item.pinLng], { icon }).addTo(map);
       const href = `/restaurants/${encodeURIComponent(item.slug)}/`;
-      marker.bindPopup(
-        `<p class="popup-kicker">${escapeHtml(item.area)}</p>` +
-        `<strong>${escapeHtml(item.name)}</strong>` +
-        `<p><a href="${href}">View details</a></p>`
-      );
+      marker.bindPopup(markerPopup(item), { maxWidth: 280 });
       markers.push(marker);
       bounds.push([item.pinLat, item.pinLng]);
       if (list) {
@@ -242,6 +252,12 @@ function bootMap() {
         const meta = document.createElement("span");
         meta.textContent = [item.area, item.price].filter(Boolean).join(" · ");
         link.append(name, meta);
+        if (item.address) {
+          const address = document.createElement("span");
+          address.className = "map-address";
+          address.textContent = item.address;
+          link.append(address);
+        }
         link.addEventListener("mouseenter", () => marker.openPopup());
         list.append(link);
       }
@@ -306,7 +322,13 @@ function bootDetailMap() {
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   });
-  L.marker([lat, lng], { icon }).addTo(map).bindPopup(escapeHtml(node.dataset.name || "Restaurant"));
+  L.marker([lat, lng], { icon }).addTo(map).bindPopup(markerPopup({
+    slug: node.dataset.slug || "",
+    name: node.dataset.name || "Restaurant",
+    area: node.dataset.area || "",
+    address: node.dataset.address || "",
+    image: node.dataset.image || "",
+  }), { maxWidth: 280 });
 }
 
 function boot() {
