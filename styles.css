@@ -536,6 +536,20 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   border: 1px solid rgba(251, 247, 241, 0.28);
   pointer-events: none;
 }
+.profile-film {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: var(--gulf-deep);
+}
+.profile-film[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
+.profile-film img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+}
 .profile-head { padding: 2.5rem 0 0.2rem; }
 .profile-head .eyebrow { font-size: 1.45rem; }
 .profile-head .eyebrow a { text-decoration: none; }
@@ -726,6 +740,7 @@ html.js-filter #cards .card { display: none; }
   .cover { grid-template-columns: 1.15fr 0.85fr; }
   .cover-controls { width: calc((100% - 3.2rem) * 0.575); }
   .essay-grid { grid-template-columns: 0.9fr 1.1fr; }
+  .profile-film[data-count="1"] { grid-template-columns: minmax(0, 50%); }
   .profile-grid { grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.72fr); gap: 3.5rem; align-items: start; }
   .profile-grid aside { position: sticky; top: 5.5rem; }
   #map { height: min(68vh, 640px); }
