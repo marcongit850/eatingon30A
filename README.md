@@ -1,14 +1,8 @@
 # Eating on 30A
 
-A static restaurant guide for Scenic Highway 30A in Walton County, Florida. The current site is a **design shell** for approval of the look and the filters. It is not the full catalog.
+A static restaurant guide for Scenic Highway 30A in Walton County, Florida. Every `PUBLISHED` row in `data/restaurants.csv` is on the site: one profile page each, plus the directory and the map.
 
-## Phase 1 (this preview)
-
-The homepage, directory, filters, detail template, and map are live and wired up. The visual direction is an editorial coastal guide: full-bleed hero, serif display type, and monogram frames where a listing has no photograph. Pages show a sample of 10 restaurants from a few towns (Dune Allen, Grayton, WaterColor, Seaside, Inlet Beach, Alys Beach, and Rosemary Beach), including the one listing that has a real photo. Meal, town, cuisine, and search filters work on that sample. The map uses the same sample.
-
-## Phase 2 (after visual sign-off)
-
-The full export stays committed at `data/restaurants.csv` (114 published rows) and `data/locations.csv`. It is **not** generated into pages yet. After the shell is approved, set `SAMPLE_SLUGS` to `None` in `scripts/build.py` and run `python3 scripts/build.py`. That publishes every `PUBLISHED` row: one detail page each, and the full directory and map.
+The visual direction is an editorial coastal guide: full-bleed hero, serif display type, and monogram frames where a listing has no photograph. Meal, town, cuisine, and search filters work across the full directory. The map uses the same listings.
 
 There is no Airtable base and no Google Places or Google Maps API.
 
@@ -37,13 +31,15 @@ npm test
 
 That rebuilds the site, checks the generated pages, and checks the filter rules.
 
-## Edit the header and footer
+## One profile template
 
-`includes/header.html` and `includes/footer.html` are the shared navigation, the same pattern as Friends of Scenic 30A. Every page mounts them with `header.js` and `footer.js`. Change a link in those two files and it shows on every page. The build does not copy the nav into each HTML file.
+`build_detail()` in `scripts/build.py` is the only restaurant profile template. `card()` is the only directory card. `includes/header.html` and `includes/footer.html` are the shared navigation, loaded by every page through `header.js` and `footer.js`. Change a link in those two files and it shows on every page. The build does not copy the nav into each HTML file.
+
+`SAMPLE_SLUGS` in `scripts/build.py` is `None`, so the build publishes every `PUBLISHED` row.
 
 ## Edit the directory
 
-`data/restaurants.csv` and `data/locations.csv` are the source of truth. The build currently publishes only the slugs in `SAMPLE_SLUGS`. Edit the CSVs whenever you like; the rest of the file is kept for phase 2 and does not appear on the site until that list is cleared. Then regenerate:
+`data/restaurants.csv` and `data/locations.csv` are the source of truth. Edit the CSVs, then regenerate:
 
 ```bash
 python3 scripts/build.py

@@ -32,12 +32,15 @@ def check(condition: bool, message: str) -> None:
 
 shown = build.published_restaurants()
 check(len(source) == 114, f"full CSV should stay at 114 published rows, got {len(source)}")
-check(len(restaurants) == len(shown), "public json should match the sample, not the full CSV")
-check(6 <= len(restaurants) <= 12, f"shell should publish 6–12 restaurants, got {len(restaurants)}")
+check(len(restaurants) == len(shown) == 114, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
-check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} sample rows")
-check("Design preview" in home, "homepage should say this is a design preview")
-check("full restaurant CSV" in home or "full catalog" in home.lower() or "not on the site yet" in home, "homepage should say the full import is later")
+check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
+check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
+check("full restaurant CSV" not in home.lower(), "homepage should not say the CSV is withheld")
+check("The table" in home, "homepage headline should stay")
+build_src = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
+check(build_src.count("def build_detail(") == 1, "restaurant profiles should come from one template function")
+check(build_src.count("def card(") == 1, "directory cards should come from one template function")
 check('"name": "eatingon30a"' in wrangler, "worker name must stay eatingon30a")
 check("eatingon30a.com" not in wrangler, "wrangler must not attach the vanity domain")
 check("routes" not in wrangler, "wrangler must not declare custom routes")
@@ -46,7 +49,7 @@ for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
     check(f'href="/restaurants/?meal={meal}"' in home, f"homepage missing meal link {meal}")
 
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
-check(1 <= len(areas) <= 8, f"sample should cover a few towns, got {len(areas)}")
+check(len(areas) == len({item["areaSlug"] for item in restaurants}), f"town pages should match listed areas, got {len(areas)}")
 for area in areas:
     check(f'href="/restaurants/?area={area["slug"]}"' in home, f"homepage missing area filter {area['slug']}")
     check((ROOT / "areas" / area["slug"] / "index.html").exists(), f"missing town page {area['slug']}")
@@ -58,6 +61,7 @@ for restaurant in restaurants:
     check(f"{build.ORIGIN}/restaurants/{restaurant['slug']}/" in sitemap, f"sitemap missing {restaurant['slug']}")
     page = path.read_text(encoding="utf-8")
     check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 missing {restaurant['name']}")
+    check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
     check("maps.googleapis" not in page and "airtable" not in page.lower(), f"detail page calls a paid API {restaurant['slug']}")
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")

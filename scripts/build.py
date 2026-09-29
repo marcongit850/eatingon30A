@@ -59,21 +59,9 @@ FALLBACK_COPY = {
 
 MEAL_ORDER = ["Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"]
 
-# Phase 1 shell. These slugs are the only listings published to the site.
-# data/restaurants.csv still holds the full export. Set this to None after
-# visual sign-off to generate a page for every PUBLISHED row.
-SAMPLE_SLUGS = [
-    "stinkys-fish-camp-dune-allen-beach",
-    "the-red-bar-grayton-beach",
-    "hurricane-oyster-bar-grayton-beach",
-    "pizza-by-the-sea-watercolor",
-    "bud-and-alleys-seaside",
-    "amavida-coffee-roasters-seaside",
-    "big-bad-breakfast-inlet-beach",
-    "georges-at-alys-beach-alys-beach",
-    "neat-bottle-shop-and-tasting-room-alys-beach",
-    "sugar-shak-rosemary-beach",
-]
+# None publishes every PUBLISHED row in data/restaurants.csv.
+# Set this to a list of slugs only when a design sample is needed again.
+SAMPLE_SLUGS = None
 
 # The Wix export's detail photo for this restaurant is a multi-megabyte PNG.
 # The same frame is committed as a compressed JPEG. The CSV stays the source.
@@ -667,10 +655,10 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         f"{hero_html}"
         '<div class="hero-veil" aria-hidden="true"></div>'
         '<div class="hero-copy"><div class="wrap">'
-        '<p class="issue-line">Design preview. These pages use a sample of listings. The full restaurant CSV is not on the site yet.</p>'
+        '<p class="issue-line">A restaurant guide for the Emerald Coast.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>The table<br> along 30A.</h1>"
-        '<p class="lede">An editorial guide to dining on Florida’s Emerald Coast. Choose a meal or a town and the sample directory opens already filtered.</p>'
+        '<p class="lede">An editorial guide to dining on Florida’s Emerald Coast. Choose a meal or a town and the directory opens already filtered.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
         '<label class="field"><span class="sr-only">Search restaurants</span>'
         '<input name="q" type="search" placeholder="Oysters, coffee, a town…"></label>'
@@ -685,10 +673,9 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p class="section-links"><a class="text-link" href="/areas/">Town notes</a><a class="text-link" href="/map/">The map</a></p>'
         "</div></section>"
         '<section class="section"><div class="wrap essay-grid">'
-        '<div><p class="kicker">The corridor</p><h2>A guide for the whole coast, shown here as a sample.</h2></div>'
+        '<div><p class="kicker">The corridor</p><h2>A guide for the whole coast.</h2></div>'
         f'<div class="prose"><p>{e(ABOUT)}</p>'
-        "<p>This preview is the design shell. The full catalog is imported after the look and filters are signed off.</p>"
-        '<p><a class="button" href="/restaurants/">Browse the sample</a></p></div>'
+        '<p><a class="button" href="/restaurants/">Browse the directory</a></p></div>'
         "</div></section>"
     )
     extra = json_ld(
@@ -747,7 +734,7 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     body = (
         '<div class="wrap page-intro"><p class="kicker">Directory</p>'
         '<h1 id="listing-title">The table</h1>'
-        "<p class=\"lede\">A short list for this preview. Narrow it by town, meal, or a few words. Only the sample listings are loaded.</p>"
+        "<p class=\"lede\">Narrow the guide by town, meal, or a few words. Homepage shortcuts land here with the matching filter already on.</p>"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
@@ -790,6 +777,7 @@ def fact(label: str, value: str) -> str:
 
 
 def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
+    """Single restaurant profile template. Every listing page is rendered here."""
     chips = []
     for meal in restaurant["meals"]:
         chips.append(f'<li><a href="/restaurants/?meal={e(meal)}">{e(meal)}</a></li>')
@@ -942,7 +930,7 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro"><p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
-        "<p class=\"lede\">The same filters as the directory, drawn for this sample. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
+        "<p class=\"lede\">The same filters as the directory. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
@@ -1042,7 +1030,6 @@ def build_about() -> None:
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT)}</p>"
         "<p>Start with breakfast, lunch, or dinner on the homepage, or pick a town. Those links open the directory with the filter already applied. The map uses the same filters and OpenStreetMap tiles.</p>"
-        "<p>What you see now is a design shell: a handful of real listings so the pages are not empty. The full export stays in <code>data/restaurants.csv</code> and is published only after this look is approved.</p>"
         "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. A card shows a photograph when the listing has one. Otherwise it keeps a monogram in a set frame.</p>"
         '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
     )
