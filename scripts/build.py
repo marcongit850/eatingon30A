@@ -396,7 +396,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
             "fullName": "",
             "description": clean_text(row.get("description")) or FALLBACK_COPY.get(slug, ""),
             "image": wix_to_url(row.get("Location Image") or "", 1200, 800),
-            "video": clean_text(row.get("VideoURL")),
         }
     for slug, copy in FALLBACK_COPY.items():
         by_slug.setdefault(
@@ -407,7 +406,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
                 "fullName": "",
                 "description": copy,
                 "image": None,
-                "video": "",
             },
         )
     counts: dict[str, int] = {}
@@ -422,7 +420,6 @@ def load_areas(restaurants: list[dict]) -> list[dict]:
                 "fullName": restaurant["area"],
                 "description": FALLBACK_COPY.get(restaurant["areaSlug"], ""),
                 "image": None,
-                "video": "",
             }
     ordered = []
     seen = set()
@@ -1234,9 +1231,6 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     )
     for area in areas:
         group = [restaurant for restaurant in restaurants if restaurant["areaSlug"] == area["slug"]]
-        video = ""
-        if "watch?v=" in area["video"] or "youtu.be/" in area["video"]:
-            video = f'<p><a href="{e(area["video"])}">Watch a short clip of {e(area["name"])}</a></p>'
         photo = ""
         if area["image"]:
             photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
@@ -1249,7 +1243,6 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<p class="lede">{e(area["description"])}</p>'
             f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} in the directory</a> '
             f'<a class="button secondary" href="/map/?area={e(area["slug"])}">Map this town</a></p>'
-            f"{video}"
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
             "</div></article>"
         )

@@ -91,6 +91,11 @@ areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
 check("Towns along the highway" in areas_index, "towns page heading should introduce the coast")
 check("Open a town for the places to eat there" in areas_index, "towns page should point visitors to places to eat")
 check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
+for area_page in (ROOT / "areas").glob("*/index.html"):
+    text = area_page.read_text(encoding="utf-8")
+    check("Watch a short clip" not in text, f"{area_page.parent.name} still has a clip sentence")
+    check("youtube.com" not in text and "youtu.be" not in text, f"{area_page.parent.name} still links to YouTube")
+    check("<h1>" in text and 'class="lede"' in text and 'class="card-grid"' in text, f"{area_page.parent.name} lost the town page")
 config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 featured = config.get("featured") or []
 by_slug = {item["slug"]: item for item in restaurants}
