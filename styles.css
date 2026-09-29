@@ -133,6 +133,11 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
   background: var(--gulf-deep);
   overflow: hidden;
 }
+.hero picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
 .hero-photo {
   position: absolute;
   inset: 0;

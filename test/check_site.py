@@ -85,6 +85,13 @@ check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" no
 check("a feel for the place" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
 check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
+check('src="/images/hero-beachside-dining.jpg"' in home, "homepage hero should use the beachside dining photo")
+check('srcset="/images/hero-beachside-dining.webp"' in home, "homepage hero should offer the WebP photo")
+check(
+    "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background." in home,
+    "homepage hero alt should describe beachside dining",
+)
+check("de29ed_1473adbe1b4b4c068a746d2bd7c0fc46" not in home, "homepage should drop the old Wix hero")
 check("editorial" not in home.lower() and "already filtered" not in home, "homepage should not sound like a product or an editorial")
 check("a feel for the place" in home, "homepage essay should use the visitor guide")
 areas_index = (ROOT / "areas" / "index.html").read_text(encoding="utf-8")
