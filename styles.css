@@ -140,6 +140,11 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
   background: var(--gulf-deep);
   overflow: hidden;
 }
+.hero picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
 .hero-photo {
   position: absolute;
   inset: 0;
@@ -345,12 +350,14 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
 .town-frame img, .town-frame .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
 .town-frame .ph { position: absolute; inset: 0; }
 .town-copy { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; }
-.town strong { font-family: var(--serif); font-size: 1.7rem; font-weight: 500; letter-spacing: -0.03em; }
+.town strong { font-family: var(--serif); font-size: 1.7rem; font-weight: 500; letter-spacing: -0.03em; min-width: 0; }
 .town small {
   color: var(--muted);
   font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .town-frame img, .card-media img, .cover-media img { transition: transform 0.7s ease; }
 .town:hover img, .card:hover img, .cover-media:hover img { transform: scale(1.04); }
