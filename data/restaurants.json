@@ -1,0 +1,264 @@
+[
+  {
+    "slug": "stinkys-fish-camp-dune-allen-beach",
+    "name": "Stinky\u2019s Fish Camp",
+    "area": "Dune Allen Beach",
+    "areaSlug": "dune-allen-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Seafood",
+      "Southern"
+    ],
+    "foods": [
+      "Oyster Bar"
+    ],
+    "price": "$$",
+    "lat": 30.354077,
+    "lng": -86.2542217,
+    "address": "5960 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-3053",
+    "search": "stinky\u2019s fish camp dune allen beach  dune allen beach seafood southern lunch dinner oyster bar restaurant a 30a staple, stinky\u2019s fish camp serves up fresh gulf seafood with a southern twist in a fun, casual setting. known for its oysters, daily specials, and local vibe, it\u2019s a must-stop for lunch or dinner near dune allen beach. stinky\u2019s fish camp restaurant oyster bar seafood southern casual dining dune allen beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": true,
+    "image": "/images/restaurants/stinkys-fish-camp.jpg"
+  },
+  {
+    "slug": "the-red-bar-grayton-beach",
+    "name": "The Red Bar",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Bistro"
+    ],
+    "price": "$$",
+    "lat": 30.3293517,
+    "lng": -86.1652302,
+    "address": "70 Hotz Ave, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-1008",
+    "search": "the red bar grayton beach  grayton beach american lunch dinner bistro bar & restaurant the red bar is an iconic 30a spot offering live music and casual dining with a unique vibe. a staple for locals and visitors alike. the red bar bar restaurant bistro american live music casual dining grayton beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": true,
+    "image": null
+  },
+  {
+    "slug": "hurricane-oyster-bar-grayton-beach",
+    "name": "Hurricane Oyster Bar",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Seafood"
+    ],
+    "foods": [
+      "Oyster Bar"
+    ],
+    "price": "$$",
+    "lat": 30.3399335,
+    "lng": -86.1653673,
+    "address": "37 Logan Ln, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-9800",
+    "search": "hurricane oyster bar grayton beach  grayton beach seafood lunch dinner oyster bar restaurant hurricane oyster bar offers oysters and seafood in a casual, no-frills environment. a go-to for simple, fresh flavors. hurricane oyster bar restaurant oyster bar seafood casual dining grayton beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "pizza-by-the-sea-watercolor",
+    "name": "Pizza by the Sea",
+    "area": "WaterColor",
+    "areaSlug": "watercolor",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Italian"
+    ],
+    "foods": [
+      "Pizza"
+    ],
+    "price": "$$",
+    "lat": 30.3198294,
+    "lng": -86.13744229999999,
+    "address": "2257 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-3030",
+    "search": "pizza by the sea watercolor  watercolor italian lunch dinner pizza restaurant pizza by the sea is a reliable choice for classic pizza in a casual setting. great for families and quick meals. pizza by the sea restaurant pizza italian casual dining watercolor $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "bud-and-alleys-seaside",
+    "name": "Bud & Alley\u2019s",
+    "area": "Seaside",
+    "areaSlug": "seaside",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American",
+      "Seafood"
+    ],
+    "foods": [
+      "Raw Bar"
+    ],
+    "price": "$$$",
+    "lat": 30.3194598,
+    "lng": -86.1376636,
+    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-5900",
+    "search": "bud & alley\u2019s seaside  seaside american seafood lunch dinner raw bar restaurant bud & alley\u2019s is a 30a classic featuring seafood, drinks, and rooftop views. a must-visit for sunsets and dining. bud & alley\u2019s restaurant raw bar american seafood waterfront rooftop seaside $$$",
+    "outdoor": true,
+    "kids": true,
+    "music": true,
+    "image": null
+  },
+  {
+    "slug": "amavida-coffee-roasters-seaside",
+    "name": "Amavida Coffee Roasters",
+    "area": "Seaside",
+    "areaSlug": "seaside",
+    "meals": [
+      "Lunch"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Coffee",
+      "Cafe"
+    ],
+    "price": "$",
+    "lat": 30.3194598,
+    "lng": -86.1376636,
+    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-1965",
+    "search": "amavida coffee roasters seaside town center seaside | town center american lunch coffee cafe cafe / coffee amavida coffee roasters serves quality coffee in a relaxed caf\u00e9 environment. a go-to for coffee lovers. amavida coffee roasters cafe coffee coffee cafe american cafe seaside $",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "big-bad-breakfast-inlet-beach",
+    "name": "Big Bad Breakfast",
+    "area": "Inlet Beach",
+    "areaSlug": "inlet-beach",
+    "meals": [
+      "Breakfast",
+      "Lunch"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Breakfast Spot"
+    ],
+    "price": "$$",
+    "lat": 30.2797647,
+    "lng": -86.0112006,
+    "address": "10711 E County Hwy 30A, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 532-6975",
+    "search": "big bad breakfast inlet beach the pointe inlet beach | the pointe american breakfast lunch breakfast spot restaurant big bad breakfast serves hearty breakfast classics in a casual environment. a top morning destination. big bad breakfast restaurant breakfast spot american casual dining inlet beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "georges-at-alys-beach-alys-beach",
+    "name": "George\u2019s at Alys Beach",
+    "area": "Alys Beach",
+    "areaSlug": "alys-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American",
+      "Seafood"
+    ],
+    "foods": [
+      "Bistro"
+    ],
+    "price": "$$$",
+    "lat": 30.2844135,
+    "lng": -86.0271715,
+    "address": "30 N Castle Harbour Dr., Alys Beach, FL 32461, USA",
+    "phone": "(850) 641-0017",
+    "search": "george\u2019s at alys beach alys beach  alys beach american seafood lunch dinner bistro restaurant george\u2019s at alys beach delivers refined coastal cuisine in an elegant setting. a standout dining experience. george\u2019s at alys beach restaurant bistro american seafood upscale romantic alys beach $$$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "neat-bottle-shop-and-tasting-room-alys-beach",
+    "name": "Neat Bottle Shop & Tasting Room",
+    "area": "Alys Beach",
+    "areaSlug": "alys-beach",
+    "meals": [
+      "Drinks"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Wine"
+    ],
+    "price": "$$",
+    "lat": 30.2847295,
+    "lng": -86.0278965,
+    "address": "20 Mark Twain Ln, Alys Beach, FL 32461, USA",
+    "phone": "(850) 909-0403",
+    "search": "neat bottle shop & tasting room alys beach  alys beach american drinks wine bar & restaurant neat bottle shop offers wine and small plates in a sophisticated environment. perfect for drinks. neat bottle shop & tasting room bar restaurant wine american wine bar alys beach $$",
+    "outdoor": true,
+    "kids": false,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "sugar-shak-rosemary-beach",
+    "name": "Sugar Shak",
+    "area": "Rosemary Beach",
+    "areaSlug": "rosemary-beach",
+    "meals": [
+      "Desserts"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Ice Cream",
+      "Dessert"
+    ],
+    "price": "$",
+    "lat": 30.2792423,
+    "lng": -86.01635030000001,
+    "address": "5 Main St suite 2a, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 231-3655",
+    "search": "sugar shak rosemary beach  rosemary beach american desserts ice cream dessert dessert sugar shak offers sweet treats in a casual setting. perfect for dessert. sugar shak dessert ice cream dessert american casual dining rosemary beach $",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "image": null
+  }
+]

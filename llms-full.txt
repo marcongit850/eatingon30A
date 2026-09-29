@@ -1,0 +1,36 @@
+# Eating on 30A
+
+> Restaurant guide for Scenic Highway 30A in Walton County, Florida.
+
+Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton County, Florida. From casual beachside bites and fresh Gulf seafood to upscale dining and local favorites, the directory is meant to help you find a place by town, meal, or cuisine. Browse Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins.
+
+Listings are edited in CSV files in the GitHub repository. The public preview does not use a custom domain.
+
+- [Home](https://eatingon30a.classy-scarer.workers.dev/)
+- [Restaurants](https://eatingon30a.classy-scarer.workers.dev/restaurants/)
+- [Map](https://eatingon30a.classy-scarer.workers.dev/map/)
+- [Towns](https://eatingon30a.classy-scarer.workers.dev/areas/)
+- [About](https://eatingon30a.classy-scarer.workers.dev/about/)
+
+## Towns
+
+- [Dune Allen Beach](https://eatingon30a.classy-scarer.workers.dev/areas/dune-allen-beach/): Explore the full stretch of 30A, from laid-back beach towns to vibrant coastal communities, all in one place.
+- [Grayton Beach](https://eatingon30a.classy-scarer.workers.dev/areas/grayton-beach/): A laid-back, artsy beach town with pristine beaches and local flavor.
+- [WaterColor](https://eatingon30a.classy-scarer.workers.dev/areas/watercolor/): Upscale and family-friendly with beautiful beaches and scenic trails.
+- [Seaside](https://eatingon30a.classy-scarer.workers.dev/areas/seaside/): The iconic heart of 30A. Charming, walkable, and full of coastal character.
+- [Alys Beach](https://eatingon30a.classy-scarer.workers.dev/areas/alys-beach/): Striking architecture, upscale shopping, and a peaceful beachfront vibe.
+- [Rosemary Beach](https://eatingon30a.classy-scarer.workers.dev/areas/rosemary-beach/): European-inspired charm with cobblestone streets and a vibrant atmosphere.
+- [Inlet Beach](https://eatingon30a.classy-scarer.workers.dev/areas/inlet-beach/): Trendy, up-and-coming, and close to the action.
+
+## Restaurants
+
+- [Stinky’s Fish Camp](https://eatingon30a.classy-scarer.workers.dev/restaurants/stinkys-fish-camp-dune-allen-beach/) — Dune Allen Beach; Seafood, Southern; Lunch, Dinner. A 30A staple, Stinky’s Fish Camp serves up fresh Gulf seafood with a Southern twist in a fun, casual setting. Known for its oysters, daily specials, and local vibe, it’s a…
+- [The Red Bar](https://eatingon30a.classy-scarer.workers.dev/restaurants/the-red-bar-grayton-beach/) — Grayton Beach; American; Lunch, Dinner. The Red Bar is an iconic 30A spot offering live music and casual dining with a unique vibe. A staple for locals and visitors alike.
+- [Hurricane Oyster Bar](https://eatingon30a.classy-scarer.workers.dev/restaurants/hurricane-oyster-bar-grayton-beach/) — Grayton Beach; Seafood; Lunch, Dinner. Hurricane Oyster Bar offers oysters and seafood in a casual, no-frills environment. A go-to for simple, fresh flavors.
+- [Pizza by the Sea](https://eatingon30a.classy-scarer.workers.dev/restaurants/pizza-by-the-sea-watercolor/) — WaterColor; Italian; Lunch, Dinner. Pizza by the Sea is a reliable choice for classic pizza in a casual setting. Great for families and quick meals.
+- [Bud & Alley’s](https://eatingon30a.classy-scarer.workers.dev/restaurants/bud-and-alleys-seaside/) — Seaside; American, Seafood; Lunch, Dinner. Bud & Alley’s is a 30A classic featuring seafood, drinks, and rooftop views. A must-visit for sunsets and dining.
+- [Amavida Coffee Roasters](https://eatingon30a.classy-scarer.workers.dev/restaurants/amavida-coffee-roasters-seaside/) — Seaside; American; Lunch. Amavida Coffee Roasters serves quality coffee in a relaxed café environment. A go-to for coffee lovers.
+- [Big Bad Breakfast](https://eatingon30a.classy-scarer.workers.dev/restaurants/big-bad-breakfast-inlet-beach/) — Inlet Beach; American; Breakfast, Lunch. Big Bad Breakfast serves hearty breakfast classics in a casual environment. A top morning destination.
+- [George’s at Alys Beach](https://eatingon30a.classy-scarer.workers.dev/restaurants/georges-at-alys-beach-alys-beach/) — Alys Beach; American, Seafood; Lunch, Dinner. George’s at Alys Beach delivers refined coastal cuisine in an elegant setting. A standout dining experience.
+- [Neat Bottle Shop & Tasting Room](https://eatingon30a.classy-scarer.workers.dev/restaurants/neat-bottle-shop-and-tasting-room-alys-beach/) — Alys Beach; American; Drinks. Neat Bottle Shop offers wine and small plates in a sophisticated environment. Perfect for drinks.
+- [Sugar Shak](https://eatingon30a.classy-scarer.workers.dev/restaurants/sugar-shak-rosemary-beach/) — Rosemary Beach; American; Desserts. Sugar Shak offers sweet treats in a casual setting. Perfect for dessert.

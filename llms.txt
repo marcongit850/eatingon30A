@@ -1,0 +1,23 @@
+# Eating on 30A
+
+> Restaurant guide for Scenic Highway 30A in Walton County, Florida.
+
+Eating on 30A is a guide to restaurants along Scenic Highway 30A in Walton County, Florida. From casual beachside bites and fresh Gulf seafood to upscale dining and local favorites, the directory is meant to help you find a place by town, meal, or cuisine. Browse Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins.
+
+Listings are edited in CSV files in the GitHub repository. The public preview does not use a custom domain.
+
+- [Home](https://eatingon30a.classy-scarer.workers.dev/)
+- [Restaurants](https://eatingon30a.classy-scarer.workers.dev/restaurants/)
+- [Map](https://eatingon30a.classy-scarer.workers.dev/map/)
+- [Towns](https://eatingon30a.classy-scarer.workers.dev/areas/)
+- [About](https://eatingon30a.classy-scarer.workers.dev/about/)
+
+## Towns
+
+- [Dune Allen Beach](https://eatingon30a.classy-scarer.workers.dev/areas/dune-allen-beach/): Explore the full stretch of 30A, from laid-back beach towns to vibrant coastal communities, all in one place.
+- [Grayton Beach](https://eatingon30a.classy-scarer.workers.dev/areas/grayton-beach/): A laid-back, artsy beach town with pristine beaches and local flavor.
+- [WaterColor](https://eatingon30a.classy-scarer.workers.dev/areas/watercolor/): Upscale and family-friendly with beautiful beaches and scenic trails.
+- [Seaside](https://eatingon30a.classy-scarer.workers.dev/areas/seaside/): The iconic heart of 30A. Charming, walkable, and full of coastal character.
+- [Alys Beach](https://eatingon30a.classy-scarer.workers.dev/areas/alys-beach/): Striking architecture, upscale shopping, and a peaceful beachfront vibe.
+- [Rosemary Beach](https://eatingon30a.classy-scarer.workers.dev/areas/rosemary-beach/): European-inspired charm with cobblestone streets and a vibrant atmosphere.
+- [Inlet Beach](https://eatingon30a.classy-scarer.workers.dev/areas/inlet-beach/): Trendy, up-and-coming, and close to the action.
