@@ -85,6 +85,14 @@ ABOUT = (
     "Find breakfast, lunch, and dinner from Dune Allen to Inlet Beach, "
     "with the address, the hours, and a feel for the place."
 )
+ABOUT_LEAD = (
+    "Eating on 30A is your guide to dining along Scenic Highway 30A in South Walton. "
+    "Discover breakfast, lunch, and dinner from Dune Allen to Inlet Beach, with restaurant locations, hours, and a sense of what to expect before you go."
+)
+ABOUT_TOWNS = (
+    "Explore the communities along 30A, including Dune Allen, Gulf Place, Blue Mountain Beach, Grayton Beach, "
+    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
+)
 TOWNS = (
     "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
@@ -1392,8 +1400,8 @@ def build_about() -> None:
     body = (
         '<div class="wrap page-intro prose"><p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
-        f"<p>{e(ABOUT)}</p>"
-        f"<p>{e(TOWNS)}</p>"
+        f"<p>{e(ABOUT_LEAD)}</p>"
+        f"<p>{e(ABOUT_TOWNS)}</p>"
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
     )
     write(

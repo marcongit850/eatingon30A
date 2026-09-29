@@ -103,7 +103,8 @@ for banned in ("CSV files", "Google Places", "OpenStreetMap tiles", "monogram in
     check(banned not in about, f"about page still mentions {banned}")
 check("editorial" not in about.lower(), "about should not call the site an editorial guide")
 check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" not in about, "about should stay free of build talk")
-check("a feel for the place" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
+check(f"<p>{build.ABOUT_LEAD}</p><p>{build.ABOUT_TOWNS}</p>" in about, "about page should use the two visitor paragraphs")
+check("a feel for the place" not in about.split("<main", 1)[-1].split("</main>", 1)[0], "about body should use the new guide copy")
 contact = (ROOT / "contact" / "index.html").read_text(encoding="utf-8")
 for banned in ("github.com", "GitHub", "restaurants.csv", "locations.csv", "README", "CSV", "Wix", "custom domain"):
     check(banned not in contact, f"contact page still mentions {banned}")
