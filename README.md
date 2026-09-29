@@ -4,7 +4,7 @@ A static restaurant guide for Scenic Highway 30A in Walton County, Florida. The 
 
 ## Phase 1 (this preview)
 
-The homepage, directory, filters, detail template, and map are live, styled, and wired up. They show a sample of 10 restaurants from a few towns (Dune Allen, Grayton, WaterColor, Seaside, Inlet Beach, Alys Beach, and Rosemary Beach), including the one listing that has a real photo. Meal, town, cuisine, and search filters work on that sample. The map uses the same sample.
+The homepage, directory, filters, detail template, and map are live and wired up. The visual direction is an editorial coastal guide: full-bleed hero, serif display type, and monogram frames where a listing has no photograph. Pages show a sample of 10 restaurants from a few towns (Dune Allen, Grayton, WaterColor, Seaside, Inlet Beach, Alys Beach, and Rosemary Beach), including the one listing that has a real photo. Meal, town, cuisine, and search filters work on that sample. The map uses the same sample.
 
 ## Phase 2 (after visual sign-off)
 

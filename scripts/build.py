@@ -436,6 +436,9 @@ def hero_image() -> str | None:
     return None
 
 
+MONOGRAM_SKIP = {"the", "and", "at", "of", "a", "an", "by", "for", "on", "in"}
+
+
 def shot_label(restaurant: dict) -> str:
     if restaurant["foods"]:
         return restaurant["foods"][0]
@@ -444,18 +447,33 @@ def shot_label(restaurant: dict) -> str:
     return restaurant["area"]
 
 
-def placeholder(tone: str, label: str) -> str:
-    return f'<div class="ph" data-tone="{e(tone)}"><span>{e(label)}</span></div>'
+def monogram(name: str) -> str:
+    cleaned = (name or "").replace("’", "").replace("'", "").replace("&", " ")
+    words = [word for word in re.findall(r"[A-Za-z0-9]+", cleaned) if word.lower() not in MONOGRAM_SKIP]
+    if not words:
+        words = re.findall(r"[A-Za-z0-9]+", name or "") or ["E"]
+    return "".join(word[0] for word in words[:2]).upper()
 
 
-def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool = False) -> str:
+def placeholder(tone: str, label: str, name: str = "", hidden: bool = False) -> str:
+    mark = monogram(name or label)
+    flag = " hidden" if hidden else ""
+    return (
+        f'<div class="ph" data-tone="{e(tone)}"{flag}>'
+        f'<span class="mono" aria-hidden="true">{e(mark)}</span>'
+        f'<span class="ph-label">{e(label)}</span></div>'
+    )
+
+
+def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool = False, name: str = "") -> str:
+    mark_name = name or alt
     if not image:
-        return placeholder(tone, label)
+        return placeholder(tone, label, mark_name)
     loading = "eager" if eager else "lazy"
     return (
         f'<img src="{e(image)}" alt="{e(alt)}" loading="{loading}" '
         'onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector(\'.ph\');if(f)f.hidden=false">'
-        f'<div class="ph" data-tone="{e(tone)}" hidden><span>{e(label)}</span></div>'
+        f"{placeholder(tone, label, mark_name, hidden=True)}"
     )
 
 
@@ -486,7 +504,7 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     note_html = f'<p class="note">{e(note)}</p>' if note else ""
     return (
         f'<a {attrs}>'
-        f'<div class="card-media">{media_block(restaurant["cardImage"], restaurant["name"], restaurant["tone"], label)}</div>'
+        f'<div class="card-media">{media_block(restaurant["cardImage"], restaurant["name"], restaurant["tone"], label, name=restaurant["name"])}</div>'
         f'<div class="card-body"><p class="card-area">{e(area_line)}</p>'
         f'<{heading}>{e(restaurant["name"])}</{heading}>'
         f'<p class="meta">{e(" · ".join(bits))}</p>{note_html}</div></a>'
@@ -507,7 +525,7 @@ def header(active: str) -> str:
     return (
         '<a class="skip" href="#main">Skip to content</a>'
         '<header class="site-header"><div class="wrap header-inner">'
-        '<a class="brand" href="/"><strong>Eating on 30A</strong><span>Restaurant guide</span></a>'
+        '<a class="brand" href="/"><em>Eating</em> on 30A</a>'
         f'<nav class="nav" aria-label="Primary">{"".join(links)}</nav>'
         "</div></header>"
     )
@@ -515,8 +533,9 @@ def header(active: str) -> str:
 
 def footer() -> str:
     return (
-        '<footer class="site-footer"><div class="wrap footer-inner">'
-        "<p>Eating on 30A · restaurants along Scenic Highway 30A, Walton County, Florida.</p>"
+        '<footer class="site-footer"><div class="wrap footer-grid">'
+        '<div><p class="footer-mark"><em>Eating</em> on 30A</p>'
+        "<p>A restaurant guide for Scenic Highway 30A, Walton County, Florida.</p></div>"
         '<nav aria-label="Footer">'
         '<a href="/restaurants/">Restaurants</a>'
         '<a href="/map/">Map</a>'
@@ -530,6 +549,8 @@ def footer() -> str:
 def layout(title: str, description: str, path: str, active: str, body: str, extra_head: str = "", include_js: bool = True) -> str:
     canonical = ORIGIN + path
     scripts = '<script type="module" src="/site.js"></script>' if include_js else ""
+    body_attr = ' class="home"' if active == "home" else ""
+    banner = "" if active == "home" else sample_banner()
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n'
@@ -538,11 +559,11 @@ def layout(title: str, description: str, path: str, active: str, body: str, extr
         f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
         f'<link rel="canonical" href="{e(canonical)}">\n'
-        '<meta name="theme-color" content="#0c3f3c">\n'
+        '<meta name="theme-color" content="#102825">\n'
         '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-        '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">\n'
+        '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">\n'
         '<link rel="stylesheet" href="/styles.css">\n'
         '<meta property="og:site_name" content="Eating on 30A">\n'
         '<meta property="og:type" content="website">\n'
@@ -551,9 +572,9 @@ def layout(title: str, description: str, path: str, active: str, body: str, extr
         f'<meta property="og:url" content="{e(canonical)}">\n'
         '<meta name="twitter:card" content="summary_large_image">\n'
         + extra_head
-        + "</head>\n<body>\n"
+        + f"</head>\n<body{body_attr}>\n"
         + header(active)
-        + sample_banner()
+        + banner
         + '<main id="main">\n'
         + body
         + "</main>\n"
@@ -585,16 +606,16 @@ def filter_form(areas: list[dict], cuisines: list[str]) -> str:
         cuisine_options.append(f'<option value="{e(cuisine)}">{e(cuisine)}</option>')
     return (
         '<form id="filters" class="filters" action="/restaurants/" method="get">'
-        '<label class="field"><span>Search</span><input id="q" name="q" type="search" placeholder="Name, seafood, pizza, coffee…"></label>'
+        '<label class="field"><span>Search</span><input id="q" name="q" type="search" placeholder="Oysters, coffee, pizza"></label>'
         f'<label class="field"><span>Town</span><select id="area" name="area">{"".join(area_options)}</select></label>'
         f'<label class="field"><span>Meal</span><select id="meal" name="meal">{"".join(meal_options)}</select></label>'
         f'<label class="field"><span>Cuisine</span><select id="cuisine" name="cuisine">{"".join(cuisine_options)}</select></label>'
         '<div class="checks">'
-        '<label><input type="checkbox" name="outdoor" value="yes"> Outdoor dining</label>'
-        '<label><input type="checkbox" name="kids" value="yes"> Kid friendly</label>'
-        '<label><input type="checkbox" name="music" value="yes"> Live music</label>'
+        '<label class="check"><input type="checkbox" name="outdoor" value="yes"><span>Outdoor dining</span></label>'
+        '<label class="check"><input type="checkbox" name="kids" value="yes"><span>Kid friendly</span></label>'
+        '<label class="check"><input type="checkbox" name="music" value="yes"><span>Live music</span></label>'
         "</div>"
-        '<div class="filter-actions"><button type="submit">Apply</button><a href="/restaurants/">Clear</a></div>'
+        '<div class="filter-actions"><button type="submit">Apply</button><a class="clear" href="/restaurants/">Clear</a></div>'
         "</form>"
         f'<script type="application/json" id="area-names">{area_names(areas)}</script>'
     )
@@ -634,21 +655,40 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         if count:
             meal_counts.append((meal, count))
     meals_html = "".join(
-        f'<a href="/restaurants/?meal={e(meal)}"><span>{e(meal)}</span><strong>{count}</strong></a>'
+        f'<a href="/restaurants/?meal={e(meal)}"><span>{e(meal)}</span><em>{count:02d}</em></a>'
         for meal, count in meal_counts
     )
     towns = []
     for area in areas:
-        photo = ""
         if area["image"]:
             photo = f'<img src="{e(area["image"])}" alt="" loading="lazy">'
         else:
-            photo = placeholder("gulf", area["name"])
+            photo = placeholder("gulf", area["name"], area["name"])
+        word = "place" if area["count"] == 1 else "places"
         towns.append(
             f'<a class="town" href="/restaurants/?area={e(area["slug"])}">'
-            f"{photo}"
-            f'<span class="town-copy"><strong>{e(area["name"])}</strong><small>{area["count"]} places</small></span>'
+            f'<span class="town-frame">{photo}</span>'
+            f'<span class="town-copy"><strong>{e(area["name"])}</strong><small>{area["count"]} {word}</small></span>'
             "</a>"
+        )
+    feature = next((item for item in restaurants if item["heroImage"] or item["cardImage"]), None)
+    cover = ""
+    if feature:
+        image = feature["heroImage"] or feature["cardImage"]
+        meta = " · ".join(
+            bit for bit in (feature["label"] or feature["area"], feature["price"], ", ".join(feature["cuisines"])) if bit
+        )
+        cover = (
+            '<section class="section cover-section"><div class="wrap cover">'
+            f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
+            f'{media_block(image, feature["name"], feature["tone"], shot_label(feature), eager=True, name=feature["name"])}'
+            "</a><div class=\"cover-copy\">"
+            '<p class="kicker">From the guide</p>'
+            f"<h2>{e(feature['name'])}</h2>"
+            f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
+            f'<p class="meta">{e(meta)}</p>'
+            f'<p><a class="text-link" href="/restaurants/{e(feature["slug"])}/">Read the profile</a></p>'
+            "</div></div></section>"
         )
     hero_html = (
         f'<img class="hero-photo" src="{e(hero)}" alt="Turquoise Gulf water and white sand along Scenic Highway 30A" width="1800" height="1200">'
@@ -658,30 +698,30 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     body = (
         '<section class="hero">'
         f"{hero_html}"
+        '<div class="hero-veil" aria-hidden="true"></div>'
         '<div class="hero-copy"><div class="wrap">'
+        '<p class="issue-line">Design preview. These pages use a sample of listings. The full restaurant CSV is not on the site yet.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
-        "<h1>Find the best restaurants along 30A.</h1>"
-        '<p class="lede">Your guide to dining on Florida’s Emerald Coast. Pick a meal or a town and the sample directory opens already filtered.</p>'
+        "<h1>The table<br> along 30A.</h1>"
+        '<p class="lede">An editorial guide to dining on Florida’s Emerald Coast. Choose a meal or a town and the sample directory opens already filtered.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
-        '<label class="field"><span class="visually-hidden" style="position:absolute;left:-999px">Search restaurants</span>'
-        '<input name="q" type="search" placeholder="Try oysters, coffee, pizza…"></label>'
+        '<label class="field"><span class="sr-only">Search restaurants</span>'
+        '<input name="q" type="search" placeholder="Oysters, coffee, a town…"></label>'
         "<button>Search</button></form>"
-        f'<div class="meal-row">{meals_html}</div>'
         "</div></div></section>"
-        '<section class="section"><div class="wrap">'
-        '<div class="section-head"><div><p class="kicker">West to east</p><h2>Explore by town</h2></div>'
-        "<p>Towns in this preview. Each one opens the directory with that area already selected.</p></div>"
+        f'<nav class="meal-index" aria-label="Meals">{meals_html}</nav>'
+        f"{cover}"
+        '<section class="section band"><div class="wrap">'
+        '<div class="section-head"><div><p class="kicker">West to east</p><h2>The towns</h2></div>'
+        "<p>Each town opens the directory with that stretch of 30A already selected.</p></div>"
         f'<div class="town-grid">{"".join(towns)}</div>'
-        '<p class="meta" style="margin-top:1rem"><a href="/areas/">Read the town guides</a> · <a href="/map/">Open the map</a></p>'
+        '<p class="section-links"><a class="text-link" href="/areas/">Town notes</a><a class="text-link" href="/map/">The map</a></p>'
         "</div></section>"
-        '<section class="section" style="padding-top:0"><div class="wrap split">'
-        f"<div class=\"prose\"><h2>A directory for the whole corridor</h2><p>{e(ABOUT)}</p>"
+        '<section class="section"><div class="wrap essay-grid">'
+        '<div><p class="kicker">The corridor</p><h2>A guide for the whole coast, shown here as a sample.</h2></div>'
+        f'<div class="prose"><p>{e(ABOUT)}</p>'
         "<p>This preview is the design shell. The full catalog is imported after the look and filters are signed off.</p>"
         '<p><a class="button" href="/restaurants/">Browse the sample</a></p></div>'
-        '<aside class="prose"><div class="stat-row">'
-        f"<p><strong>{len(restaurants)}</strong> sample listings</p>"
-        f"<p><strong>{len(areas)}</strong> towns in this preview</p>"
-        "</div><p>The map uses OpenStreetMap tiles. A card shows a photo when the listing has a working image URL, and a color block when it does not.</p></aside>"
         "</div></section>"
     )
     extra = json_ld(
@@ -739,8 +779,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     cards = "".join(card(restaurant) for restaurant in restaurants)
     body = (
         '<div class="wrap page-intro"><p class="kicker">Directory</p>'
-        '<h1 id="listing-title">Sample directory</h1>'
-        "<p class=\"lede\">Filter by town, meal, or cuisine. Homepage shortcuts land here with the matching filter already on. Only the sample listings are loaded.</p>"
+        '<h1 id="listing-title">The table</h1>'
+        "<p class=\"lede\">A short list for this preview. Narrow it by town, meal, or a few words. Only the sample listings are loaded.</p>"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
@@ -806,16 +846,15 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     for flag in flags:
         chips.append(f"<li>{e(flag)}</li>")
     phone = f'<a href="{e(restaurant["tel"])}">{e(restaurant["phone"])}</a>' if restaurant["tel"] else ""
-    website = (
-        f'<a href="{e(restaurant["website"])}" rel="noopener noreferrer">{e(restaurant["website"].removeprefix("https://").removeprefix("http://"))}</a>'
-        if restaurant["website"]
-        else ""
-    )
+    website = ""
+    if restaurant["website"]:
+        host = re.sub(r"^www\.", "", re.sub(r"^https?://", "", restaurant["website"]).split("/")[0])
+        website = f'<a href="{e(restaurant["website"])}" rel="noopener noreferrer">{e(host)}</a>'
     directions = ""
     if restaurant["lat"] is not None and restaurant["lng"] is not None:
         directions = (
             f'<a href="https://www.openstreetmap.org/?mlat={restaurant["lat"]}&amp;mlon={restaurant["lng"]}'
-            f'#map=17/{restaurant["lat"]}/{restaurant["lng"]}">Open in OpenStreetMap</a>'
+            f'#map=17/{restaurant["lat"]}/{restaurant["lng"]}">View map</a>'
         )
     socials = []
     if restaurant["instagram"]:
@@ -854,23 +893,35 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             '<script src="/vendor/leaflet/leaflet.js"></script>'
         )
     area_href = f'/restaurants/?area={restaurant["areaSlug"]}'
+    area_line = restaurant["label"] or restaurant["area"]
+    price_bit = f' · {e(restaurant["price"])}' if restaurant["price"] else ""
+    category_bit = f' · {e(restaurant["category"])}' if restaurant["category"] else ""
+    map_block = f'<div class="wrap profile-map">{map_html}</div>' if map_html else ""
+    if nearby_html:
+        more = (
+            f'<section class="wrap more"><h2>Also in {e(restaurant["area"])}</h2>'
+            f'<div class="map-list">{nearby_html}</div>'
+            f'<p><a class="text-link" href="{e(area_href)}">All of {e(restaurant["area"])}</a></p></section>'
+        )
+    else:
+        more = (
+            f'<section class="wrap more"><p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p></section>'
+        )
     body = (
-        '<div class="wrap detail">'
-        f'<div class="detail-hero">{media_block(restaurant["heroImage"], restaurant["name"], restaurant["tone"], shot_label(restaurant), eager=True)}</div>'
-        "<div>"
-        f'<p class="crumbs"><a href="/">Home</a> / <a href="/restaurants/">Restaurants</a> / {e(restaurant["name"])}</p>'
+        '<article class="profile">'
+        f'<div class="profile-hero">{media_block(restaurant["heroImage"], restaurant["name"], restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
+        '<div class="wrap profile-head">'
+        f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
+        f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
         f"<h1>{e(restaurant['name'])}</h1>"
-        f'<p class="lede"><a href="{e(area_href)}">{e(restaurant["label"] or restaurant["area"])}</a>'
-        + (f' · {e(restaurant["category"])}' if restaurant["category"] else "")
-        + "</p>"
         f'<ul class="chips">{"".join(chips)}</ul>'
-        f'<div class="prose"><p>{e(restaurant["notes"])}</p></div>'
-        "</div><aside>"
-        f"{logo}<dl class=\"facts\">{facts}</dl></aside>"
-        f"{map_html}"
-        f'<section><h2>More in {e(restaurant["area"])}</h2><div class="map-list">{nearby_html}</div>'
-        f'<p><a href="{e(area_href)}">All {e(restaurant["area"])} restaurants</a></p></section>'
         "</div>"
+        '<div class="wrap profile-grid">'
+        f'<div class="prose profile-story"><p>{e(restaurant["notes"])}</p></div>'
+        f"<aside>{logo}<dl class=\"facts\">{facts}</dl></aside>"
+        "</div>"
+        f"{map_block}{more}"
+        "</article>"
     )
     description = snippet(restaurant["notes"], 155) or f'{restaurant["name"]} in {restaurant["area"]} on Scenic Highway 30A.'
     same_as = [url for url in (restaurant["website"], restaurant["instagram"], restaurant["facebook"]) if url]
@@ -922,9 +973,9 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
 
 def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
-        '<div class="wrap page-intro"><p class="kicker">OpenStreetMap</p>'
-        '<h1 id="listing-title">Sample map</h1>'
-        "<p class=\"lede\">Same filters as the directory, limited to the sample. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
+        '<div class="wrap page-intro"><p class="kicker">The map</p>'
+        '<h1 id="listing-title">Along the coast</h1>'
+        "<p class=\"lede\">The same filters as the directory, drawn for this sample. Pins sit on OpenStreetMap, so this page does not use Google Maps.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
@@ -951,10 +1002,15 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
 def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     cards = []
     for area in areas:
-        photo = f'<img src="{e(area["image"])}" alt="" loading="lazy">' if area["image"] else placeholder("gulf", area["name"])
+        photo = (
+            f'<img src="{e(area["image"])}" alt="" loading="lazy">'
+            if area["image"]
+            else placeholder("gulf", area["name"], area["name"])
+        )
+        word = "place" if area["count"] == 1 else "places"
         cards.append(
-            f'<a class="town" href="/areas/{e(area["slug"])}/">{photo}'
-            f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} places</small></span></a>'
+            f'<a class="town" href="/areas/{e(area["slug"])}/"><span class="town-frame">{photo}</span>'
+            f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
         '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Towns along 30A</h1>'
@@ -980,16 +1036,17 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         if area["image"]:
             photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
         body = (
+            '<article class="profile">'
+            f'<div class="profile-hero">{photo or placeholder("gulf", area["name"], area["name"])}</div>'
             '<div class="wrap page-intro">'
-            f'<p class="crumbs"><a href="/areas/">Towns</a> / {e(area["fullName"])}</p>'
-            f'<div class="detail-hero">{photo or placeholder("gulf", area["name"])}</div>'
+            f'<p class="crumbs"><a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
             f"<h1>{e(area['fullName'])}</h1>"
             f'<p class="lede">{e(area["description"])}</p>'
-            f'<p><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} in the directory</a> '
+            f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} in the directory</a> '
             f'<a class="button secondary" href="/map/?area={e(area["slug"])}">Map this town</a></p>'
             f"{video}"
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
-            "</div>"
+            "</div></article>"
         )
         write(
             ROOT / "areas" / area["slug"] / "index.html",
@@ -1019,7 +1076,7 @@ def build_about() -> None:
         f"<p>{e(ABOUT)}</p>"
         "<p>Start with breakfast, lunch, or dinner on the homepage, or pick a town. Those links open the directory with the filter already applied. The map uses the same filters and OpenStreetMap tiles.</p>"
         "<p>What you see now is a design shell: a handful of real listings so the pages are not empty. The full export stays in <code>data/restaurants.csv</code> and is published only after this look is approved.</p>"
-        "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. If a restaurant has a working photo URL in the data, the card shows it. Otherwise the card keeps a simple color block.</p>"
+        "<p>Listings come from the project’s CSV files, not from a live Google Places lookup. A card shows a photograph when the listing has one. Otherwise it keeps a monogram in a set frame.</p>"
         '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
     )
     write(
@@ -1059,7 +1116,7 @@ def build_contact() -> None:
 
 def build_404() -> None:
     body = (
-        '<div class="wrap page-intro prose"><h1>That page is not on the menu.</h1>'
+        '<div class="wrap page-intro prose"><p class="kicker">Not found</p><h1>That page is not on the menu.</h1>'
         '<p>Try the restaurant directory or the map.</p>'
         '<p><a class="button" href="/restaurants/">Browse restaurants</a></p></div>'
     )
