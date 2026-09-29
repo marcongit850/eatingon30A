@@ -7,6 +7,7 @@ scripts
 test
 package.json
 wrangler.jsonc
+worker.js
 site.config.json
 data/*.csv
 **/.DS_Store

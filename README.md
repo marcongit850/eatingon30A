@@ -81,7 +81,15 @@ The raw CSV is not uploaded with the site (see `.assetsignore`). It includes exp
 
 ## Deploy
 
-Cloudflare Workers static assets, same shape as the other 30A sites. `wrangler.jsonc` sets `"name"` to `eatingon30a` and `"assets.directory"` to `.`. There is no Worker script and no custom domain route.
+Cloudflare Worker `eatingon30a` serves the static site and `POST /api/subscribe`. `wrangler.jsonc` sets `"name"` to `eatingon30a`, `"main"` to `worker.js`, and `"assets.directory"` to `.`. There is no custom domain route.
+
+Signup notes go out through the Resend HTTP API (`https://api.resend.com/emails`) only when all three secrets are set on the Worker:
+
+- `RESEND_API_KEY`
+- `SUBSCRIBE_FROM` — a verified Resend sender
+- `CONTACT_EMAIL` — inbox that receives the signup
+
+If any secret is missing, the worker still accepts the signup and returns `delivered: false`. It does not call another newsletter product.
 
 ```bash
 npx wrangler deploy
