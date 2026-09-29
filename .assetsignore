@@ -1,0 +1,12 @@
+.git
+.gitignore
+.assetsignore
+.wrangler
+README.md
+scripts
+test
+package.json
+wrangler.jsonc
+site.config.json
+data/*.csv
+**/.DS_Store
