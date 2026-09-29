@@ -85,6 +85,14 @@ ABOUT = (
     "Find breakfast, lunch, and dinner from Dune Allen to Inlet Beach, "
     "with the address, the hours, and a feel for the place."
 )
+ABOUT_LEAD = (
+    "Eating on 30A is your guide to dining along Scenic Highway 30A in South Walton. "
+    "Discover breakfast, lunch, and dinner from Dune Allen to Inlet Beach, with restaurant locations, hours, and a sense of what to expect before you go."
+)
+ABOUT_TOWNS = (
+    "Explore the communities along 30A, including Dune Allen, Gulf Place, Blue Mountain Beach, Grayton Beach, "
+    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
+)
 TOWNS = (
     "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
@@ -698,6 +706,7 @@ def layout(
     image: str | None = None,
     image_alt: str = "",
     noindex: bool = False,
+    extra_scripts: str = "",
 ) -> str:
     canonical = ORIGIN + path
     scripts = '<script src="/header.js"></script>\n<script src="/footer.js"></script>\n'
@@ -734,6 +743,7 @@ def layout(
         + "</main>\n"
         + '<div id="site-footer"></div>\n'
         + scripts
+        + extra_scripts
         + "\n</body>\n</html>\n"
     )
 
@@ -1390,8 +1400,8 @@ def build_about() -> None:
     body = (
         '<div class="wrap page-intro prose"><p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
-        f"<p>{e(ABOUT)}</p>"
-        f"<p>{e(TOWNS)}</p>"
+        f"<p>{e(ABOUT_LEAD)}</p>"
+        f"<p>{e(ABOUT_TOWNS)}</p>"
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
     )
     write(
@@ -1421,18 +1431,40 @@ def build_about() -> None:
 
 def build_contact() -> None:
     body = (
-        '<div class="wrap page-intro prose"><p class="kicker">Contact</p>'
+        '<div class="wrap page-intro">'
+        '<div class="prose"><p class="kicker">Contact</p>'
         "<h1>Corrections and new listings</h1>"
-        "<p>Hours, phone numbers, and websites live on each restaurant page. For a correction to this guide, edit the CSV that feeds the site and rebuild. The README in the project explains the columns.</p>"
-        '<p>The source files are <code>data/restaurants.csv</code> and <code>data/locations.csv</code>. '
-        "This preview does not attach a custom domain and does not send the old Wix coupon form anywhere.</p>"
-        '<p><a href="https://github.com/marcongit850/eatingon30A">eatingon30A on GitHub</a></p></div>'
+        "<p>Hours, phone numbers, and websites live on each restaurant page. "
+        "If a listing needs an update or an edit, if a restaurant should come off the guide, "
+        "or if one is missing, send a note. Marc reads these and replies to the email you leave.</p>"
+        "<p>Name the restaurant, the town if you know it, and what should change.</p></div>"
+        '<form class="listing-form" action="/api/listing" method="post" data-listing>'
+        "<label><span>Restaurant name <abbr title=\"required\">*</abbr></span>"
+        '<input name="restaurant" type="text" required maxlength="160" autocomplete="organization"></label>'
+        "<label><span>Town / location</span>"
+        '<input name="town" type="text" maxlength="120" autocomplete="off"></label>'
+        "<fieldset><legend>Request type <abbr title=\"required\">*</abbr></legend>"
+        '<label class="listing-choice"><input type="radio" name="type" value="update" required> <span>Update</span></label>'
+        '<label class="listing-choice"><input type="radio" name="type" value="edit"> <span>Edit</span></label>'
+        '<label class="listing-choice"><input type="radio" name="type" value="deletion"> <span>Deletion</span></label>'
+        '<label class="listing-choice"><input type="radio" name="type" value="new"> <span>New listing</span></label>'
+        "</fieldset>"
+        '<p class="listing-hint">Update covers hours, phone, website, or address. Edit is for the wording. Deletion removes a restaurant. New listing adds one.</p>'
+        "<label><span>Details <abbr title=\"required\">*</abbr></span>"
+        '<textarea name="details" required maxlength="4000" rows="6"></textarea></label>'
+        "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
+        '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
+        "<label><span>Email <abbr title=\"required\">*</abbr></span>"
+        '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label>'
+        '<button type="submit">Send to Marc</button>'
+        '<p class="listing-status" role="status" aria-live="polite"></p>'
+        "</form></div>"
     )
     write(
         ROOT / "contact" / "index.html",
         layout(
             "Contact Eating on 30A about a listing",
-            "How to correct a restaurant listing in the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.",
+            "Request an update, edit, deletion, or new restaurant listing on the Eating on 30A guide for Scenic Highway 30A in Walton County, Florida.",
             "/contact/",
             "",
             body,
@@ -1448,6 +1480,7 @@ def build_contact() -> None:
                 )
             ),
             include_js=False,
+            extra_scripts='<script src="/listing.js"></script>\n',
         ),
     )
 
@@ -1551,7 +1584,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
         f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
-        f"- [Contact]({ORIGIN}/contact/): How to correct a listing.",
+        f"- [Contact]({ORIGIN}/contact/): Send a correction, edit, deletion, or new listing.",
         "",
         "## Towns",
         "",

@@ -11,7 +11,7 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Map](https://eatingon30a.352marc.workers.dev/map/)
 - [Towns](https://eatingon30a.352marc.workers.dev/areas/)
 - [About](https://eatingon30a.352marc.workers.dev/about/): A restaurant guide for Scenic Highway 30A.
-- [Contact](https://eatingon30a.352marc.workers.dev/contact/): How to correct a listing.
+- [Contact](https://eatingon30a.352marc.workers.dev/contact/): Send a correction, edit, deletion, or new listing.
 
 ## Towns
 

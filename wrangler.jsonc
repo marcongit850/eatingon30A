@@ -2,7 +2,7 @@
   // Static Eating on 30A guide. Worker name is eatingon30a.
   // Preview only: do not add a custom domain binding in this file.
   // The preview URL is the workers.dev hostname Cloudflare assigns this Worker.
-  // Signup mail is sent only when RESEND_API_KEY, SUBSCRIBE_FROM, and CONTACT_EMAIL are set.
+  // Signup and listing mail is sent only when RESEND_API_KEY, SUBSCRIBE_FROM, and CONTACT_EMAIL are set.
   "name": "eatingon30a",
   "main": "worker.js",
   "compatibility_date": "2026-09-29",

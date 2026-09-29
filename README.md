@@ -81,15 +81,15 @@ The raw CSV is not uploaded with the site (see `.assetsignore`). It includes exp
 
 ## Deploy
 
-Cloudflare Worker `eatingon30a` serves the static site and `POST /api/subscribe`. `wrangler.jsonc` sets `"name"` to `eatingon30a`, `"main"` to `worker.js`, and `"assets.directory"` to `.`. There is no custom domain route.
+Cloudflare Worker `eatingon30a` serves the static site, `POST /api/subscribe`, and `POST /api/listing`. `wrangler.jsonc` sets `"name"` to `eatingon30a`, `"main"` to `worker.js`, and `"assets.directory"` to `.`. There is no custom domain route.
 
-Signup notes go out through the Resend HTTP API (`https://api.resend.com/emails`) only when all three secrets are set on the Worker:
+Signup notes and listing requests from `/contact/` go out through the Resend HTTP API (`https://api.resend.com/emails`) only when all three secrets are set on the Worker:
 
 - `RESEND_API_KEY`
-- `SUBSCRIBE_FROM` — a verified Resend sender
-- `CONTACT_EMAIL` — inbox that receives the signup
+- `SUBSCRIBE_FROM` — a verified Resend sender, also used as the From address for listing mail
+- `CONTACT_EMAIL` — inbox that receives the signup and listing requests
 
-If any secret is missing, the worker still accepts the signup and returns `delivered: false`. It does not call another newsletter product.
+If any secret is missing, the worker still accepts the signup or listing note and returns `delivered: false`. It does not call another newsletter product. A listing email sets `reply_to` to the address on the form so a reply goes back to that person.
 
 ```bash
 npx wrangler deploy
