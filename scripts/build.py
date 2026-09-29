@@ -838,7 +838,7 @@ def cover_slot(feature: dict, hidden: bool, eager: bool) -> str:
         f'<a class="cover-media" href="/restaurants/{e(feature["slug"])}/">'
         f'{media_block(image, photo_alt(feature), feature["tone"], shot_label(feature), eager=eager, name=feature["name"])}'
         "</a><div class=\"cover-copy\">"
-        '<p class="kicker">From the guide</p>'
+        '<p class="kicker">Featured</p>'
         f"<h2>{e(feature['name'])}</h2>"
         f'<p class="lede">{e(snippet(feature["notes"], 240))}</p>'
         f'<p class="meta">{e(meta)}</p>'
@@ -919,7 +919,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     if slots:
         controls = featured_controls() if len(featured) > 1 else ""
         cover = (
-            '<section class="section cover-section" id="from-the-guide" aria-label="From the guide">'
+            '<section class="section cover-section" id="from-the-guide" aria-label="Featured">'
             '<div class="wrap cover-stage">'
             f"{controls}{slots}</div>{FEATURED_ROTATION}</section>"
         )
@@ -1434,10 +1434,10 @@ def build_contact() -> None:
         '<div class="wrap page-intro">'
         '<div class="prose"><p class="kicker">Contact</p>'
         "<h1>Corrections and new listings</h1>"
-        "<p>Hours, phone numbers, and websites live on each restaurant page. "
-        "If a listing needs an update or an edit, if a restaurant should come off the guide, "
-        "or if one is missing, send a note. Marc reads these and replies to the email you leave.</p>"
-        "<p>Name the restaurant, the town if you know it, and what should change.</p></div>"
+        "<p>Restaurant hours, phone numbers, websites, and other details are listed on each restaurant page. "
+        "If something needs to be updated, a restaurant has closed, or we’re missing a place you think should be included, let us know.</p>"
+        "<p>Just include the restaurant name and what needs to be changed or added. "
+        "We review every submission and can follow up using the email address you provide.</p></div>"
         '<form class="listing-form" action="/api/listing" method="post" data-listing>'
         "<label><span>Restaurant name <abbr title=\"required\">*</abbr></span>"
         '<input name="restaurant" type="text" required maxlength="160" autocomplete="organization"></label>'
@@ -1449,7 +1449,6 @@ def build_contact() -> None:
         '<label class="listing-choice"><input type="radio" name="type" value="deletion"> <span>Deletion</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="new"> <span>New listing</span></label>'
         "</fieldset>"
-        '<p class="listing-hint">Update covers hours, phone, website, or address. Edit is for the wording. Deletion removes a restaurant. New listing adds one.</p>'
         "<label><span>Details <abbr title=\"required\">*</abbr></span>"
         '<textarea name="details" required maxlength="4000" rows="6"></textarea></label>'
         "<label><span>Your name <abbr title=\"required\">*</abbr></span>"

@@ -49,7 +49,7 @@ Commit the CSV and the generated HTML, JSON, sitemap, and robots file together. 
 
 ## Featured cover
 
-The homepage “From the guide” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Previous and Next on that cover step through the same list, wrapping at either end, and the day still picks the first slide. Without JavaScript, the first slug stays on screen and the arrows stay hidden. The cover itself does not change: photo or monogram, name, lede, town and price line, and a profile link.
+The homepage “Featured” slot rotates through the `featured` list in `site.config.json`. One listing shows for each UTC day, in list order, then the rotation starts over. Previous and Next on that cover step through the same list, wrapping at either end, and the day still picks the first slide. Without JavaScript, the first slug stays on screen and the arrows stay hidden. The cover itself does not change: photo or monogram, name, lede, town and price line, and a profile link.
 
 To add or remove a spot, edit that list and rebuild:
 

@@ -995,13 +995,6 @@ html.js-filter #cards .card { display: none; }
   border: 0;
   accent-color: var(--gulf);
 }
-.listing-hint {
-  margin: 0;
-  max-width: none;
-  color: var(--muted);
-  font-size: 0.92rem;
-  font-weight: 300;
-}
 .listing-form button[type="submit"] {
   width: fit-content;
   min-width: 12rem;
