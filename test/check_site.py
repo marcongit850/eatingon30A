@@ -80,8 +80,13 @@ check(".leaflet-div-icon.pin" not in styles, "pin styles must not depend on the 
 about = (ROOT / "about" / "index.html").read_text(encoding="utf-8")
 for banned in ("CSV files", "Google Places", "OpenStreetMap tiles", "monogram in a set frame"):
     check(banned not in about, f"about page still mentions {banned}")
-check("the hours, the vibe, and a map pin" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
-check("the hours, the vibe, and a map pin" in home, "homepage essay should use the visitor guide")
+check("editorial" not in about.lower(), "about should not call the site an editorial guide")
+check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" not in about, "about should stay free of build talk")
+check("a feel for the place" in about and "Dune Allen" in about and "Watersound Origins" in about, "about page should keep the visitor guide and the towns")
+check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
+check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
+check("editorial" not in home.lower() and "already filtered" not in home, "homepage should not sound like a product or an editorial")
+check("a feel for the place" in home, "homepage essay should use the visitor guide")
 config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 featured = config.get("featured") or []
 by_slug = {item["slug"]: item for item in restaurants}

@@ -77,9 +77,9 @@ PHOTO_DIR = ROOT / "images" / "restaurants"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
 ABOUT = (
-    "Eating on 30A is an editorial guide to dining along Scenic Highway 30A in South Walton. "
-    "Browse by breakfast, lunch, or dinner, or by town from Dune Allen to Inlet Beach, "
-    "and open any listing for the address, the hours, the vibe, and a map pin."
+    "Eating on 30A is a restaurant guide for Scenic Highway 30A in South Walton. "
+    "Find breakfast, lunch, and dinner from Dune Allen to Inlet Beach, "
+    "with the address, the hours, and a feel for the place."
 )
 TOWNS = (
     "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
@@ -836,7 +836,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p class="issue-line">A restaurant guide for the Emerald Coast.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>The table<br> along 30A.</h1>"
-        '<p class="lede">An editorial guide to dining on Florida’s Emerald Coast. Choose a meal or a town and the directory opens already filtered.</p>'
+        '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A — from Dune Allen to Inlet Beach.</p>'
         '<form class="search-form" action="/restaurants/" method="get">'
         '<label class="field"><span class="sr-only">Search restaurants</span>'
         '<input name="q" type="search" placeholder="Oysters, coffee, a town…"></label>'
@@ -1309,13 +1309,13 @@ def build_about() -> None:
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT)}</p>"
         f"<p>{e(TOWNS)}</p>"
-        '<p><a class="button" href="/restaurants/">Open the directory</a></p></div>'
+        '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
     )
     write(
         ROOT / "about" / "index.html",
         layout(
             "About the Eating on 30A restaurant guide",
-            "How the Eating on 30A restaurant guide is organized along Scenic Highway 30A in Walton County, Florida. One profile covers every listing.",
+            "Find breakfast, lunch, and dinner on Scenic Highway 30A in Walton County, Florida, from Dune Allen to Inlet Beach.",
             "/about/",
             "about",
             body,
@@ -1467,7 +1467,7 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
-        f"- [About]({ORIGIN}/about/): How the guide is organized.",
+        f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): How to correct a listing.",
         "",
         "## Towns",
