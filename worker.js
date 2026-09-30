@@ -9,12 +9,12 @@
  * GOOGLE_SHEETS_WEBHOOK_URL and GOOGLE_SHEETS_WEBHOOK_TOKEN are set. `delivered`
  * is only the Resend result. `recorded` is only the Sheets result. A Sheets
  * miss does not fail the signup when Resend accepted it.
+ * sourcePage is the live homepage. site.config.json origin stays the workers.dev preview.
  */
-import siteConfig from "./site.config.json" with { type: "json" };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SHEETS_SITE = "30A";
-const SOURCE_PAGE = `${String(siteConfig.origin || "https://eatingon30a.352marc.workers.dev").replace(/\/$/, "")}/`;
+const SOURCE_PAGE = "https://www.eatingon30a.com/";
 const LISTING_TYPES = {
   update: "Update",
   edit: "Edit",

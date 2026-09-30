@@ -19,7 +19,7 @@ const sheetsEnv = {
   GOOGLE_SHEETS_WEBHOOK_URL: "https://script.google.com/macros/s/test-webhook/exec",
   GOOGLE_SHEETS_WEBHOOK_TOKEN: "sheets-token",
 };
-const SOURCE_PAGE = "https://eatingon30a.352marc.workers.dev/";
+const SOURCE_PAGE = "https://www.eatingon30a.com/";
 
 function callsFor(handler) {
   const calls = [];

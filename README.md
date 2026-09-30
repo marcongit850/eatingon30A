@@ -96,7 +96,7 @@ Coupon signups (`POST /api/subscribe`) are also posted to a Google Sheets Apps S
 - `GOOGLE_SHEETS_WEBHOOK_URL`
 - `GOOGLE_SHEETS_WEBHOOK_TOKEN`
 
-The webhook body includes `site` (`30A`), the email, coupons, an optional `audience` of `local` or `visitor`, and `sourcePage` set to the canonical homepage. The JSON response reports `recorded` separately from `delivered`. If either Sheets secret is missing, the webhook is skipped and `recorded` is `false`. A Sheets error still returns success when Resend accepted the signup, so the browser does not retry and send a second email. Listing mail does not call the webhook.
+The webhook body includes `site` (`30A`), the email, coupons, an optional `audience` of `local` or `visitor`, and `sourcePage` set to the live homepage `https://www.eatingon30a.com/`. Preview canonical links stay on the workers.dev origin in `site.config.json`. The JSON response reports `recorded` separately from `delivered`. If either Sheets secret is missing, the webhook is skipped and `recorded` is `false`. A Sheets error still returns success when Resend accepted the signup, so the browser does not retry and send a second email. Listing mail does not call the webhook.
 
 ```bash
 npx wrangler deploy
