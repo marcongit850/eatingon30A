@@ -75,20 +75,10 @@ photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
     "beach-happy-cafe-seagrove-beach",
-    "black-bear-bread-co-grayton-beach",
-    "bud-and-alleys-pizza-bar-seaside",
-    "cafe-tango-blue-mountain-beach",
-    "caliza-restaurant-alys-beach",
-    "caribe-and-crumb-gulf-place",
-    "chanticleer-eatery-grayton-beach",
-    "grayton-corner-cafe-grayton-beach",
-    "roux-30a-grayton-beach",
     "steamboat-grill-30a-seagrove-beach",
-    "tahona-tacos-and-tequileria-rosemary-beach",
-    "the-perfect-pig-watercolor",
 ]
-check(sorted(missing_photos) == expected_monograms, f"new listings should keep a monogram until they have photos, got {missing_photos}")
-check(len(photos) == 112, f"expected 112 restaurant photos, got {len(photos)}")
+check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
+check(len(photos) == 122, f"expected 122 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(build.listing_photos("steamboat-grill-30a-seagrove-beach") == [], "Steamboat has no photo folder")
 oku_photo = build.listing_photos("o-ku-alys-beach")
@@ -99,6 +89,10 @@ for left, right in (
     ("canopy-road-cafe-inlet-beach", "canopy-road-cafe-seagrove-beach"),
     ("pizza-by-the-sea-watercolor", "pizza-by-the-sea-gulf-place"),
     ("the-perfect-pig-seagrove-beach", "the-perfect-pig-gulf-place"),
+    ("the-perfect-pig-watercolor", "the-perfect-pig-seagrove-beach"),
+    ("the-perfect-pig-watercolor", "the-perfect-pig-gulf-place"),
+    ("black-bear-bread-co-grayton-beach", "black-bear-bread-co-seaside"),
+    ("bud-and-alleys-pizza-bar-seaside", "bud-and-alleys-seaside"),
     ("cowgirl-kitchen-blue-mountain-beach", "cowgirl-kitchen-rosemary-beach"),
     ("goatfeathers-seafood-market-inlet-beach", "goatfeathers-seafood-market-east-location-seagrove-beach"),
 ):
