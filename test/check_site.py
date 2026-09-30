@@ -200,8 +200,17 @@ contact_form = contact.split("<form", 1)[1].split("</form>", 1)[0]
 contact_fields = ["name", "email", "restaurant", "type", "details"]
 contact_order = [contact_form.find(f'name="{field}"') for field in contact_fields]
 check(all(index >= 0 for index in contact_order) and contact_order == sorted(contact_order), "contact fields should run name, email, restaurant, type, details")
-for request_type in ("update", "edit", "deletion", "new"):
+for request_type in ("update", "edit", "deletion", "new", "other"):
     check(f'value="{request_type}"' in contact, f"contact form missing request type {request_type}")
+check(
+    '<label class="listing-choice"><input type="radio" name="type" value="other"> <span>Other</span></label>' in contact,
+    "contact form should offer Other in the same radio style as the other request types",
+)
+check(
+    '<label><span>Restaurant name</span><input name="restaurant" type="text" maxlength="160" autocomplete="organization"></label>' in contact,
+    "restaurant name should stay on the form without a required mark",
+)
+check("Restaurant name <abbr" not in contact, "restaurant name should not show a required asterisk")
 check('src="/listing.js"' in contact, "contact page should load the listing form script")
 listing_js = (ROOT / "listing.js").read_text(encoding="utf-8")
 check('params.get("restaurant")' in listing_js and 'params.get("subject")' in listing_js, "listing form should read restaurant and subject query params")
@@ -209,6 +218,8 @@ check('[name="restaurant"]' in listing_js and '[name="details"]' in listing_js, 
 listing_js = (ROOT / "listing.js").read_text(encoding="utf-8")
 check("/api/listing" in listing_js, "listing script should post to the worker")
 check("town" not in listing_js, "listing script should not send a town")
+check("Enter the restaurant name." not in listing_js, "listing script should allow a blank restaurant name")
+check('body.type !== "other"' in listing_js, "listing script should accept an Other request")
 check("Marc" not in listing_js and "Thanks. We have your note." in listing_js, "listing script should thank without a personal name")
 check(".listing-form" in styles and ".listing-status" in styles, "listing form should use the site styles")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
@@ -413,6 +424,8 @@ check("30000" in subscribe_js and "localStorage" in subscribe_js, "popup should 
 worker_js = (ROOT / "worker.js").read_text(encoding="utf-8")
 check("CONTACT_EMAIL" in worker_js and "RESEND_API_KEY" in worker_js and "SUBSCRIBE_FROM" in worker_js, "signup mail should name its env vars")
 check('pathname === "/api/listing"' in worker_js and "reply_to" in worker_js, "listing mail should use the same Resend secrets and a reply address")
+check('other: "Other"' in worker_js, "worker should accept an Other listing request")
+check("Enter the restaurant name." not in worker_js, "worker should not require a restaurant name")
 check("run_worker_first" in wrangler and '"main": "worker.js"' in wrangler, "api subscribe should be served by the worker")
 html_pages = [
     path

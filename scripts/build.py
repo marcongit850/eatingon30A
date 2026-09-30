@@ -1565,13 +1565,14 @@ def build_contact() -> None:
         '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
         "<label><span>Email <abbr title=\"required\">*</abbr></span>"
         '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label>'
-        "<label><span>Restaurant name <abbr title=\"required\">*</abbr></span>"
-        '<input name="restaurant" type="text" required maxlength="160" autocomplete="organization"></label>'
+        "<label><span>Restaurant name</span>"
+        '<input name="restaurant" type="text" maxlength="160" autocomplete="organization"></label>'
         "<fieldset><legend>Request type <abbr title=\"required\">*</abbr></legend>"
         '<label class="listing-choice"><input type="radio" name="type" value="update" required> <span>Update</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="edit"> <span>Edit</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="deletion"> <span>Deletion</span></label>'
         '<label class="listing-choice"><input type="radio" name="type" value="new"> <span>New listing</span></label>'
+        '<label class="listing-choice"><input type="radio" name="type" value="other"> <span>Other</span></label>'
         "</fieldset>"
         "<label><span>Details <abbr title=\"required\">*</abbr></span>"
         '<textarea name="details" required maxlength="4000" rows="6"></textarea></label>'

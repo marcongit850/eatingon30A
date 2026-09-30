@@ -23,9 +23,9 @@
   function invalid(body) {
     if (!body.name || body.name.length > 120) return { message: "Enter your name.", field: "name" };
     if (!EMAIL.test(body.email) || body.email.length > 200) return { message: "Enter a valid email.", field: "email" };
-    if (!body.restaurant || body.restaurant.length > 160) return { message: "Enter the restaurant name.", field: "restaurant" };
-    if (body.type !== "update" && body.type !== "edit" && body.type !== "deletion" && body.type !== "new") {
-      return { message: "Choose update, edit, deletion, or new listing.", field: "type" };
+    if (body.restaurant.length > 160) return { message: "Keep the restaurant name under 160 characters.", field: "restaurant" };
+    if (body.type !== "update" && body.type !== "edit" && body.type !== "deletion" && body.type !== "new" && body.type !== "other") {
+      return { message: "Choose update, edit, deletion, new listing, or other.", field: "type" };
     }
     if (!body.details) return { message: "Tell us what should change.", field: "details" };
     if (body.details.length > 4000) return { message: "Keep the details under 4,000 characters.", field: "details" };
