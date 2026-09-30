@@ -10,17 +10,47 @@ const note = {
   email: "jamie@example.com",
 };
 
-test("parseListing requires a restaurant, a known request type, details, a name, and an email", () => {
-  assert.equal(parseListing({}).error, "Enter the restaurant name.");
-  assert.equal(parseListing({ restaurant: "Cafe" }).error, "Choose update, edit, deletion, or new listing.");
-  assert.equal(parseListing({ restaurant: "Cafe", type: "closed" }).error, "Choose update, edit, deletion, or new listing.");
+test("parseListing requires a known request type, details, a name, and an email", () => {
+  assert.equal(parseListing({}).error, "Choose update, edit, deletion, new listing, or other.");
+  assert.equal(parseListing({ restaurant: "Cafe" }).error, "Choose update, edit, deletion, new listing, or other.");
+  assert.equal(parseListing({ restaurant: "Cafe", type: "closed" }).error, "Choose update, edit, deletion, new listing, or other.");
   assert.equal(parseListing({ restaurant: "Cafe", type: "edit" }).error, "Tell us what should change.");
   assert.equal(parseListing({ restaurant: "Cafe", type: "edit", details: "Hours" }).error, "Enter your name.");
   assert.equal(parseListing({ restaurant: "Cafe", type: "new", details: "Add it", name: "Jamie", email: "nope" }).error, "Enter a valid email.");
+  assert.equal(parseListing({ ...note, restaurant: "x".repeat(161) }).error, "Keep the restaurant name under 160 characters.");
   assert.equal(parseListing({ ...note, details: "x".repeat(4001) }).error, "Keep the details under 4,000 characters.");
   assert.deepEqual(parseListing(note).value, { ...note, town: "" });
+  assert.deepEqual(parseListing({ ...note, restaurant: "" }).value, { ...note, restaurant: "", town: "" });
+  assert.deepEqual(parseListing({ ...note, restaurant: "   " }).value, { ...note, restaurant: "", town: "" });
   assert.deepEqual(parseListing({ ...note, town: "" }).value, { ...note, town: "" });
   assert.deepEqual(parseListing({ ...note, town: "Seaside" }).value, { ...note, town: "Seaside" });
+  assert.deepEqual(parseListing({ ...note, type: "other", restaurant: "" }).value, {
+    ...note,
+    type: "other",
+    restaurant: "",
+    town: "",
+  });
+});
+
+test("a blank restaurant is labeled Not specified in the listing email", async () => {
+  let init = null;
+  const result = await deliverListing(
+    { ...note, restaurant: "", type: "other" },
+    {
+      RESEND_API_KEY: "re_test",
+      CONTACT_EMAIL: "marc@example.com",
+      SUBSCRIBE_FROM: "Eating on 30A <listings@example.com>",
+    },
+    (_nextUrl, nextInit) => {
+      init = nextInit;
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    },
+  );
+  assert.equal(result.ok, true);
+  const body = JSON.parse(init.body);
+  assert.equal(body.subject, "Eating on 30A listing: Other — Not specified");
+  assert.match(body.text, /Request: Other/);
+  assert.match(body.text, /Restaurant: Not specified/);
 });
 
 test("missing secrets accept the listing note and do not call Resend", async () => {

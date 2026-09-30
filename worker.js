@@ -1,7 +1,8 @@
 /**
  * Static assets are served by the assets binding.
  * /api/subscribe accepts a coupon signup and /api/listing accepts a restaurant
- * correction, edit, deletion, or new listing. When the secrets exist, both
+ * correction, edit, deletion, new listing, or other note. A restaurant name
+ * is optional. When the secrets exist, both
  * email CONTACT_EMAIL through Resend (https://resend.com). Nothing is emailed
  * until all three are set: RESEND_API_KEY, SUBSCRIBE_FROM (a verified Resend
  * sender), CONTACT_EMAIL.
@@ -13,7 +14,9 @@ const LISTING_TYPES = {
   edit: "Edit",
   deletion: "Deletion",
   new: "New listing",
+  other: "Other",
 };
+const LISTING_TYPE_ERROR = "Choose update, edit, deletion, new listing, or other.";
 
 export function parseSubscribe(body) {
   if (!body || typeof body !== "object") return { error: "Send the signup as JSON." };
@@ -69,12 +72,14 @@ function oneLine(value, max) {
 export function parseListing(body) {
   if (!body || typeof body !== "object") return { error: "Send the request as JSON." };
   const restaurant = oneLine(body.restaurant, 160);
-  if (!restaurant) return { error: "Enter the restaurant name." };
+  if (String(body.restaurant || "").trim() && !restaurant) {
+    return { error: "Keep the restaurant name under 160 characters." };
+  }
   const town = oneLine(body.town, 120);
   if (String(body.town || "").trim() && !town) return { error: "Town is too long." };
   const type = String(body.type || "").trim().toLowerCase();
   if (!Object.prototype.hasOwnProperty.call(LISTING_TYPES, type)) {
-    return { error: "Choose update, edit, deletion, or new listing." };
+    return { error: LISTING_TYPE_ERROR };
   }
   const details = String(body.details || "").replace(/\r\n/g, "\n").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
   if (!details) return { error: "Tell us what should change." };
@@ -89,12 +94,13 @@ export function parseListing(body) {
 export async function deliverListing(payload, env, fetchImpl = fetch) {
   const label = LISTING_TYPES[payload.type] || payload.type;
   const town = payload.town || "Not specified";
+  const restaurant = payload.restaurant || "Not specified";
   return postResend(
     env,
     {
       reply_to: payload.email,
-      subject: `Eating on 30A listing: ${label} — ${payload.restaurant}`,
-      text: `Request: ${label}\nRestaurant: ${payload.restaurant}\nTown: ${town}\nFrom: ${payload.name} <${payload.email}>\n\n${payload.details}`,
+      subject: `Eating on 30A listing: ${label} — ${restaurant}`,
+      text: `Request: ${label}\nRestaurant: ${restaurant}\nTown: ${town}\nFrom: ${payload.name} <${payload.email}>\n\n${payload.details}`,
     },
     fetchImpl,
     "The request could not be sent.",
