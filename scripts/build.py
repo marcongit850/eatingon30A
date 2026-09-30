@@ -1150,8 +1150,13 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         "</div></section>"
         '<section class="section"><div class="wrap essay-grid">'
         '<div><p class="kicker">The corridor</p><h2>A guide for the whole coast.</h2></div>'
-        f'<div class="prose"><p>{e(ABOUT)}</p>'
+        '<div><div class="prose">'
+        f"<p>{e(ABOUT)}</p>"
         '<p><a class="button" href="/restaurants/">Browse the directory</a></p></div>'
+        '<p class="kicker">Guides</p>'
+        '<p class="lede">Popular guides for a trip along Scenic Highway 30A. This one covers seafood restaurants.</p>'
+        '<p class="section-links"><a class="text-link" href="/guides/best-seafood-30a/">Best seafood on 30A</a>'
+        '<a class="text-link" href="/guides/">All guides</a></p></div>'
         "</div></section>"
     )
     description = (
@@ -1667,6 +1672,330 @@ def print_cover(path: str, alt: str) -> str:
     )
 
 
+SEAFOOD_CUISINE = "Seafood"
+SEAFOOD_FOOD_LABELS = (
+    ("Raw Bar", "raw bars"),
+    ("Oyster Bar", "oyster bars"),
+    ("Seafood Market", "seafood markets"),
+    ("Shrimp", "shrimp baskets"),
+)
+GUIDES_INDEX_TITLE = "Restaurant guides for 30A | Eating on 30A"
+GUIDES_INDEX_DESCRIPTION = (
+    "Short restaurant guides for Scenic Highway 30A in Walton County, Florida, "
+    "starting with seafood, plus links into the directory and the map."
+)
+SEAFOOD_GUIDE_TITLE = "Best seafood on 30A | Eating on 30A"
+SEAFOOD_GUIDE_DESCRIPTION = (
+    "Best seafood restaurants on Scenic Highway 30A in Walton County, Florida, "
+    "from Dune Allen to Inlet Beach, with the directory and a map."
+)
+
+
+def require_meta(title: str, description: str) -> None:
+    if not 20 <= len(title) <= 70:
+        raise SystemExit(f"title length {len(title)}: {title}")
+    if not 110 <= len(description) <= 165 or "30A" not in description or "Walton County" not in description:
+        raise SystemExit(f"description length {len(description)}: {description}")
+
+
+def human_list(items: list[str]) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + f", and {items[-1]}"
+
+
+def seafood_restaurants(restaurants: list[dict], areas: list[dict]) -> list[dict]:
+    """Restaurants whose Cuisine Type includes Seafood, west to east, then by name.
+
+    Related food types (raw bar, oyster bar, seafood market, shrimp) sit inside
+    that cuisine set. The directory and map use the same cuisine query.
+    """
+    order = {area["slug"]: index for index, area in enumerate(areas)}
+    picked = [restaurant for restaurant in restaurants if SEAFOOD_CUISINE in restaurant["cuisines"]]
+    picked.sort(key=lambda restaurant: (order.get(restaurant["areaSlug"], len(order)), restaurant["name"].lower()))
+    return picked
+
+
+def place_phrase(restaurant: dict) -> str:
+    return f"{restaurant['name']} in {restaurant['area']}"
+
+
+def text_link(href: str, label: str) -> str:
+    return f'<a class="text-link" href="{e(href)}">{e(label)}</a>'
+
+
+def linked_places(restaurants: list[dict]) -> str:
+    return human_list(
+        [text_link(f"/restaurants/{restaurant['slug']}/", place_phrase(restaurant)) for restaurant in restaurants]
+    )
+
+
+def faq_nodes(items: list[dict]) -> dict:
+    return {
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": item["question"],
+                "acceptedAnswer": {"@type": "Answer", "text": item["answer"]},
+            }
+            for item in items
+        ],
+    }
+
+
+def faq_html(items: list[dict]) -> str:
+    blocks = [
+        '<section class="guide-faq" aria-labelledby="guide-faq-heading">',
+        '<h2 id="guide-faq-heading">Common questions</h2>',
+    ]
+    for item in items:
+        blocks.append(f"<h3>{e(item['question'])}</h3><p>{item['html']}</p>")
+    blocks.append("</section>")
+    return "".join(blocks)
+
+
+def seafood_faq(picked: list[dict], areas: list[dict]) -> list[dict]:
+    by_area = []
+    for area in areas:
+        group = [restaurant for restaurant in picked if restaurant["areaSlug"] == area["slug"]]
+        if group:
+            by_area.append((area, group))
+    first = by_area[0][0]["fullName"]
+    last = by_area[-1][0]["fullName"]
+    ranked = sorted(by_area, key=lambda item: (-len(item[1]), item[0]["fullName"]))
+    where = f"Listed west to east, seafood restaurants on this page start in {first} and end in {last}."
+    if len(ranked) > 1:
+        top = ranked[0][0]["fullName"]
+        second = ranked[1][0]["fullName"]
+        where = f"{where} {top} has the most, then {second}."
+    kids = [restaurant for restaurant in picked if restaurant["kids"]]
+    examples = []
+    seen = set()
+    for restaurant in kids:
+        if restaurant["areaSlug"] in seen:
+            continue
+        examples.append(restaurant)
+        seen.add(restaurant["areaSlug"])
+        if len(examples) == 3:
+            break
+    kid_plain = human_list([place_phrase(restaurant) for restaurant in examples])
+    kids_answer = (
+        f"Yes. {len(kids)} of the {len(picked)} seafood restaurants are marked kid friendly, "
+        f"including {kid_plain}."
+    )
+    waterfront = [restaurant for restaurant in picked if "Waterfront" in restaurant["vibes"]]
+    water_plain = human_list([place_phrase(restaurant) for restaurant in waterfront])
+    water_answer = f"The directory tags these seafood restaurants as waterfront: {water_plain}."
+    map_answer = (
+        "Yes. The map uses the same Seafood cuisine filter as the directory, so the pins match this guide."
+    )
+    items = [
+        {
+            "question": "Where along 30A are the seafood restaurants?",
+            "answer": where,
+            "html": e(where) + " " + text_link("/restaurants/?cuisine=Seafood", "See them in the directory") + ".",
+        }
+    ]
+    if kids and examples:
+        items.append(
+            {
+                "question": "Are there kid-friendly seafood restaurants on 30A?",
+                "answer": kids_answer,
+                "html": (
+                    e(kids_answer)
+                    + " "
+                    + text_link("/restaurants/?cuisine=Seafood&kids=yes", "Show kid-friendly seafood")
+                    + "."
+                ),
+            }
+        )
+    if waterfront:
+        items.append(
+            {
+                "question": "Which seafood restaurants are on the water?",
+                "answer": water_answer,
+                "html": (
+                    e("The directory tags these seafood restaurants as waterfront: ")
+                    + linked_places(waterfront)
+                    + "."
+                ),
+            }
+        )
+    items.append(
+        {
+            "question": "Can I see these seafood restaurants on the map?",
+            "answer": map_answer,
+            "html": e(map_answer) + " " + text_link("/map/?cuisine=Seafood", "Open the seafood map") + ".",
+        }
+    )
+    return items
+
+
+def guide_teaser(title: str, href: str, area: str, meta: str, note: str, image: str, image_alt: str) -> str:
+    return (
+        f'<a class="card" href="{e(href)}">'
+        f'<div class="card-media"><img src="{e(image)}" alt="{e(image_alt)}" loading="lazy"></div>'
+        f'<div class="card-body"><p class="card-area">{e(area)}</p>'
+        f"<h2>{e(title)}</h2>"
+        f'<p class="meta">{e(meta)}</p>'
+        f'<p class="note">{e(note)}</p></div></a>'
+    )
+
+
+def build_guides(restaurants: list[dict], areas: list[dict]) -> None:
+    require_meta(GUIDES_INDEX_TITLE, GUIDES_INDEX_DESCRIPTION)
+    require_meta(SEAFOOD_GUIDE_TITLE, SEAFOOD_GUIDE_DESCRIPTION)
+    picked = seafood_restaurants(restaurants, areas)
+    if not picked:
+        raise SystemExit("seafood guide needs at least one Seafood cuisine listing")
+    foods = [
+        label
+        for food, label in SEAFOOD_FOOD_LABELS
+        if any(food in restaurant["foods"] for restaurant in picked)
+    ]
+    count = len(picked)
+    word = restaurant_count_word(count)
+    food_line = human_list(foods)
+    intro = (
+        "Planning a trip on Scenic Highway 30A and looking for seafood? "
+        "This guide gathers the restaurants tagged Seafood in the directory, in driving order from west to east."
+    )
+    detail = (
+        f"There are {count} {word}. The listings include {food_line}. "
+        "Open a card for the address and hours, or use the directory and the map with the Seafood filter already on."
+    )
+    faqs = seafood_faq(picked, areas)
+    cards = "".join(card(restaurant) for restaurant in picked)
+    seafood_body = (
+        '<article class="profile">'
+        '<div class="profile-hero">'
+        f'<img src="{e(HERO_IMAGE)}" alt="{e(HERO_ALT)}" loading="eager">'
+        "</div>"
+        '<div class="wrap page-intro">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> '
+        '<a href="/guides/">Guides</a> <span aria-hidden="true">/</span> Best seafood on 30A</p>'
+        '<p class="kicker">Seafood</p>'
+        '<h1 class="guide-title">Best seafood on 30A</h1>'
+        f'<p class="lede">{e(intro)}</p>'
+        f'<p class="lede">{e(detail)}</p>'
+        f'<p class="action-row"><a class="button" href="/restaurants/?cuisine=Seafood">Show {count} {restaurant_count_word(count, label=True)}</a> '
+        '<a class="button secondary" href="/map/?cuisine=Seafood">Map these restaurants</a></p>'
+        '<nav class="section-links" aria-label="Seafood filters">'
+        f'{text_link("/restaurants/?cuisine=Seafood&kids=yes", "Kid-friendly seafood")}'
+        "</nav>"
+        f'<div class="card-grid">{cards}</div>'
+        f"{faq_html(faqs)}"
+        "</div></article>"
+    )
+    seafood_list = {
+        "@type": "ItemList",
+        "name": "Seafood restaurants on 30A",
+        "numberOfItems": count,
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": index,
+                "name": restaurant["name"],
+                "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
+            }
+            for index, restaurant in enumerate(picked, start=1)
+        ],
+    }
+    write(
+        ROOT / "guides" / "best-seafood-30a" / "index.html",
+        layout(
+            SEAFOOD_GUIDE_TITLE,
+            SEAFOOD_GUIDE_DESCRIPTION,
+            "/guides/best-seafood-30a/",
+            "guides",
+            seafood_body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "CollectionPage",
+                        "name": "Best seafood on 30A",
+                        "headline": "Best seafood on 30A",
+                        "url": ORIGIN + "/guides/best-seafood-30a/",
+                        "description": SEAFOOD_GUIDE_DESCRIPTION,
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                    },
+                    seafood_list,
+                    faq_nodes(faqs),
+                    breadcrumbs(
+                        [
+                            ("Home", "/"),
+                            ("Guides", "/guides/"),
+                            ("Best seafood on 30A", "/guides/best-seafood-30a/"),
+                        ]
+                    ),
+                )
+            ),
+            image=HERO_IMAGE,
+            image_alt=HERO_ALT,
+        ),
+    )
+    teaser = guide_teaser(
+        "Best seafood on 30A",
+        "/guides/best-seafood-30a/",
+        "Seafood",
+        f"{count} {word}",
+        "Seafood restaurants from Dune Allen Beach east along Scenic Highway 30A, listed west to east.",
+        HERO_IMAGE,
+        HERO_ALT,
+    )
+    index_body = (
+        '<div class="wrap page-intro">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Guides</p>'
+        '<p class="kicker">For the trip</p>'
+        "<h1>Guides along 30A</h1>"
+        "<p class=\"lede\">Short guides for planning a meal on Scenic Highway 30A. "
+        "Each one starts from restaurants already in the directory.</p>"
+        f'<div class="card-grid">{teaser}</div></div>'
+    )
+    write(
+        ROOT / "guides" / "index.html",
+        layout(
+            GUIDES_INDEX_TITLE,
+            GUIDES_INDEX_DESCRIPTION,
+            "/guides/",
+            "guides",
+            index_body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "CollectionPage",
+                        "name": "Guides along 30A",
+                        "url": ORIGIN + "/guides/",
+                        "description": GUIDES_INDEX_DESCRIPTION,
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                    },
+                    {
+                        "@type": "ItemList",
+                        "name": "Guides",
+                        "numberOfItems": 1,
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": 1,
+                                "name": "Best seafood on 30A",
+                                "url": ORIGIN + "/guides/best-seafood-30a/",
+                            }
+                        ],
+                    },
+                    breadcrumbs([("Home", "/"), ("Guides", "/guides/")]),
+                )
+            ),
+            image=HERO_IMAGE,
+            image_alt=HERO_ALT,
+        ),
+    )
+
+
 def build_about() -> None:
     covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
     body = (
@@ -1796,11 +2125,16 @@ def build_404() -> None:
 
 def build_sitemap(restaurants: list[dict], areas: list[dict]) -> None:
     stamp = newest(restaurant["updated"] for restaurant in restaurants)
+    seafood_stamp = newest(
+        restaurant["updated"] for restaurant in restaurants if SEAFOOD_CUISINE in restaurant["cuisines"]
+    )
     urls = [
         ("/", stamp),
         ("/restaurants/", stamp),
         ("/map/", stamp),
         ("/areas/", stamp),
+        ("/guides/", stamp),
+        ("/guides/best-seafood-30a/", seafood_stamp),
         ("/about/", ""),
         ("/contact/", ""),
     ]
@@ -1866,6 +2200,8 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
+        f"- [Guides]({ORIGIN}/guides/): Short guides for planning a meal on Scenic Highway 30A.",
+        f"- [Best seafood on 30A]({ORIGIN}/guides/best-seafood-30a/): Seafood restaurants along Scenic Highway 30A.",
         f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): Send a correction, edit, deletion, or new listing.",
         "",
@@ -1911,6 +2247,8 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
+        f"- [Guides]({ORIGIN}/guides/)",
+        f"- [Best seafood on 30A]({ORIGIN}/guides/best-seafood-30a/)",
         f"- [About]({ORIGIN}/about/)",
         f"- [Contact]({ORIGIN}/contact/)",
         f"- [Short index]({ORIGIN}/llms.txt)",
@@ -1939,6 +2277,7 @@ def main() -> None:
     cuisines = sorted({cuisine for restaurant in restaurants for cuisine in restaurant["cuisines"]})
     shutil.rmtree(ROOT / "restaurants", ignore_errors=True)
     shutil.rmtree(ROOT / "areas", ignore_errors=True)
+    shutil.rmtree(ROOT / "guides", ignore_errors=True)
     write(DATA / "restaurants.json", json.dumps([public_record(item) for item in restaurants], indent=2) + "\n")
     write(
         DATA / "locations.json",
@@ -1964,6 +2303,7 @@ def main() -> None:
         build_detail(restaurant, restaurants)
     build_map(areas, cuisines)
     build_areas(areas, restaurants)
+    build_guides(restaurants, areas)
     build_about()
     build_contact()
     build_404()
@@ -1971,7 +2311,7 @@ def main() -> None:
     build_robots()
     build_llms(restaurants, areas)
     photos = sum(1 for restaurant in restaurants if restaurant["cardImage"])
-    print(f"Built {len(restaurants)} restaurants, {len(areas)} towns, {photos} photos")
+    print(f"Built {len(restaurants)} restaurants, {len(areas)} towns, {photos} photos, 1 guide")
 
 
 if __name__ == "__main__":
