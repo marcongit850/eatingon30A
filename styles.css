@@ -375,6 +375,36 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
 .prose p { color: var(--muted); font-weight: 300; }
 .page-intro { padding: 3.4rem 0 4.4rem; }
 .page-intro h1, .profile-head h1 { max-width: 14ch; }
+.print-guides {
+  margin-top: 3.2rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--line);
+}
+.print-guides h2 { margin-bottom: 0.75rem; }
+.print-covers {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+  margin-top: 1.55rem;
+  max-width: 52rem;
+}
+.print-covers figure { margin: 0; }
+.print-covers picture,
+.print-covers img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.print-covers img {
+  border: 1px solid var(--line);
+  background: var(--sand);
+}
+@media (min-width: 720px) {
+  .print-covers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+}
 #listing-title { max-width: 16ch; }
 
 input, select, textarea, button { font: inherit; color: var(--ink); }

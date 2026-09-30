@@ -202,6 +202,31 @@ check("town" not in listing_js, "listing script should not send a town")
 check("Marc" not in listing_js and "Thanks. We have your note." in listing_js, "listing script should thank without a personal name")
 check(".listing-form" in styles and ".listing-status" in styles, "listing form should use the site styles")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
+check("<h2 id=\"print-guides-heading\">Coming in 2027</h2>" in about, "about page should announce printed guides coming in 2027")
+check(f"<p>{build.e(build.PRINT_GUIDES)}</p>" in about, "about page should use the print-guide paragraph")
+print_section = about.split('class="print-guides"', 1)[1].split("</section>", 1)[0]
+guide_at = print_section.find(build.e(build.PRINT_GUIDES))
+contact_at = print_section.find('For information or to reserve your space, please <a class="text-link" href="/contact/">contact us</a>.')
+covers_at = print_section.find('class="print-covers"')
+check(
+    0 <= guide_at < contact_at < covers_at,
+    "print inquiries should link to contact between the paragraph and the covers",
+)
+check("—" not in about and "–" not in about, "about page should not use em or en dashes")
+check('class="print-covers"' in about, "about page should show the print covers together")
+for path, alt in build.PRINT_COVERS:
+    check(f'src="{path}.jpg"' in about and f'srcset="{path}.webp"' in about, f"about page should include {path}")
+    check(f'alt="{build.e(alt)}"' in about, f"about page should describe {path}")
+    for ext in (".jpg", ".webp"):
+        cover = ROOT / path.lstrip("/")
+        cover = cover.with_suffix(ext)
+        check(cover.is_file(), f"missing print cover {cover.name}")
+        check(cover.stat().st_size < 400_000, f"print cover too large for the web: {cover.name}")
+check(".print-covers" in styles and "grid-template-columns: 1fr" in styles, "print covers should stack in one column")
+check(
+    "grid-template-columns: repeat(2, minmax(0, 1fr))" in styles,
+    "print covers should sit side by side on wider screens",
+)
 check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "homepage hero should welcome visitors to 30A")
 check('src="/images/hero-beachside-dining.jpg"' in home, "homepage hero should use the beachside dining photo")
 check('srcset="/images/hero-beachside-dining.webp"' in home, "homepage hero should offer the WebP photo")
