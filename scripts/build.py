@@ -1505,7 +1505,8 @@ def build_about() -> None:
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
         '<section class="print-guides" aria-labelledby="print-guides-heading">'
         '<div class="prose"><h2 id="print-guides-heading">Coming in 2027</h2>'
-        f"<p>{e(PRINT_GUIDES)}</p></div>"
+        f"<p>{e(PRINT_GUIDES)}</p>"
+        '<p>For information or to reserve your space, please <a class="text-link" href="/contact/">contact us</a>.</p></div>'
         f'<div class="print-covers">{covers}</div>'
         "</section></div>"
     )
