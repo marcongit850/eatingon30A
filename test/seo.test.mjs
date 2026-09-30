@@ -184,7 +184,9 @@ assert.equal(locs.includes(`${ORIGIN}/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
 assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
-assert.equal(locs.length, 6 + 13 + 135);
+assert.equal(locs.includes(`${ORIGIN}/guides/`), true);
+assert.equal(locs.includes(`${ORIGIN}/guides/best-seafood-30a/`), true);
+assert.equal(locs.length, 8 + 13 + 135);
 assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
 assert.equal(sitemap.includes("workers.dev"), false);
 
@@ -202,7 +204,7 @@ assert.equal(robotsTagForHost("www.eatingon30a.com"), "");
 const llms = read("llms.txt");
 const llmsFull = read("llms-full.txt");
 assert.ok(llmsFull.length > llms.length);
-for (const url of [`${ORIGIN}/`, `${ORIGIN}/restaurants/`, `${ORIGIN}/map/`, `${ORIGIN}/areas/`, `${ORIGIN}/about/`, `${ORIGIN}/contact/`, `${ORIGIN}/sitemap.xml`, `${ORIGIN}/restaurants/o-ku-alys-beach/`]) {
+for (const url of [`${ORIGIN}/`, `${ORIGIN}/restaurants/`, `${ORIGIN}/map/`, `${ORIGIN}/areas/`, `${ORIGIN}/guides/`, `${ORIGIN}/guides/best-seafood-30a/`, `${ORIGIN}/about/`, `${ORIGIN}/contact/`, `${ORIGIN}/sitemap.xml`, `${ORIGIN}/restaurants/o-ku-alys-beach/`]) {
   assert.ok(llms.includes(url), "llms.txt missing " + url);
   assert.ok(llmsFull.includes(url), "llms-full.txt missing " + url);
 }
