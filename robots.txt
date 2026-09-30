@@ -1,6 +1,7 @@
 # Search and AI crawlers may read this site.
-# https://eatingon30a.352marc.workers.dev/llms.txt
-# https://eatingon30a.352marc.workers.dev/llms-full.txt
+# Public site: https://www.eatingon30a.com/ (apex eatingon30a.com redirects here).
+# https://www.eatingon30a.com/llms.txt
+# https://www.eatingon30a.com/llms-full.txt
 
 User-agent: *
 Allow: /
@@ -44,4 +45,4 @@ Allow: /
 User-agent: FacebookBot
 Allow: /
 
-Sitemap: https://eatingon30a.352marc.workers.dev/sitemap.xml
+Sitemap: https://www.eatingon30a.com/sitemap.xml

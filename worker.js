@@ -107,6 +107,33 @@ export async function deliverListing(payload, env, fetchImpl = fetch) {
   );
 }
 
+export const CANONICAL_HOST = "www.eatingon30a.com";
+
+export function canonicalRedirect(url, method = "GET") {
+  const host = String(url.hostname || "").toLowerCase();
+  if (host !== "eatingon30a.com") return null;
+  const target = new URL(url.toString());
+  target.protocol = "https:";
+  target.hostname = CANONICAL_HOST;
+  const verb = String(method || "GET").toUpperCase();
+  const status = verb === "GET" || verb === "HEAD" ? 301 : 308;
+  return new Response(null, { status, headers: { location: target.toString() } });
+}
+
+export function robotsTagForHost(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  if (host.endsWith(".workers.dev")) return "noindex";
+  return "";
+}
+
+function withPreviewRobots(url, response) {
+  const tag = robotsTagForHost(url.hostname);
+  if (!tag) return response;
+  const headers = new Headers(response.headers);
+  if (!headers.has("x-robots-tag")) headers.set("x-robots-tag", tag);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -194,8 +221,10 @@ export async function handleListing(request, env, fetchImpl = fetch) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const redirect = canonicalRedirect(url, request.method);
+    if (redirect) return redirect;
     if (url.pathname === "/api/subscribe") return handleSubscribe(request, env);
     if (url.pathname === "/api/listing") return handleListing(request, env);
-    return env.ASSETS.fetch(request);
+    return withPreviewRobots(url, await env.ASSETS.fetch(request));
   },
 };

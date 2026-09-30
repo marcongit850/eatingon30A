@@ -6,13 +6,15 @@ The visual direction is an editorial coastal guide: full-bleed hero, serif displ
 
 There is no Airtable base and no Google Places or Google Maps API.
 
-The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or any other custom domain to this Worker. Vanity DNS stays where it is until someone moves it on purpose.
+The Cloudflare Worker name is `eatingon30a`. Do not attach `eatingon30a.com` or any other custom domain in `wrangler.jsonc`. Vanity DNS stays where it is until someone moves it on purpose.
+
+Live site: https://www.eatingon30a.com/ (the apex host redirects to www). `site.config.json` sets `origin` to that URL for canonical links, Open Graph URLs, structured data, the sitemap, and `llms.txt`. Do not point the sitemap at a former Wix host or at the workers.dev preview.
 
 Preview (workers.dev only):
 
 https://eatingon30a.352marc.workers.dev
 
-That hostname is the workers.dev preview. Do not attach a custom domain. The first visit can show a short Cloudflare “verify you are human” check. `site.config.json` sets `origin` to this same URL for canonical links, Open Graph URLs, the sitemap, and `llms.txt`. Override it for one build with `SITE_ORIGIN` if the preview host changes. Do not point the sitemap at the Wix domain.
+That hostname is the workers.dev preview. Do not attach a custom domain in this repo. The first visit can show a short Cloudflare “verify you are human” check. The worker marks the preview `noindex` so it does not compete with the live domain. Override `origin` for one build with `SITE_ORIGIN` if a one-off host is needed.
 
 ## Preview locally
 

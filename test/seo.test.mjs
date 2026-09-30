@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { canonicalRedirect, robotsTagForHost } from "../worker.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const config = JSON.parse(readFileSync(join(root, "site.config.json"), "utf8"));
@@ -29,6 +30,15 @@ function jsonLd(html) {
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   assert.equal(blocks.length, 1, "expected one JSON-LD block");
   return JSON.parse(blocks[0][1]);
+}
+
+function hasType(node, type) {
+  const value = node && node["@type"];
+  return value === type || (Array.isArray(value) && value.includes(type));
+}
+
+function typed(graph, type) {
+  return graph.find((node) => hasType(node, type));
 }
 
 function walk(dir, out = []) {
@@ -60,7 +70,8 @@ for (const path of htmlPages) {
   assert.match(description, /Walton County/);
   const canonical = attr(html, /<link rel="canonical" href="([^"]+)">/);
   assert.ok(canonical.startsWith(ORIGIN), rel + " canonical " + canonical);
-  assert.equal(canonical.includes("eatingon30a.com"), false);
+  assert.equal(new URL(canonical).hostname, "www.eatingon30a.com", rel);
+  assert.equal(canonical.includes("workers.dev"), false, rel);
   assert.equal(attr(html, /<meta property="og:title" content="([^"]+)">/), title);
   assert.equal(attr(html, /<meta property="og:description" content="([^"]+)">/), description);
   assert.equal(attr(html, /<meta property="og:url" content="([^"]+)">/), canonical);
@@ -91,34 +102,53 @@ const directory = jsonLd(read("restaurants/index.html"));
 const list = directory["@graph"].find((node) => node["@type"] === "ItemList");
 assert.equal(list.numberOfItems, 135);
 assert.equal(directory["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+const directoryHtml = read("restaurants/index.html");
+assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
+assert.match(directoryHtml, /href="\/areas\/seaside\/"/);
+assert.match(directoryHtml, /Scenic Highway 30A/);
 
-const profile = jsonLd(read("restaurants/o-ku-alys-beach/index.html"));
-const restaurant = profile["@graph"].find((node) => node["@type"] === "Restaurant");
+const profileHtml = read("restaurants/o-ku-alys-beach/index.html");
+const profile = jsonLd(profileHtml);
+const restaurant = typed(profile["@graph"], "Restaurant");
 assert.equal(restaurant.name, "O-Ku");
+assert.ok(hasType(restaurant, "LocalBusiness"));
 assert.equal(restaurant.url, `${ORIGIN}/restaurants/o-ku-alys-beach/`);
 assert.equal(restaurant.address.addressCountry, "US");
 assert.ok(restaurant.address.streetAddress);
+assert.equal(restaurant.areaServed.name, "Alys Beach");
+assert.equal(restaurant.containedInPlace.url, `${ORIGIN}/areas/alys-beach/`);
+assert.ok(restaurant.servesCuisine.includes("Japanese"));
 assert.equal(typeof restaurant.geo.latitude, "number");
 assert.equal(typeof restaurant.geo.longitude, "number");
 assert.ok(restaurant.telephone);
 assert.equal(profile["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+const crumbs = typed(profile["@graph"], "BreadcrumbList");
+assert.deepEqual(crumbs.itemListElement.map((item) => item.name), ["Home", "Restaurants", "Alys Beach", "O-Ku"]);
 assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$/);
+assert.match(profileHtml, /<title>O-Ku \| Japanese in Alys Beach, 30A<\/title>/);
+assert.match(profileHtml, /href="\/areas\/alys-beach\/"/);
 
 const steam = jsonLd(read("restaurants/steamboat-grill-30a-seagrove-beach/index.html"));
-const steamRestaurant = steam["@graph"].find((node) => node["@type"] === "Restaurant");
+const steamRestaurant = typed(steam["@graph"], "Restaurant");
 assert.match(steamRestaurant.image, /\/images\/restaurants\/steamboat-grill-30a-seagrove-beach\/01\.jpg$/);
 
 const happy = jsonLd(read("restaurants/beach-happy-cafe-seagrove-beach/index.html"));
-const happyRestaurant = happy["@graph"].find((node) => node["@type"] === "Restaurant");
+const happyRestaurant = typed(happy["@graph"], "Restaurant");
 assert.match(happyRestaurant.image, /\/images\/restaurants\/beach-happy-cafe-seagrove-beach\/01\.jpg$/);
 
 const stinkys = jsonLd(read("restaurants/stinkys-fish-camp-dune-allen-beach/index.html"));
-const stinkysRestaurant = stinkys["@graph"].find((node) => node["@type"] === "Restaurant");
+const stinkysRestaurant = typed(stinkys["@graph"], "Restaurant");
 assert.match(stinkysRestaurant.image, /\/images\/restaurants\/stinkys-fish-camp-dune-allen-beach\/01\.jpg$/);
 
-const town = jsonLd(read("areas/seaside/index.html"));
+const seasideHtml = read("areas/seaside/index.html");
+const town = jsonLd(seasideHtml);
 assert.equal(town["@graph"].some((node) => node["@type"] === "ItemList"), true);
 assert.equal(town["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+assert.equal(typed(town["@graph"], "Place").name, "Seaside");
+assert.match(seasideHtml, /<h1 class="town-title">Restaurants in Seaside<\/h1>/);
+assert.match(seasideHtml, /Find restaurants in Seaside on Scenic Highway 30A/);
+assert.match(seasideHtml, /href="\/areas\/watercolor\/"/);
+assert.match(seasideHtml, /href="\/areas\/seagrove-beach\/"/);
 
 const missing = read("404.html");
 assert.match(missing, /noindex/);
@@ -155,6 +185,19 @@ assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
 assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
 assert.equal(locs.length, 6 + 13 + 135);
+assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
+assert.equal(sitemap.includes("workers.dev"), false);
+
+const apex = canonicalRedirect(new URL("https://eatingon30a.com/restaurants/o-ku-alys-beach/?q=sushi"));
+assert.equal(apex.status, 301);
+assert.equal(apex.headers.get("location"), "https://www.eatingon30a.com/restaurants/o-ku-alys-beach/?q=sushi");
+const apexPost = canonicalRedirect(new URL("https://eatingon30a.com/api/listing"), "POST");
+assert.equal(apexPost.status, 308);
+assert.equal(apexPost.headers.get("location"), "https://www.eatingon30a.com/api/listing");
+assert.equal(canonicalRedirect(new URL("https://www.eatingon30a.com/")), null);
+assert.equal(canonicalRedirect(new URL("https://eatingon30a.352marc.workers.dev/restaurants/")), null);
+assert.equal(robotsTagForHost("eatingon30a.352marc.workers.dev"), "noindex");
+assert.equal(robotsTagForHost("www.eatingon30a.com"), "");
 
 const llms = read("llms.txt");
 const llmsFull = read("llms-full.txt");

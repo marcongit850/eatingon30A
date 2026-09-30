@@ -677,25 +677,132 @@ def photo_alt(restaurant: dict) -> str:
     return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
 
 
-def fit_meta(lead: str, identity: str) -> str:
+def fit_meta(lead: str, identity: str, pad: str = "Hours, address, and map are on the profile.") -> str:
     """Build a unique description in the same length range as the other 30A sites."""
     lead = clean_text(lead).rstrip(".")
     identity = clean_text(identity)
     text = f"{lead}. {identity}" if lead else identity
     if len(text) > 165:
         room = 165 - len(identity) - 2
-        cut = lead[:room].rsplit(" ", 1)[0].rstrip(".,;:") if room > 24 else ""
+        cut = ""
+        if lead and room >= 40:
+            # Keep a whole sentence from the listing note. A mid-sentence cut reads as a fragment.
+            sentence = re.split(r"(?<=[.!?])\s+", lead)[0].rstrip(".")
+            if sentence and 40 <= len(sentence) <= room:
+                cut = sentence
         text = f"{cut}. {identity}" if cut else identity
-    if len(text) < 110:
-        text = f"{text} Hours, address, and map are on the profile."
+    if len(text) < 110 and pad:
+        text = f"{text} {pad}"
     if len(text) > 165:
-        text = text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
+        text = identity if len(identity) <= 165 else text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
     return text
 
 
+def cuisine_phrase(cuisines: list[str], limit: int = 2) -> str:
+    names = [name for name in cuisines if name][:limit]
+    if not names:
+        return ""
+    if len(names) == 1:
+        return names[0]
+    return f"{names[0]} and {names[1]}"
+
+
+def listing_identity(restaurant: dict) -> str:
+    where = (
+        f"in {restaurant['area']} on Scenic Highway 30A, Walton County, Florida."
+    )
+    cuisine = cuisine_phrase(restaurant["cuisines"])
+    if cuisine:
+        identity = f"{restaurant['name']} serves {cuisine} {where}"
+    else:
+        identity = f"{restaurant['name']} {where}"
+    if len(identity) <= 155 or not restaurant["cuisines"]:
+        return identity
+    return f"{restaurant['name']} serves {restaurant['cuisines'][0]} {where}"
+
+
 def listing_description(restaurant: dict) -> str:
-    identity = f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A, Walton County, Florida."
-    return fit_meta(restaurant["notes"], identity)
+    return fit_meta(restaurant["notes"], listing_identity(restaurant))
+
+
+def listing_title(restaurant: dict) -> str:
+    name = restaurant["name"]
+    area = restaurant["area"]
+    cuisine = restaurant["cuisines"][0] if restaurant["cuisines"] else ""
+    options = []
+    if cuisine:
+        options.append(f"{name} | {cuisine} in {area}, 30A")
+    options.extend(
+        [
+            f"{name} in {area} | 30A restaurants",
+            f"{name} in {area} | Eating on 30A",
+            f"{name} | {area} on 30A",
+            f"{name} | Eating on 30A",
+        ]
+    )
+    for option in options:
+        if 20 <= len(option) <= 70:
+            return option
+    return options[-1]
+
+
+def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
+    found = []
+    for restaurant in group:
+        for cuisine in restaurant["cuisines"]:
+            if cuisine and cuisine not in found:
+                found.append(cuisine)
+            if len(found) == limit:
+                return found
+    return found
+
+
+def area_description(area: dict, group: list[dict]) -> str:
+    identity = f"Restaurants in {area['fullName']} on Scenic Highway 30A, Walton County, Florida."
+    text = fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
+    top = area_cuisines(group, 2)
+    count = f" {area['count']} {restaurant_count_word(area['count'])}"
+    extra = count + (f", including {', '.join(top)}." if top else ".")
+    if len(text) + len(extra) <= 165:
+        text += extra
+    return text
+
+
+def area_intro(area: dict, group: list[dict]) -> str:
+    top = area_cuisines(group)
+    detail = f"{area['count']} {restaurant_count_word(area['count'])}"
+    if top:
+        detail += f", including {', '.join(top)}"
+    return (
+        f"Find restaurants in {area['fullName']} on Scenic Highway 30A. "
+        f"The guide lists {detail}."
+    )
+
+
+def area_title(area: dict) -> str:
+    title = f"Restaurants in {area['fullName']} on 30A | Eating on 30A"
+    if len(title) <= 70:
+        return title
+    shorter = f"{area['fullName']} restaurants on 30A | Eating on 30A"
+    return shorter if len(shorter) <= 70 else f"{area['fullName']} restaurants | Eating on 30A"
+
+
+def newest(dates) -> str:
+    values = [item for item in dates if item]
+    return max(values) if values else ""
+
+
+def postal_address(restaurant: dict) -> dict:
+    address = {
+        "@type": "PostalAddress",
+        "streetAddress": restaurant["street"] or restaurant["address"],
+        "addressLocality": restaurant["city"] or restaurant["area"],
+        "addressRegion": restaurant["region"] or "FL",
+        "addressCountry": "US",
+    }
+    if restaurant["postal"]:
+        address["postalCode"] = restaurant["postal"]
+    return address
 
 
 def local_image_info(path: Path) -> tuple[int, int, str] | None:
@@ -1000,7 +1107,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
             photo = placeholder("gulf", area["name"], area["name"])
         word = restaurant_count_word(area["count"], label=True)
         towns.append(
-            f'<a class="town" href="/restaurants/?area={e(area["slug"])}">'
+            f'<a class="town" href="/areas/{e(area["slug"])}/">'
             f'<span class="town-frame">{photo}</span>'
             f'<span class="town-copy"><strong>{e(area["name"])}</strong><small>{area["count"]} {word}</small></span>'
             "</a>"
@@ -1047,7 +1154,10 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p><a class="button" href="/restaurants/">Browse the directory</a></p></div>'
         "</div></section>"
     )
-    description = "Find restaurants along Scenic Highway 30A in Walton County, Florida, by meal, town, or cuisine, with a directory and a map."
+    description = (
+        "Find restaurants and food along Scenic Highway 30A in Walton County, Florida, "
+        "by meal, town, or cuisine, with a directory and a map."
+    )
     extra = json_ld(
         graph(
             {
@@ -1056,6 +1166,11 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
                 "name": "Eating on 30A",
                 "url": ORIGIN + "/",
                 "description": ABOUT,
+                "logo": ORIGIN + "/images/eating-on-30a-logo.png",
+                "areaServed": {
+                    "@type": "Place",
+                    "name": "Scenic Highway 30A, Walton County, Florida",
+                },
             },
             {
                 "@type": "WebSite",
@@ -1109,10 +1224,21 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         "&&document.documentElement.classList.add('js-filter')}();</script>\n"
     )
     cards = "".join(card(restaurant) for restaurant in restaurants)
+    town_links = "".join(
+        f'<a class="text-link" href="/areas/{e(area["slug"])}/">{e(area["fullName"])} restaurants</a>'
+        for area in areas
+    )
+    description = (
+        "Restaurants on Scenic Highway 30A in Walton County, Florida. "
+        f"Search by town, meal, and cuisine. All {len(restaurants)} listings are here."
+    )
     body = (
-        '<div class="wrap page-intro"><p class="kicker">Directory</p>'
-        '<h1 id="listing-title">Where to eat</h1>'
-        "<p class=\"lede\">Filter by beach town, meal, or a few words.</p>"
+        '<div class="wrap page-intro">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Restaurants</p>'
+        '<p class="kicker">Directory</p>'
+        '<h1 id="listing-title">Restaurants on 30A</h1>'
+        '<p class="lede">Find restaurants along Scenic Highway 30A in Walton County. Filter by beach town, meal, or a few words.</p>'
+        f'<nav class="section-links" aria-label="Town guides">{town_links}</nav>'
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
@@ -1123,13 +1249,10 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
             {
                 "@type": "CollectionPage",
                 "@id": ORIGIN + "/restaurants/#page",
-                "name": "Restaurants along 30A",
+                "name": "Restaurants on Scenic Highway 30A",
                 "url": ORIGIN + "/restaurants/",
                 "isPartOf": {"@id": ORIGIN + "/#website"},
-                "description": (
-                    "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. "
-                    f"All {len(restaurants)} listings are here."
-                ),
+                "description": description,
             },
             {
                 "@type": "ItemList",
@@ -1151,9 +1274,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     write(
         ROOT / "restaurants" / "index.html",
         layout(
-            "Restaurants along 30A | Eating on 30A",
-            "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. "
-            f"All {len(restaurants)} listings are here.",
+            "Restaurants on Scenic Highway 30A | Eating on 30A",
+            description,
             "/restaurants/",
             "restaurants",
             body,
@@ -1243,7 +1365,8 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             '<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">'
             '<script src="/vendor/leaflet/leaflet.js"></script>'
         )
-    area_href = f'/restaurants/?area={restaurant["areaSlug"]}'
+    area_page = f'/areas/{restaurant["areaSlug"]}/'
+    area_href = area_page
     area_line = restaurant["label"] or restaurant["area"]
     price_bit = f' · {e(restaurant["price"])}' if restaurant["price"] else ""
     category_bit = f' · {e(restaurant["category"])}' if restaurant["category"] else ""
@@ -1255,7 +1378,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         more = (
             f'<section class="wrap more"><h2>Also in {e(restaurant["area"])}</h2>'
             f'<div class="map-list">{nearby_html}</div>'
-            f'<p><a class="text-link" href="{e(area_href)}">All of {e(restaurant["area"])}</a></p>'
+            f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
             f"{claim}</section>"
         )
     else:
@@ -1268,7 +1391,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         f'<div class="profile-hero">{media_block(restaurant["heroImage"], photo_alt(restaurant), restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
         f"{filmstrip(restaurant)}"
         '<div class="wrap profile-head">'
-        f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
+        f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
         f"<h1>{e(restaurant['name'])}</h1>"
         f'<ul class="chips">{"".join(chips)}</ul>'
@@ -1284,26 +1407,31 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     page_url = f"{ORIGIN}/restaurants/{restaurant['slug']}/"
     same_as = [url for url in (restaurant["website"], restaurant["instagram"], restaurant["facebook"]) if url]
     schema = {
-        "@type": "Restaurant",
+        "@type": ["Restaurant", "LocalBusiness"],
         "@id": page_url + "#restaurant",
         "name": restaurant["name"],
         "url": page_url,
-        "description": restaurant["notes"] or description,
-        "servesCuisine": restaurant["cuisines"],
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": restaurant["street"] or restaurant["address"],
-            "addressLocality": restaurant["city"] or restaurant["area"],
-            "addressRegion": restaurant["region"] or "FL",
-            "postalCode": restaurant["postal"],
-            "addressCountry": "US",
+        "description": description,
+        "address": postal_address(restaurant),
+        "areaServed": {
+            "@type": "Place",
+            "name": restaurant["area"],
+        },
+        "containedInPlace": {
+            "@type": "Place",
+            "name": restaurant["area"],
+            "url": ORIGIN + area_page,
         },
         "isPartOf": {"@id": ORIGIN + "/#website"},
     }
+    if restaurant["cuisines"]:
+        schema["servesCuisine"] = restaurant["cuisines"]
     if restaurant["price"]:
         schema["priceRange"] = restaurant["price"]
     if restaurant["phone"]:
         schema["telephone"] = restaurant["phone"]
+    if restaurant["reservations"]:
+        schema["acceptsReservations"] = True
     if restaurant["lat"] is not None:
         schema["geo"] = {"@type": "GeoCoordinates", "latitude": restaurant["lat"], "longitude": restaurant["lng"]}
     if restaurant["heroImage"]:
@@ -1318,14 +1446,13 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
                 [
                     ("Home", "/"),
                     ("Restaurants", "/restaurants/"),
+                    (restaurant["area"], area_page),
                     (restaurant["name"], f"/restaurants/{restaurant['slug']}/"),
                 ]
             ),
         )
     )
-    title = f'{restaurant["name"]} · {restaurant["area"]} | Eating on 30A'
-    if len(title) > 70:
-        title = f'{restaurant["name"]} | Eating on 30A'
+    title = listing_title(restaurant)
     write(
         ROOT / "restaurants" / restaurant["slug"] / "index.html",
         layout(
@@ -1343,7 +1470,9 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
 
 def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
-        '<div class="wrap page-intro"><p class="kicker">The map</p>'
+        '<div class="wrap page-intro">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Map</p>'
+        '<p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
         "<p class=\"lede\">Explore restaurants on the map using the same filters as the directory. Tap a pin to see the restaurant name, street address, and full profile.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
@@ -1396,15 +1525,18 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<span class="town-copy"><strong>{e(area["fullName"])}</strong><small>{area["count"]} {word}</small></span></a>'
         )
     body = (
-        '<div class="wrap page-intro"><p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
+        '<div class="wrap page-intro">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Towns</p>'
+        '<p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
         '<p class="lede">From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one.</p>'
+        '<p class="lede">Each town page lists the restaurants on that stretch of Scenic Highway 30A.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(
         ROOT / "areas" / "index.html",
         layout(
-            "Towns along 30A | Eating on 30A",
-            "Restaurant towns along Scenic Highway 30A in Walton County, Florida, from Dune Allen Beach east to Inlet Beach.",
+            "30A beach towns and restaurants | Eating on 30A",
+            "Find restaurants in the beach towns along Scenic Highway 30A in Walton County, Florida, from Dune Allen Beach east to Inlet Beach.",
             "/areas/",
             "areas",
             body,
@@ -1412,8 +1544,12 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                 graph(
                     {
                         "@type": "CollectionPage",
-                        "name": "Towns along 30A",
+                        "name": "Beach towns and restaurants on 30A",
                         "url": ORIGIN + "/areas/",
+                        "description": (
+                            "Find restaurants in the beach towns along Scenic Highway 30A in Walton County, Florida, "
+                            "from Dune Allen Beach east to Inlet Beach."
+                        ),
                         "isPartOf": {"@id": ORIGIN + "/#website"},
                     },
                     {
@@ -1440,26 +1576,36 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         photo = ""
         if area["image"]:
             photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
+        neighbors = []
+        index = areas.index(area)
+        if index > 0:
+            west = areas[index - 1]
+            neighbors.append(f'<a class="text-link" href="/areas/{e(west["slug"])}/">{e(west["fullName"])}</a>')
+        if index + 1 < len(areas):
+            east = areas[index + 1]
+            neighbors.append(f'<a class="text-link" href="/areas/{e(east["slug"])}/">{e(east["fullName"])}</a>')
+        neighbor_html = ""
+        if neighbors:
+            neighbor_html = f'<nav class="section-links" aria-label="More towns">{"".join(neighbors)}</nav>'
         body = (
             '<article class="profile">'
             f'<div class="profile-hero">{photo or placeholder("gulf", area["name"], area["name"])}</div>'
             '<div class="wrap page-intro">'
-            f'<p class="crumbs"><a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
-            f"<h1>{e(area['fullName'])}</h1>"
+            f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
+            f'<h1 class="town-title">Restaurants in {e(area["fullName"])}</h1>'
             f'<p class="lede">{e(area["description"])}</p>'
+            f'<p class="lede">{e(area_intro(area, group))}</p>'
             f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} {restaurant_count_word(area["count"], label=True)}</a> '
             f'<a class="button secondary" href="/map/?area={e(area["slug"])}">Map this town</a></p>'
+            f"{neighbor_html}"
             f'<div class="card-grid">{"".join(card(restaurant, "h2") for restaurant in group)}</div>'
             "</div></article>"
         )
-        description = fit_meta(
-            area["description"],
-            f"Restaurants in {area['fullName']} on Scenic Highway 30A, Walton County, Florida.",
-        )
+        description = area_description(area, group)
         write(
             ROOT / "areas" / area["slug"] / "index.html",
             layout(
-                f'{area["fullName"]} restaurants | Eating on 30A',
+                area_title(area),
                 description,
                 f'/areas/{area["slug"]}/',
                 "areas",
@@ -1468,7 +1614,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                     graph(
                         {
                             "@type": "CollectionPage",
-                            "name": f'{area["fullName"]} restaurants',
+                            "name": f'Restaurants in {area["fullName"]}',
                             "url": f'{ORIGIN}/areas/{area["slug"]}/',
                             "description": description,
                             "isPartOf": {"@id": ORIGIN + "/#website"},
@@ -1486,6 +1632,16 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                                 }
                                 for index, restaurant in enumerate(group, start=1)
                             ],
+                        },
+                        {
+                            "@type": "Place",
+                            "name": area["fullName"],
+                            "url": f'{ORIGIN}/areas/{area["slug"]}/',
+                            "description": description,
+                            "containedInPlace": {
+                                "@type": "Place",
+                                "name": "Scenic Highway 30A, Walton County, Florida",
+                            },
                         },
                         breadcrumbs(
                             [
@@ -1514,7 +1670,9 @@ def print_cover(path: str, alt: str) -> str:
 def build_about() -> None:
     covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
     body = (
-        '<div class="wrap page-intro"><div class="prose"><p class="kicker">About</p>'
+        '<div class="wrap page-intro"><div class="prose">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> About</p>'
+        '<p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT_LEAD)}</p>"
         f"<p>{e(ABOUT_TOWNS)}</p>"
@@ -1554,7 +1712,9 @@ def build_about() -> None:
 def build_contact() -> None:
     body = (
         '<div class="wrap page-intro">'
-        '<div class="prose"><p class="kicker">Contact</p>'
+        '<div class="prose">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Contact</p>'
+        '<p class="kicker">Contact</p>'
         "<h1>Corrections and new listings</h1>"
         "<p>Restaurant hours, phone numbers, websites, and other details are listed on each restaurant page. "
         "If something needs to be updated, a restaurant has closed, or we’re missing a place you think should be included, let us know.</p>"
@@ -1635,16 +1795,18 @@ def build_404() -> None:
 
 
 def build_sitemap(restaurants: list[dict], areas: list[dict]) -> None:
+    stamp = newest(restaurant["updated"] for restaurant in restaurants)
     urls = [
-        ("/", ""),
-        ("/restaurants/", ""),
-        ("/map/", ""),
-        ("/areas/", ""),
+        ("/", stamp),
+        ("/restaurants/", stamp),
+        ("/map/", stamp),
+        ("/areas/", stamp),
         ("/about/", ""),
         ("/contact/", ""),
     ]
     for area in areas:
-        urls.append((f"/areas/{area['slug']}/", ""))
+        group_dates = (restaurant["updated"] for restaurant in restaurants if restaurant["areaSlug"] == area["slug"])
+        urls.append((f"/areas/{area['slug']}/", newest(group_dates)))
     for restaurant in restaurants:
         urls.append((f"/restaurants/{restaurant['slug']}/", restaurant["updated"]))
     lines = [
@@ -1680,6 +1842,7 @@ def build_robots() -> None:
     ]
     blocks = [
         "# Search and AI crawlers may read this site.",
+        "# Public site: https://www.eatingon30a.com/ (apex eatingon30a.com redirects here).",
         f"# {ORIGIN}/llms.txt",
         f"# {ORIGIN}/llms-full.txt",
         "",
@@ -1710,7 +1873,9 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         "",
     ]
     for area in areas:
-        lines.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']}")
+        lines.append(
+            f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} Restaurants in {area['fullName']} on Scenic Highway 30A."
+        )
     lines.extend(
         [
             "",
@@ -1719,8 +1884,9 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         ]
     )
     for restaurant in restaurants:
+        cuisine = cuisine_phrase(restaurant["cuisines"]) or restaurant["category"] or "Restaurant"
         lines.append(
-            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {restaurant['area']} on Scenic Highway 30A."
+            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {cuisine} in {restaurant['area']} on Scenic Highway 30A."
         )
     lines.extend(
         [
