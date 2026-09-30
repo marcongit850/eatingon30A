@@ -330,6 +330,17 @@ check(
 check("<em>Eating</em>" not in shared_header, "header should not keep the text wordmark")
 check('class="footer-mark"' in shared_footer and 'src="/images/eating-on-30a-logo.png"' in shared_footer, "footer should use the Eating on 30A logo")
 check('alt="Eating on 30A"' in shared_footer and "<em>Eating</em>" not in shared_footer, "footer logo needs alt text")
+check("Be sure to also check out" in shared_footer, "footer should point visitors to the sister guide")
+check(
+    'class="footer-also"' in shared_footer and 'href="https://eatingindestin.352marc.workers.dev"' in shared_footer,
+    "footer promo should link Eating in Destin",
+)
+check(
+    'src="/images/eating-in-destin-logo.png"' in shared_footer and 'alt="Eating in Destin"' in shared_footer,
+    "footer promo should use the Destin logo with alt text",
+)
+check((ROOT / "images" / "eating-in-destin-logo.png").is_file(), "Destin logo should be a local file")
+check("a.footer-also" in styles and "width: 8.5rem" in styles, "Destin promo should stay a small footer line")
 check("logo.svg" not in shared_header and "logo.svg" not in shared_footer and not (ROOT / "logo.svg").exists(), "the masthead file should stay out of the site")
 check((ROOT / "images" / "eating-on-30a-logo.png").is_file(), "transparent logo file should be in images")
 check('href="/favicon.png"' in home and 'href="/apple-touch-icon.png"' in home, "home should link the circle favicon")
