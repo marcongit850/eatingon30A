@@ -12,7 +12,7 @@
     "name": "Gulf Place",
     "shortName": "Gulf Place",
     "description": "A vibrant hub on the west end of 30A with colorful architecture, local shops, live music, and easy beach access.",
-    "count": 7,
+    "count": 8,
     "image": "https://static.wixstatic.com/media/de29ed_eae4b4b4e89c453d8a67a90eab88552a~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/gulf-place.jpg"
   },
   {
@@ -20,7 +20,7 @@
     "name": "Blue Mountain Beach",
     "shortName": "Blue Mountain",
     "description": "A relaxed beach town with local eats and a friendly community.",
-    "count": 6,
+    "count": 7,
     "image": "https://static.wixstatic.com/media/de29ed_b5793e285dad435a9cbc6ea79e17e468~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/blue-mountain-beach.jpg"
   },
   {
@@ -28,7 +28,7 @@
     "name": "Grayton Beach",
     "shortName": "Grayton",
     "description": "A laid-back, artsy beach town with pristine beaches and local flavor.",
-    "count": 7,
+    "count": 11,
     "image": "https://static.wixstatic.com/media/de29ed_a9ea3f98c2d34bcaa531ed557eff0d31~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/grayton.jpg"
   },
   {
@@ -36,7 +36,7 @@
     "name": "WaterColor",
     "shortName": "WaterColor",
     "description": "Upscale and family-friendly with beautiful beaches and scenic trails.",
-    "count": 5,
+    "count": 6,
     "image": "https://static.wixstatic.com/media/de29ed_bc93553801d640c0b57627b763df64b6~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/watercolor.jpg"
   },
   {
@@ -44,7 +44,7 @@
     "name": "Seaside",
     "shortName": "Seaside",
     "description": "The iconic heart of 30A. Charming, walkable, and full of coastal character.",
-    "count": 18,
+    "count": 19,
     "image": "https://static.wixstatic.com/media/de29ed_36620ca1f57f4406ad00476bb2bf7104~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seaside.jpg"
   },
   {
@@ -52,7 +52,7 @@
     "name": "Seagrove Beach",
     "shortName": "Seagrove",
     "description": "A laid-back, tree-lined beach community with a mix of old Florida charm and modern coastal living.",
-    "count": 17,
+    "count": 18,
     "image": "https://static.wixstatic.com/media/de29ed_f033c0318f90442e8e45d9c98635f745~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seagrove-beach.jpg"
   },
   {
@@ -76,7 +76,7 @@
     "name": "Alys Beach",
     "shortName": "Alys Beach",
     "description": "Striking architecture, upscale shopping, and a peaceful beachfront vibe.",
-    "count": 7,
+    "count": 8,
     "image": "https://static.wixstatic.com/media/de29ed_3f0f4d942a8245418ed6960c0602630b~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/alys-beach.jpg"
   },
   {
@@ -84,7 +84,7 @@
     "name": "Rosemary Beach",
     "shortName": "Rosemary",
     "description": "European-inspired charm with cobblestone streets and a vibrant atmosphere.",
-    "count": 15,
+    "count": 16,
     "image": "https://static.wixstatic.com/media/de29ed_6547f451f1724414a1818e5363af6527~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/rosemary.jpg"
   },
   {
