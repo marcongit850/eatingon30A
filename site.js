@@ -4,7 +4,7 @@
  * directory stay in lockstep. Imported by tests; the browser boots below.
  */
 
-const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music"];
+const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music", "laurensFavorite"];
 
 export function filtersFromParams(params) {
   const read = (key) => (params.get(key) || "").trim();
@@ -16,6 +16,7 @@ export function filtersFromParams(params) {
     outdoor: read("outdoor"),
     kids: read("kids"),
     music: read("music"),
+    laurensFavorite: read("laurensFavorite"),
   };
 }
 
@@ -34,6 +35,7 @@ export function matches(record, filters) {
   if (filters.outdoor === "yes" && !record.outdoor) return false;
   if (filters.kids === "yes" && !record.kids) return false;
   if (filters.music === "yes" && !record.music) return false;
+  if (filters.laurensFavorite === "yes" && !record.laurensFavorite) return false;
   const query = (filters.q || "").trim().toLowerCase();
   if (query && !(record.search || "").toLowerCase().includes(query)) return false;
   return true;
@@ -147,6 +149,7 @@ export function describeFilters(filters, areaNames, emptyLabel = "Where to eat")
   if (filters.outdoor === "yes") parts.push("Outdoor dining");
   if (filters.kids === "yes") parts.push("Kid friendly");
   if (filters.music === "yes") parts.push("Live music");
+  if (filters.laurensFavorite === "yes") parts.push("Lauren’s Favorites");
   let label = parts.length ? parts.join(" · ") : emptyLabel;
   if (filters.area) {
     const town = areaNames[filters.area] || filters.area;
@@ -164,6 +167,7 @@ function recordFromCard(card) {
     outdoor: card.dataset.outdoor === "yes",
     kids: card.dataset.kids === "yes",
     music: card.dataset.music === "yes",
+    laurensFavorite: card.dataset.laurensFavorite === "yes",
     search: card.dataset.search || "",
   };
 }

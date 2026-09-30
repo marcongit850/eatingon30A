@@ -5,7 +5,7 @@ import { FEATURED_ROTATE_MS, describeFilters, featuredAutoRotate, featuredIndex,
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
-const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "" };
+const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "", laurensFavorite: "" };
 
 test("empty filters keep the full directory", () => {
   assert.equal(restaurants.filter((item) => matches(item, blank)).length, restaurants.length);
@@ -46,6 +46,31 @@ test("amenity filters require a yes flag", () => {
   assert.ok(outdoor.length > 0);
   assert.ok(outdoor.every((item) => item.outdoor));
   assert.ok(outdoor.length < restaurants.length);
+});
+
+test("Lauren’s Favorites keeps only the six tagged restaurants", () => {
+  const expected = [
+    "fish-out-of-water-watercolor",
+    "mimmos-30a-blue-mountain-beach",
+    "old-florida-fish-house-seagrove-beach",
+    "pescado-seafood-grill-and-rooftop-bar-rosemary-beach",
+    "raw-and-juicy-alys-beach",
+    "surfing-deer-seagrove-beach",
+  ];
+  const filters = filtersFromParams(new URLSearchParams("laurensFavorite=yes"));
+  const rows = restaurants.filter((item) => matches(item, { ...blank, ...filters }));
+  assert.deepEqual(rows.map((item) => item.slug).sort(), expected);
+  assert.ok(rows.every((item) => item.laurensFavorite));
+  assert.deepEqual(
+    restaurants.filter((item) => item.laurensFavorite).map((item) => item.slug).sort(),
+    expected
+  );
+  assert.equal(describeFilters({ ...blank, laurensFavorite: "yes" }, {}), "Lauren’s Favorites");
+
+  const withTown = restaurants.filter((item) =>
+    matches(item, { ...blank, ...filters, area: "watercolor" })
+  );
+  assert.deepEqual(withTown.map((item) => item.slug), ["fish-out-of-water-watercolor"]);
 });
 
 test("every restaurant with coordinates gets its own map pin", () => {
