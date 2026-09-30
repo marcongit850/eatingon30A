@@ -40,11 +40,28 @@ check("full restaurant CSV" not in home.lower(), "homepage should not say the CS
 check("<h1>Where to eat<br> on 30A.</h1>" in home, "homepage headline should say where to eat on 30A")
 check('<h1 id="listing-title">Restaurants on 30A</h1>' in directory, "directory heading should name restaurants on 30A")
 check("Filter by beach town, meal, or a few words." in directory, "directory intro should name the filters")
+check('aria-label="Town guides"' not in directory, "town pages should not sit in a row above the filters")
+check('<select id="area"' in directory and ">All towns</option>" in directory, "directory should keep the town dropdown")
+switch_at = directory.find('class="view-switch"')
+filters_at = directory.find('id="filters"')
+cards_at = directory.find('id="cards"')
+browse_at = directory.find('id="browse-areas"')
+check(
+    0 < switch_at < filters_at < cards_at < browse_at,
+    "directory should show List/Map, then filters, then listings, then browse by area",
+)
+check('aria-current="page">List</a>' in directory and 'data-view-href="/map/"' in directory, "directory should offer a Map view beside the filters")
+check("<h2 id=\"browse-areas-title\">Browse by area</h2>" in directory, "directory should title the town links Browse by area")
+map_page = (ROOT / "map" / "index.html").read_text(encoding="utf-8")
+map_switch = map_page.find('class="view-switch"')
+map_filters = map_page.find('id="filters"')
+check(0 < map_switch < map_filters, "map should offer List/Map above the filters")
+check('aria-current="page">Map</a>' in map_page and 'data-view-href="/restaurants/"' in map_page, "map should link back to the listing")
+check('id="browse-areas"' not in map_page, "browse by area belongs under the directory listings")
 check(
     'name="laurensFavorite"' in directory and ">Lauren’s Favorites</span>" in directory,
     "directory should offer a Lauren’s Favorites checkbox",
 )
-map_page = (ROOT / "map" / "index.html").read_text(encoding="utf-8")
 check(
     'name="laurensFavorite"' in map_page and ">Lauren’s Favorites</span>" in map_page,
     "map should offer a Lauren’s Favorites checkbox",
@@ -74,9 +91,13 @@ for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
 
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
 check(len(areas) == len({item["areaSlug"] for item in restaurants}), f"town pages should match listed areas, got {len(areas)}")
+browse = directory.split('id="browse-areas"', 1)[1]
 for area in areas:
     check(f'href="/areas/{area["slug"]}/"' in home, f"homepage missing area page {area['slug']}")
     check((ROOT / "areas" / area["slug"] / "index.html").exists(), f"missing town page {area['slug']}")
+    town_href = f'href="/areas/{area["slug"]}/"'
+    check(browse.count(town_href) == 1, f"browse by area should link to {area['slug']}")
+    check(directory.count(town_href) == 1, f"town page link for {area['slug']} should only be in browse by area")
 
 for restaurant in restaurants:
     path = ROOT / "restaurants" / restaurant["slug"] / "index.html"

@@ -217,6 +217,18 @@ function paramsFromFilters(filters) {
   return params;
 }
 
+export function viewHref(path, filters) {
+  const query = paramsFromFilters(filters).toString();
+  return query ? `${path}?${query}` : path;
+}
+
+function syncViewLinks(filters) {
+  document.querySelectorAll("[data-view-href]").forEach((link) => {
+    const path = link.getAttribute("data-view-href");
+    if (path) link.href = viewHref(path, filters);
+  });
+}
+
 function syncUrl(filters) {
   const params = paramsFromFilters(filters);
   const query = params.toString();
@@ -247,6 +259,7 @@ function bootDirectory() {
     }
     if (empty) empty.hidden = shown !== 0;
     document.title = documentTitle(baseTitle, filters, `${label} | Eating on 30A`);
+    syncViewLinks(filters);
     if (pushUrl) syncUrl(filters);
     document.documentElement.classList.remove("js-filter");
   };
@@ -346,6 +359,7 @@ function bootMap() {
 
   const apply = (filters, pushUrl) => {
     draw(filters);
+    syncViewLinks(filters);
     if (pushUrl) syncUrl(filters);
   };
 
