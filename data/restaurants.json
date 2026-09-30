@@ -24,6 +24,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -51,6 +52,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/3rd-cup-rosemary-beach/01.jpg"
   },
   {
@@ -77,6 +79,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/87-central-square-seaside/01.jpg"
   },
   {
@@ -104,6 +107,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/aja-30a-inlet-beach/01.jpg"
   },
   {
@@ -131,6 +135,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/ajs-grayton-beach-grayton-beach/01.jpg"
   },
   {
@@ -158,6 +163,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/amavida-coffee-roasters-seaside/01.jpg"
   },
   {
@@ -185,6 +191,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/amavida-coffee-roasters-rosemary-beach/01.jpg"
   },
   {
@@ -211,6 +218,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/ambrosia-watersound-origins/01.jpg"
   },
   {
@@ -237,6 +245,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/amici-30a-italian-kitchen-inlet-beach/01.jpg"
   },
   {
@@ -263,6 +272,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/amigos-30a-mexican-kitchen-inlet-beach/01.jpg"
   },
   {
@@ -290,6 +300,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/angelinas-pizzeria-and-pasta-seagrove-beach/01.jpg"
   },
   {
@@ -316,6 +327,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/barefoot-bbq-seaside/01.jpg"
   },
   {
@@ -342,6 +354,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/basmatis-asian-cuisine-blue-mountain-beach/01.jpg"
   },
   {
@@ -370,6 +383,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/beach-and-brew-on-30a-seacrest/01.jpg"
   },
   {
@@ -400,6 +414,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/beach-happy-cafe-watercolor/01.jpg"
   },
   {
@@ -429,6 +444,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg"
   },
   {
@@ -455,6 +471,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/big-bad-breakfast-inlet-beach/01.jpg"
   },
   {
@@ -485,6 +502,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/black-bear-bread-co-seaside/01.jpg"
   },
   {
@@ -515,6 +533,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/black-bear-bread-co-grayton-beach/01.jpg"
   },
   {
@@ -543,6 +562,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/blue-mountain-bakery-blue-mountain-beach/01.jpg"
   },
   {
@@ -570,6 +590,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/blue-mountain-beach-creamery-blue-mountain-beach/01.jpg"
   },
   {
@@ -597,6 +618,7 @@
     "outdoor": false,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -622,6 +644,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/borago-grayton-beach/01.jpg"
   },
   {
@@ -648,6 +671,7 @@
     "outdoor": false,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -674,6 +698,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/brunos-pizza-watersound/01.jpg"
   },
   {
@@ -701,6 +726,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/bud-and-alleys-seaside/01.jpg"
   },
   {
@@ -727,6 +753,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/bud-and-alleys-pizza-bar-seaside/01.jpg"
   },
   {
@@ -753,6 +780,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/bud-and-alleys-taco-bar-seaside/01.jpg"
   },
   {
@@ -778,6 +806,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/buddys-seafood-market/01.jpg"
   },
   {
@@ -803,6 +832,7 @@
     "outdoor": false,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/cafe-tango-blue-mountain-beach/01.jpg"
   },
   {
@@ -829,6 +859,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/cafe-thirty-a-seagrove-beach/01.jpg"
   },
   {
@@ -854,6 +885,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/caliza-restaurant-alys-beach/01.jpg"
   },
   {
@@ -880,6 +912,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/canopy-road-cafe-inlet-beach/01.jpg"
   },
   {
@@ -906,6 +939,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/canopy-road-cafe-seagrove-beach/01.jpg"
   },
   {
@@ -934,6 +968,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/caribe-and-crumb-gulf-place/01.jpg"
   },
   {
@@ -961,6 +996,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/chanticleer-eatery-grayton-beach/01.jpg"
   },
   {
@@ -988,6 +1024,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/charlies-cafe-rosemary-beach/01.jpg"
   },
   {
@@ -1014,6 +1051,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/charlies-delights/01.jpg"
   },
   {
@@ -1040,6 +1078,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/chiringo-grayton-beach/01.jpg"
   },
   {
@@ -1067,6 +1106,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/cowgirl-kitchen-rosemary-beach/01.jpg"
   },
   {
@@ -1094,6 +1134,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/cowgirl-kitchen-blue-mountain-beach/01.jpg"
   },
   {
@@ -1120,6 +1161,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/crabby-steves-rosemary-beach/01.jpg"
   },
   {
@@ -1145,6 +1187,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/crackings-grayton-beach/01.jpg"
   },
   {
@@ -1174,6 +1217,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/crepes-du-soleil-seaside/01.jpg"
   },
   {
@@ -1200,6 +1244,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/cuvee-30a-inlet-beach/01.jpg"
   },
   {
@@ -1227,6 +1272,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -1255,6 +1301,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -1280,6 +1327,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/edwards-fine-food-and-wine-rosemary-beach/01.jpg"
   },
   {
@@ -1306,6 +1354,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": true,
     "image": "/images/restaurants/fish-out-of-water-watercolor/01.jpg"
   },
   {
@@ -1336,6 +1385,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/fonville-press-market-and-cafe-alys-beach/01.jpg"
   },
   {
@@ -1362,6 +1412,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/friends-30a-burger-bar-watersound-origins/01.jpg"
   },
   {
@@ -1391,6 +1442,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/frost-bites-seaside/01.jpg"
   },
   {
@@ -1417,6 +1469,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/gallions-rosemary-beach/01.jpg"
   },
   {
@@ -1444,6 +1497,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/georges-at-alys-beach-alys-beach/01.jpg"
   },
   {
@@ -1470,6 +1524,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/goatfeathers-seafood-market-inlet-beach/01.jpg"
   },
   {
@@ -1496,6 +1551,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/goatfeathers-seafood-market-east-location-seagrove-beach/01.jpg"
   },
   {
@@ -1522,6 +1578,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/goatfeathers-seafood-restaurant-dune-allen-beach/01.jpg"
   },
   {
@@ -1550,6 +1607,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -1577,6 +1635,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/grayton-corner-cafe-grayton-beach/01.jpg"
   },
   {
@@ -1602,6 +1661,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/grayton-seafood-co-grayton-beach/01.jpg"
   },
   {
@@ -1629,6 +1689,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/great-american-cookies-inlet-beach/01.jpg"
   },
   {
@@ -1657,6 +1718,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/great-southern-cafe-seaside/01.jpg"
   },
   {
@@ -1681,6 +1743,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/growler-garage-30a-dune-allen-beach/01.jpg"
   },
   {
@@ -1708,6 +1771,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/havana-beach-bar-and-grill-rosemary-beach/01.jpg"
   },
   {
@@ -1737,6 +1801,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/heavenlys-shortcakes-and-ice-cream-seaside/01.jpg"
   },
   {
@@ -1766,6 +1831,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -1792,6 +1858,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/hurricane-oyster-bar-grayton-beach/01.jpg"
   },
   {
@@ -1818,6 +1885,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/idyll-hounds-proper-inlet-beach/01.jpg"
   },
   {
@@ -1845,6 +1913,7 @@
     "outdoor": false,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/johnny-mctighes-irish-pub-dune-allen-beach/01.jpg"
   },
   {
@@ -1871,6 +1940,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/kilwins-rosemary-beach/01.jpg"
   },
   {
@@ -1898,6 +1968,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/la-crema-tapas-and-chocolate-rosemary-beach/01.jpg"
   },
   {
@@ -1924,6 +1995,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/la-cocina-seacrest/01.jpg"
   },
   {
@@ -1950,6 +2022,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/local-cantina/01.jpg"
   },
   {
@@ -1977,6 +2050,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/local-catch-bar-and-grill-dune-allen-beach/01.jpg"
   },
   {
@@ -2003,6 +2077,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/lola-coastal-italian-seacrest/01.jpg"
   },
   {
@@ -2030,6 +2105,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/marble-slab-creamery-inlet-beach/01.jpg"
   },
   {
@@ -2056,6 +2132,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/meltdown-on-30a-seaside/01.jpg"
   },
   {
@@ -2082,6 +2159,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/mi-casita-mexican-grill-seagrove-beach/01.jpg"
   },
   {
@@ -2109,6 +2187,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": true,
     "image": "/images/restaurants/mimmos-30a-blue-mountain-beach/01.jpg"
   },
   {
@@ -2135,6 +2214,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/modica-market-seaside/01.jpg"
   },
   {
@@ -2161,6 +2241,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/mr-gyro-hero-seaside/01.jpg"
   },
   {
@@ -2186,6 +2267,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/neat-bottle-shop-and-tasting-room-alys-beach/01.jpg"
   },
   {
@@ -2213,6 +2295,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -2239,6 +2322,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/o-ku-alys-beach/01.jpg"
   },
   {
@@ -2265,6 +2349,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/obscure-wine-company-inlet-beach/01.jpg"
   },
   {
@@ -2293,6 +2378,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": true,
     "image": "/images/restaurants/old-florida-fish-house-seagrove-beach/01.jpg"
   },
   {
@@ -2319,6 +2405,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/papa-surf-burger-bar-gulf-place/01.jpg"
   },
   {
@@ -2346,6 +2433,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/pecan-jacks-gulf-place/01.jpg"
   },
   {
@@ -2373,6 +2461,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -2399,6 +2488,7 @@
     "outdoor": true,
     "kids": false,
     "music": true,
+    "laurensFavorite": true,
     "image": "/images/restaurants/pescado-seafood-grill-and-rooftop-bar-rosemary-beach/01.jpg"
   },
   {
@@ -2425,6 +2515,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/pickles-burger-and-shake-seaside/01.jpg"
   },
   {
@@ -2452,6 +2543,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -2478,6 +2570,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/pizza-by-the-sea-watercolor/01.jpg"
   },
   {
@@ -2504,6 +2597,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/pizza-by-the-sea-gulf-place/01.jpg"
   },
   {
@@ -2530,6 +2624,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   },
   {
@@ -2557,6 +2652,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/playa-bowls-rosemary-beach/01.jpg"
   },
   {
@@ -2586,6 +2682,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/prema-organic-cafe-seagrove-beach/01.jpg"
   },
   {
@@ -2616,6 +2713,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": true,
     "image": "/images/restaurants/raw-and-juicy-alys-beach/01.jpg"
   },
   {
@@ -2642,6 +2740,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/red-fish-taco-blue-mountain-beach/01.jpg"
   },
   {
@@ -2668,6 +2767,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/renaissance-french-restaurant-gulf-place/01.jpg"
   },
   {
@@ -2695,6 +2795,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/restaurant-paradis-rosemary-beach/01.jpg"
   },
   {
@@ -2720,6 +2821,7 @@
     "outdoor": false,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/roux-30a-grayton-beach/01.jpg"
   },
   {
@@ -2745,6 +2847,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/salty-butcher/01.jpg"
   },
   {
@@ -2771,6 +2874,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/scout-sports-tavern-watersound-origins/01.jpg"
   },
   {
@@ -2797,6 +2901,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/scratch-biscuit-kitchen-watercolor/01.jpg"
   },
   {
@@ -2824,6 +2929,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/seacrest-sundries-seacrest/01.jpg"
   },
   {
@@ -2851,6 +2957,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/seagrove-coffee-and-donuts-seagrove-beach/01.jpg"
   },
   {
@@ -2878,6 +2985,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/seagrove-village-market-cafe-seagrove-beach/01.jpg"
   },
   {
@@ -2904,6 +3012,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/shades-bar-and-grill-inlet-beach/01.jpg"
   },
   {
@@ -2931,6 +3040,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/shaka-sushi-and-noodle-bar-inlet-beach/01.jpg"
   },
   {
@@ -2957,6 +3067,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/shunk-gulley-oyster-bar-gulf-place/01.jpg"
   },
   {
@@ -2983,6 +3094,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/south-of-philly-gulf-place/01.jpg"
   },
   {
@@ -3009,6 +3121,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg"
   },
   {
@@ -3036,6 +3149,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/stinkys-bait-shack-dune-allen-beach/01.jpg"
   },
   {
@@ -3063,6 +3177,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg"
   },
   {
@@ -3090,6 +3205,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/sugar-shak-rosemary-beach/01.jpg"
   },
   {
@@ -3116,6 +3232,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": true,
     "image": "/images/restaurants/surfing-deer-seagrove-beach/01.jpg"
   },
   {
@@ -3143,6 +3260,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/tahona-tacos-and-tequileria-rosemary-beach/01.jpg"
   },
   {
@@ -3169,6 +3287,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-big-chill-watersound/01.jpg"
   },
   {
@@ -3196,6 +3315,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-citizen-alys-beach/01.jpg"
   },
   {
@@ -3223,6 +3343,7 @@
     "outdoor": true,
     "kids": false,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-daytrader-tiki-bar-and-restaurant-seaside/01.jpg"
   },
   {
@@ -3252,6 +3373,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-donut-hole-inlet-beach/01.jpg"
   },
   {
@@ -3281,6 +3403,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-perfect-pig-seagrove-beach/01.jpg"
   },
   {
@@ -3310,6 +3433,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-perfect-pig-gulf-place/01.jpg"
   },
   {
@@ -3339,6 +3463,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-perfect-pig-watercolor/01.jpg"
   },
   {
@@ -3365,6 +3490,7 @@
     "outdoor": true,
     "kids": true,
     "music": true,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-red-bar-grayton-beach/01.jpg"
   },
   {
@@ -3392,6 +3518,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-shrimp-shack-seaside/01.jpg"
   },
   {
@@ -3420,6 +3547,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-summer-kitchen-cafe-rosemary-beach/01.jpg"
   },
   {
@@ -3446,6 +3574,7 @@
     "outdoor": true,
     "kids": false,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/the-wine-bar-watercolor/01.jpg"
   },
   {
@@ -3472,6 +3601,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/tichelis-pizza-seacrest/01.jpg"
   },
   {
@@ -3500,6 +3630,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/turbo-coffee/01.jpg"
   },
   {
@@ -3527,6 +3658,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/village-market-cafe-bar-watersound-origins/01.jpg"
   },
   {
@@ -3554,6 +3686,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/wild-bills-beach-dogs-seaside/01.jpg"
   },
   {
@@ -3580,6 +3713,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": "/images/restaurants/wild-nectar-seaside/01.jpg"
   },
   {
@@ -3606,6 +3740,7 @@
     "outdoor": false,
     "kids": true,
     "music": false,
+    "laurensFavorite": false,
     "image": null
   }
 ]

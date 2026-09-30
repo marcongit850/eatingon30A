@@ -40,6 +40,27 @@ check("full restaurant CSV" not in home.lower(), "homepage should not say the CS
 check("<h1>Where to eat<br> on 30A.</h1>" in home, "homepage headline should say where to eat on 30A")
 check('<h1 id="listing-title">Where to eat</h1>' in directory, "directory heading should be Where to eat")
 check("Filter by beach town, meal, or a few words." in directory, "directory intro should name the filters")
+check(
+    'name="laurensFavorite"' in directory and ">Lauren’s Favorites</span>" in directory,
+    "directory should offer a Lauren’s Favorites checkbox",
+)
+map_page = (ROOT / "map" / "index.html").read_text(encoding="utf-8")
+check(
+    'name="laurensFavorite"' in map_page and ">Lauren’s Favorites</span>" in map_page,
+    "map should offer a Lauren’s Favorites checkbox",
+)
+favorite_slugs = {
+    "fish-out-of-water-watercolor",
+    "raw-and-juicy-alys-beach",
+    "pescado-seafood-grill-and-rooftop-bar-rosemary-beach",
+    "mimmos-30a-blue-mountain-beach",
+    "old-florida-fish-house-seagrove-beach",
+    "surfing-deer-seagrove-beach",
+}
+tagged = {item["slug"] for item in restaurants if item.get("laurensFavorite")}
+check(tagged == favorite_slugs, f"Lauren’s Favorites should be the six named restaurants, got {sorted(tagged)}")
+favorite_cards = set(re.findall(r'id="r-([^"]+)"[^>]*data-laurens-favorite="yes"', directory))
+check(favorite_cards == favorite_slugs, f"directory cards tagged Lauren’s Favorites: {sorted(favorite_cards)}")
 check("The table" not in directory and "Narrow the guide" not in directory, "directory should drop the old heading and intro")
 build_src = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
 check(build_src.count("def build_detail(") == 1, "restaurant profiles should come from one template function")

@@ -319,10 +319,53 @@ def unique_slug(base: str, used: set[str]) -> str:
     return slug
 
 
+def fold_name(value: str) -> str:
+    """Lowercase a listing name so apostrophes and & match plain text."""
+    text = unicodedata.normalize("NFKD", value or "")
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.lower().replace("&", " and ")
+    return re.sub(r"[^a-z0-9]+", " ", text).strip()
+
+
+# Each rule must match exactly one published row. The build stops if a name is missing.
+LAURENS_FAVORITE_MATCHERS = (
+    ("Fish Out of Water", lambda name, area: name == "fish out of water"),
+    ("Raw and Juicy (Alys Beach)", lambda name, area: name == "raw and juicy" and "alys" in area),
+    (
+        "Pescado Seafood Grill & Rooftop Bar",
+        lambda name, area: name == "pescado seafood grill and rooftop bar",
+    ),
+    ("Mimmo’s / Mimmos", lambda name, area: name.startswith("mimmo")),
+    ("Old Florida Fish House", lambda name, area: name == "old florida fish house"),
+    ("Surfing Deer", lambda name, area: name.startswith("surfing deer")),
+)
+
+
+def laurens_favorite_ids(rows: list[dict]) -> set[str]:
+    published = [row for row in rows if clean_text(row.get("Status")) == "PUBLISHED"]
+    ids: set[str] = set()
+    for label, matcher in LAURENS_FAVORITE_MATCHERS:
+        hits = [
+            row
+            for row in published
+            if matcher(fold_name(row.get("Restaurant Name")), fold_name(row.get("map_area") or ""))
+        ]
+        if len(hits) != 1:
+            found = ", ".join(clean_text(row.get("Restaurant Name")) for row in hits) or "no match"
+            raise SystemExit(f"Lauren’s Favorites: {label} matched {found}")
+        row_id = clean_text(hits[0].get("ID"))
+        if not row_id or row_id in ids:
+            raise SystemExit(f"Lauren’s Favorites: {label} did not map to a unique row")
+        ids.add(row_id)
+    return ids
+
+
 def load_restaurants() -> list[dict]:
     used: set[str] = set()
     restaurants = []
-    for row in load_rows(DATA / "restaurants.csv"):
+    rows = load_rows(DATA / "restaurants.csv")
+    favorite_ids = laurens_favorite_ids(rows)
+    for row in rows:
         if clean_text(row.get("Status")) != "PUBLISHED":
             continue
         name = clean_text(row.get("Restaurant Name"))
@@ -397,6 +440,7 @@ def load_restaurants() -> list[dict]:
                 "outdoor": is_yes(row.get("Outdoor Dining")),
                 "kids": is_yes(row.get("Kid Friendly")),
                 "music": is_yes(row.get("Live Music")),
+                "laurensFavorite": clean_text(row.get("ID")) in favorite_ids,
                 "happyDrinks": is_yes(row.get("Happy Hour (drinks)")),
                 "happyFood": is_yes(row.get("Happy Hour (food)")),
                 "reservations": is_yes(row.get("Reservations")),
@@ -589,6 +633,7 @@ def card(restaurant: dict, heading: str = "h2") -> str:
             f'data-outdoor="{yes_no(restaurant["outdoor"])}"',
             f'data-kids="{yes_no(restaurant["kids"])}"',
             f'data-music="{yes_no(restaurant["music"])}"',
+            f'data-laurens-favorite="{yes_no(restaurant["laurensFavorite"])}"',
             f'data-search="{e(restaurant["search"])}"',
         ]
     )
@@ -801,6 +846,7 @@ def filter_form(areas: list[dict], cuisines: list[str]) -> str:
         '<label class="check"><input type="checkbox" name="outdoor" value="yes"><span>Outdoor dining</span></label>'
         '<label class="check"><input type="checkbox" name="kids" value="yes"><span>Kid friendly</span></label>'
         '<label class="check"><input type="checkbox" name="music" value="yes"><span>Live music</span></label>'
+        '<label class="check"><input type="checkbox" name="laurensFavorite" value="yes"><span>Lauren’s Favorites</span></label>'
         "</div>"
         '<div class="filter-actions"><button type="submit">Apply</button><a class="clear" href="/restaurants/">Clear</a></div>'
         "</form>"
@@ -831,6 +877,7 @@ def public_record(restaurant: dict) -> dict:
         "outdoor": restaurant["outdoor"],
         "kids": restaurant["kids"],
         "music": restaurant["music"],
+        "laurensFavorite": restaurant["laurensFavorite"],
         "image": restaurant["cardImage"],
     }
 
@@ -1033,7 +1080,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
 def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[str]) -> None:
     pending = (
         "<script>!function(){var p=new URLSearchParams(location.search);"
-        "['meal','area','cuisine','q','outdoor','kids','music'].some(function(k){return p.get(k)})"
+        "['meal','area','cuisine','q','outdoor','kids','music','laurensFavorite'].some(function(k){return p.get(k)})"
         "&&document.documentElement.classList.add('js-filter')}();</script>\n"
     )
     cards = "".join(card(restaurant) for restaurant in restaurants)
@@ -1112,6 +1159,8 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         flags.append("Kid friendly")
     if restaurant["music"]:
         flags.append("Live music")
+    if restaurant["laurensFavorite"]:
+        flags.append("Lauren’s Favorites")
     if restaurant["happyDrinks"]:
         flags.append("Happy hour drinks")
     if restaurant["happyFood"]:
