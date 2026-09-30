@@ -6,9 +6,16 @@
  * email CONTACT_EMAIL through Resend (https://resend.com). Nothing is emailed
  * until all three are set: RESEND_API_KEY, SUBSCRIBE_FROM (a verified Resend
  * sender), CONTACT_EMAIL.
+ * A coupon signup is also appended through an Apps Script webhook when both
+ * GOOGLE_SHEETS_WEBHOOK_URL and GOOGLE_SHEETS_WEBHOOK_TOKEN are set. `delivered`
+ * is only the Resend result. `recorded` is only the Sheets result. A Sheets
+ * miss does not fail the signup when Resend accepted it.
+ * sourcePage is the live homepage. site.config.json origin stays the workers.dev preview.
  */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SHEETS_SITE = "30A";
+const SOURCE_PAGE = "https://www.eatingon30a.com/";
 const LISTING_TYPES = {
   update: "Update",
   edit: "Edit",
@@ -50,17 +57,55 @@ async function postResend(env, message, fetchImpl, failure) {
   return { ok: true, delivered: true };
 }
 
+function sheetsReady(env) {
+  const url = env && env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const token = env && env.GOOGLE_SHEETS_WEBHOOK_TOKEN;
+  if (!url || !token) return null;
+  return { url, token };
+}
+
+function sheetPayload(payload, token) {
+  const body = {
+    token,
+    site: SHEETS_SITE,
+    email: payload.email,
+    coupons: Boolean(payload.coupons),
+    sourcePage: SOURCE_PAGE,
+  };
+  if (payload.audience === "local" || payload.audience === "visitor") body.audience = payload.audience;
+  return body;
+}
+
+async function recordSubscribe(payload, env, fetchImpl) {
+  const ready = sheetsReady(env);
+  if (!ready) return { recorded: false };
+  try {
+    const response = await fetchImpl(ready.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(sheetPayload(payload, ready.token)),
+    });
+    return { recorded: Boolean(response && response.ok) };
+  } catch {
+    return { recorded: false };
+  }
+}
+
 export async function deliverSubscribe(payload, env, fetchImpl = fetch) {
   const who = payload.audience === "local" ? "Local" : payload.audience === "visitor" ? "Visitor" : "Not specified";
-  return postResend(
-    env,
-    {
-      subject: "Eating on 30A coupon signup",
-      text: `Email: ${payload.email}\nI am a: ${who}\nCoupons: ${payload.coupons ? "yes" : "no"}`,
-    },
-    fetchImpl,
-    "The signup could not be sent.",
-  );
+  const [mail, sheet] = await Promise.all([
+    postResend(
+      env,
+      {
+        subject: "Eating on 30A coupon signup",
+        text: `Email: ${payload.email}\nI am a: ${who}\nCoupons: ${payload.coupons ? "yes" : "no"}`,
+      },
+      fetchImpl,
+      "The signup could not be sent.",
+    ),
+    recordSubscribe(payload, env, fetchImpl),
+  ]);
+  return { ...mail, recorded: sheet.recorded };
 }
 
 function oneLine(value, max) {
