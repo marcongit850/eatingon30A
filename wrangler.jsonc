@@ -5,6 +5,7 @@
   // Signup and listing mail is sent only when RESEND_API_KEY, SUBSCRIBE_FROM, and CONTACT_EMAIL are set.
   // Coupon signups are also appended when GOOGLE_SHEETS_WEBHOOK_URL and GOOGLE_SHEETS_WEBHOOK_TOKEN are set.
   // Missing Sheets secrets skip the webhook (recorded: false) and do not change the Resend delivered flag.
+  // recorded is true only when the webhook body is JSON with ok: true. HTTP 200 alone is not enough.
   "name": "eatingon30a",
   "main": "worker.js",
   "compatibility_date": "2026-09-29",
