@@ -20,7 +20,7 @@
     "name": "Blue Mountain Beach",
     "shortName": "Blue Mountain",
     "description": "A relaxed beach town with local eats and a friendly community.",
-    "count": 7,
+    "count": 9,
     "image": "https://static.wixstatic.com/media/de29ed_b5793e285dad435a9cbc6ea79e17e468~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/blue-mountain-beach.jpg"
   },
   {
@@ -28,7 +28,7 @@
     "name": "Grayton Beach",
     "shortName": "Grayton",
     "description": "A laid-back, artsy beach town with pristine beaches and local flavor.",
-    "count": 11,
+    "count": 13,
     "image": "https://static.wixstatic.com/media/de29ed_a9ea3f98c2d34bcaa531ed557eff0d31~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/grayton.jpg"
   },
   {
@@ -44,7 +44,7 @@
     "name": "Seaside",
     "shortName": "Seaside",
     "description": "The iconic heart of 30A. Charming, walkable, and full of coastal character.",
-    "count": 19,
+    "count": 23,
     "image": "https://static.wixstatic.com/media/de29ed_36620ca1f57f4406ad00476bb2bf7104~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seaside.jpg"
   },
   {
@@ -52,7 +52,7 @@
     "name": "Seagrove Beach",
     "shortName": "Seagrove",
     "description": "A laid-back, tree-lined beach community with a mix of old Florida charm and modern coastal living.",
-    "count": 18,
+    "count": 21,
     "image": "https://static.wixstatic.com/media/de29ed_f033c0318f90442e8e45d9c98635f745~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seagrove-beach.jpg"
   },
   {
@@ -60,7 +60,7 @@
     "name": "Seacrest",
     "shortName": "Seacrest",
     "description": "A peaceful retreat with sugar-white sands and easy access to fun.",
-    "count": 5,
+    "count": 6,
     "image": "https://static.wixstatic.com/media/de29ed_3729645be8c74e1e94846037e3096436~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/seacrest.jpg"
   },
   {

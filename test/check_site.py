@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 124, f"full CSV should stay at 124 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 124, "public json should include every published restaurant")
+check(len(source) == 136, f"full CSV should stay at 136 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 136, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -74,7 +74,19 @@ check(not missing_coords, f"listings missing address or coordinates: {missing_co
 photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
+    "3-sons-bar-b-q-dune-allen-beach",
     "beach-happy-cafe-seagrove-beach",
+    "boggy-boys-pizza-seagrove-beach",
+    "boxcar-annie-blue-mountain-beach",
+    "dawsons-yogurt-and-fudge-seaside",
+    "dough-sea-dough-seagrove-beach",
+    "drome-seaside",
+    "grace-pizza-and-shakes-grayton-beach",
+    "hibiscus-cafe-grayton-beach",
+    "nigels-bananas-seaside",
+    "pecan-jacks-seagrove-beach",
+    "pickles-sandbar-seaside",
+    "pizza-by-the-sea-seacrest",
     "steamboat-grill-30a-seagrove-beach",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
@@ -182,8 +194,8 @@ check(
     len(town_count) == 2 and "white-space: nowrap" in town_count[1][:500],
     "town restaurant counts should stay on one line",
 )
-check("7 Restaurants" in areas_index and "7 places" not in areas_index, "town cards should count Restaurants")
-check("7 Restaurants" in home and re.search(r"\bplaces\b", home) is None, "homepage town counts should say Restaurants")
+check("8 Restaurants" in areas_index and "8 places" not in areas_index, "town cards should count Restaurants")
+check("8 Restaurants" in home and re.search(r"\bplaces\b", home) is None, "homepage town counts should say Restaurants")
 check(build.restaurant_count_word(1, label=True) == "Restaurant", "a single listing is a Restaurant label")
 check(build.restaurant_count_word(7) == "restaurants", "sentence counts stay lowercase")
 check("1 restaurant on the map" in site_js and "restaurants on the map" in site_js, "map count should say restaurants")
