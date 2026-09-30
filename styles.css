@@ -76,7 +76,7 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
   position: sticky;
   top: 0;
   z-index: 20;
-  min-height: 7.1rem;
+  min-height: 6.4rem;
   background: rgba(251, 247, 241, 0.94);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
@@ -87,7 +87,7 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem 2rem;
-  min-height: 7.1rem;
+  min-height: 6.4rem;
   flex-wrap: wrap;
 }
 .brand {
@@ -99,7 +99,7 @@ h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); }
 }
 .brand img {
   display: block;
-  height: 6.35rem;
+  height: 5.6rem;
   width: auto;
   max-width: none;
 }
@@ -126,7 +126,7 @@ body.home #site-header {
 body.home .brand {
   background: rgba(251, 247, 241, 0.94);
   border-radius: 0.7rem;
-  padding: 0.28rem 0.35rem;
+  padding: 0.18rem 0.42rem;
 }
 body.home .nav a { color: #f7f2ea; }
 body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242, 234, 0.8); }
@@ -728,7 +728,7 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
 }
 .footer-mark img {
   display: block;
-  width: min(9.25rem, 100%);
+  width: min(14rem, 100%);
   height: auto;
   background: var(--paper);
   border-radius: 0.75rem;
@@ -759,7 +759,7 @@ html.js-filter #cards .card { display: none; }
   .essay-grid { grid-template-columns: 0.9fr 1.1fr; }
   .profile-film[data-count="1"] { grid-template-columns: minmax(0, 50%); }
   .profile-grid { grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.72fr); gap: 3.5rem; align-items: start; }
-  .profile-grid aside { position: sticky; top: 7.6rem; }
+  .profile-grid aside { position: sticky; top: 6.9rem; }
   #map { height: min(68vh, 640px); }
   .map-layout { grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.75fr); align-items: start; }
   #map-list { max-height: min(68vh, 640px); overflow-y: auto; }
@@ -777,9 +777,9 @@ html.js-filter #cards .card { display: none; }
   .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
   .hero { min-height: 86vh; }
   .profile-hero { min-height: 320px; height: 58vh; }
-  .brand img { height: 4.85rem; }
-  .footer-mark img { width: min(8.25rem, 72%); }
-  #site-header, .header-inner { min-height: 5.6rem; }
+  .brand img { height: 4.6rem; }
+  .footer-mark img { width: min(12.5rem, 100%); }
+  #site-header, .header-inner { min-height: 5.4rem; }
 }
 @media (max-width: 360px) {
   .hero h1 { font-size: clamp(3.2rem, 15vw, 3.45rem); }
