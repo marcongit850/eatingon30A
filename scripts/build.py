@@ -94,6 +94,20 @@ ABOUT_TOWNS = (
     "Explore the communities along 30A, including Dune Allen, Gulf Place, Blue Mountain Beach, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
 )
+PRINT_GUIDES = (
+    "Looking ahead, we’ll also be launching a printed version of the \"Eating In\" guides in 2027, "
+    "bringing the same curated experience into a high-quality physical format you can bring along."
+)
+PRINT_COVERS = (
+    (
+        "/images/guides/eating-in-destin-spring-summer-2027",
+        "Spring/Summer 2027 cover of Eating In Destin, a printed restaurant guide, showing oysters, fish tacos, and drinks on a harbor table.",
+    ),
+    (
+        "/images/guides/eating-on-30a-spring-summer-2027",
+        "Spring/Summer 2027 cover of Eating on 30A, a printed restaurant guide, showing seared scallops in front of white beach houses along the Gulf.",
+    ),
+)
 TOWNS = (
     "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
@@ -1472,13 +1486,28 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         )
 
 
+def print_cover(path: str, alt: str) -> str:
+    return (
+        "<figure><picture>"
+        f'<source srcset="{e(path)}.webp" type="image/webp">'
+        f'<img src="{e(path)}.jpg" alt="{e(alt)}" width="840" height="1260" loading="lazy" decoding="async">'
+        "</picture></figure>"
+    )
+
+
 def build_about() -> None:
+    covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
     body = (
-        '<div class="wrap page-intro prose"><p class="kicker">About</p>'
+        '<div class="wrap page-intro"><div class="prose"><p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT_LEAD)}</p>"
         f"<p>{e(ABOUT_TOWNS)}</p>"
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
+        '<section class="print-guides" aria-labelledby="print-guides-heading">'
+        '<div class="prose"><h2 id="print-guides-heading">Coming in 2027</h2>'
+        f"<p>{e(PRINT_GUIDES)}</p></div>"
+        f'<div class="print-covers">{covers}</div>'
+        "</section></div>"
     )
     write(
         ROOT / "about" / "index.html",
