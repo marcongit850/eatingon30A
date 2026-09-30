@@ -30,6 +30,13 @@ function callsFor(handler) {
   return { calls, fetchImpl };
 }
 
+function sheetJson(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 test("missing secrets accept the signup and do not call Resend or Sheets", async () => {
   let called = false;
   const result = await deliverSubscribe(signup, { RESEND_API_KEY: "key-only" }, () => {
@@ -59,7 +66,10 @@ test("all three Resend secrets post the signup and skip Sheets when those secret
 });
 
 test("Resend and Sheets are posted independently", async () => {
-  const { calls, fetchImpl } = callsFor(() => new Response("{}", { status: 200 }));
+  const { calls, fetchImpl } = callsFor((url) => {
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return sheetJson({ ok: true });
+    return new Response("{}", { status: 200 });
+  });
   const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);
   assert.deepEqual(result, { ok: true, delivered: true, recorded: true });
   assert.equal(calls.length, 2);
@@ -80,7 +90,7 @@ test("Resend and Sheets are posted independently", async () => {
 });
 
 test("a blank audience is omitted from the Sheets row", async () => {
-  const { calls, fetchImpl } = callsFor(() => new Response("{}", { status: 200 }));
+  const { calls, fetchImpl } = callsFor(() => sheetJson({ ok: true }));
   const result = await deliverSubscribe(
     { email: "guest@example.com", audience: "", coupons: false },
     sheetsEnv,
@@ -124,6 +134,49 @@ test("a Sheets outage still counts as delivered when Resend succeeded", async ()
   assert.equal(calls.length, 2);
 });
 
+test("an Apps Script HTML 200 is not recorded", async () => {
+  const fetchImpl = (url) => {
+    if (url === "https://api.resend.com/emails") return Promise.resolve(new Response("{}", { status: 200 }));
+    return Promise.resolve(
+      new Response("Script function not found: doPost", {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      }),
+    );
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: false });
+});
+
+test("a non-JSON Sheets body is not recorded", async () => {
+  const fetchImpl = (url) => {
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) {
+      return Promise.resolve(new Response("ok", { status: 200, headers: { "content-type": "text/plain" } }));
+    }
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: false });
+});
+
+test("Sheets JSON without ok true is not recorded", async () => {
+  const fetchImpl = (url) => {
+    if (url === "https://api.resend.com/emails") return Promise.resolve(new Response("{}", { status: 200 }));
+    return Promise.resolve(sheetJson({ ok: false }));
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: false });
+});
+
+test("an empty JSON object from Sheets is not recorded", async () => {
+  const fetchImpl = (url) => {
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return Promise.resolve(sheetJson({}));
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: false });
+});
+
 test("a Sheets network error still counts as delivered when Resend succeeded", async () => {
   const fetchImpl = (url) => {
     if (url === "https://api.resend.com/emails") return Promise.resolve(new Response("{}", { status: 200 }));
@@ -135,7 +188,7 @@ test("a Sheets network error still counts as delivered when Resend succeeded", a
 
 test("a Resend failure stays failed even when Sheets recorded the row", async () => {
   const fetchImpl = (url) => {
-    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return Promise.resolve(new Response("{}", { status: 200 }));
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return Promise.resolve(sheetJson({ ok: true }));
     return Promise.resolve(new Response("no", { status: 422 }));
   };
   const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv }, fetchImpl);

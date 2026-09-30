@@ -8,8 +8,10 @@
  * sender), CONTACT_EMAIL.
  * A coupon signup is also appended through an Apps Script webhook when both
  * GOOGLE_SHEETS_WEBHOOK_URL and GOOGLE_SHEETS_WEBHOOK_TOKEN are set. `delivered`
- * is only the Resend result. `recorded` is only the Sheets result. A Sheets
- * miss does not fail the signup when Resend accepted it.
+ * is only the Resend result. `recorded` is true only when that webhook returns
+ * JSON with ok: true. An HTTP 200 HTML error page, any other non-JSON body,
+ * and {ok:false} stay recorded: false. A Sheets miss does not fail the signup
+ * when Resend accepted it.
  * sourcePage is the live homepage. site.config.json origin stays the workers.dev preview.
  */
 
@@ -76,6 +78,17 @@ function sheetPayload(payload, token) {
   return body;
 }
 
+async function sheetsAccepted(response) {
+  if (!response || !response.ok) return false;
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    return false;
+  }
+  return Boolean(body && typeof body === "object" && body.ok === true);
+}
+
 async function recordSubscribe(payload, env, fetchImpl) {
   const ready = sheetsReady(env);
   if (!ready) return { recorded: false };
@@ -85,7 +98,7 @@ async function recordSubscribe(payload, env, fetchImpl) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(sheetPayload(payload, ready.token)),
     });
-    return { recorded: Boolean(response && response.ok) };
+    return { recorded: await sheetsAccepted(response) };
   } catch {
     return { recorded: false };
   }
