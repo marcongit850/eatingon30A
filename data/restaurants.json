@@ -423,7 +423,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
-    "image": null
+    "image": "/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg"
   },
   {
     "slug": "big-bad-breakfast-inlet-beach",
@@ -2998,7 +2998,7 @@
     "outdoor": true,
     "kids": true,
     "music": false,
-    "image": null
+    "image": "/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg"
   },
   {
     "slug": "stinkys-bait-shack-dune-allen-beach",

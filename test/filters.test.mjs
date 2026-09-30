@@ -71,12 +71,19 @@ test("map popups show the name, address, and profile", () => {
   assert.match(okuHtml, /class="popup-photo"/);
   assert.match(okuHtml, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg/);
 
-  const plain = restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach");
+  const steam = restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach");
+  const steamHtml = markerPopup(steam);
+  assert.match(steamHtml, /Steamboat/);
+  assert.match(steamHtml, /class="popup-address"/);
+  assert.match(steamHtml, /class="popup-photo"/);
+  assert.match(steamHtml, /\/images\/restaurants\/steamboat-grill-30a-seagrove-beach\/01\.jpg/);
+  assert.match(steamHtml, /href="\/restaurants\/steamboat-grill-30a-seagrove-beach\/"/);
+
+  const plain = restaurants.find((item) => item.slug === "nigels-bananas-seaside");
   const plainHtml = markerPopup(plain);
-  assert.match(plainHtml, /Steamboat/);
+  assert.match(plainHtml, /Nigel/);
   assert.match(plainHtml, /class="popup-address"/);
   assert.doesNotMatch(plainHtml, /popup-photo/);
-  assert.match(plainHtml, /href="\/restaurants\/steamboat-grill-30a-seagrove-beach\/"/);
   assert.match(html, />View restaurant</);
   assert.doesNotMatch(html, /View profile|https?:\/\//);
 });
@@ -95,11 +102,14 @@ test("map list cards stay compact", () => {
   const okuCard = mapListCard(restaurants.find((item) => item.slug === "o-ku-alys-beach"));
   assert.match(okuCard, /o-ku-alys-beach\/01\.jpg/);
   assert.doesNotMatch(okuCard, /class="map-thumb ph"/);
-  const plain = restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach");
+  const steamCard = mapListCard(restaurants.find((item) => item.slug === "steamboat-grill-30a-seagrove-beach"));
+  assert.match(steamCard, /steamboat-grill-30a-seagrove-beach\/01\.jpg/);
+  assert.doesNotMatch(steamCard, /class="map-thumb ph"/);
+  const plain = restaurants.find((item) => item.slug === "nigels-bananas-seaside");
   const mark = mapListCard(plain);
   assert.match(mark, /class="map-thumb ph"/);
-  assert.match(mark, /aria-hidden="true">SG</);
-  assert.match(mark, /Seagrove Beach · /);
+  assert.match(mark, /aria-hidden="true">NB</);
+  assert.match(mark, /Seaside · /);
   assert.doesNotMatch(mark, /<img/);
 });
 

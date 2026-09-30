@@ -75,7 +75,6 @@ photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
-    "beach-happy-cafe-seagrove-beach",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
     "dawsons-yogurt-and-fudge-seaside",
@@ -87,12 +86,28 @@ expected_monograms = [
     "pecan-jacks-seagrove-beach",
     "pickles-sandbar-seaside",
     "pizza-by-the-sea-seacrest",
-    "steamboat-grill-30a-seagrove-beach",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 122, f"expected 122 restaurant photos, got {len(photos)}")
+check(len(photos) == 124, f"expected 124 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
-check(build.listing_photos("steamboat-grill-30a-seagrove-beach") == [], "Steamboat has no photo folder")
+check(
+    build.listing_photos("beach-happy-cafe-seagrove-beach")
+    == [
+        "/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg",
+        "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg",
+        "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg",
+    ],
+    "Beach Happy Seagrove should use the supplied frames",
+)
+check(
+    build.listing_photos("steamboat-grill-30a-seagrove-beach")
+    == [
+        "/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg",
+        "/images/restaurants/steamboat-grill-30a-seagrove-beach/02.webp",
+        "/images/restaurants/steamboat-grill-30a-seagrove-beach/03.jpg",
+    ],
+    "Steamboat should use the supplied frames",
+)
 oku_photo = build.listing_photos("o-ku-alys-beach")
 check(oku_photo and oku_photo[0].endswith("/o-ku-alys-beach/01.jpg"), f"O-Ku cover should be 01, got {oku_photo}")
 by_slug_early = {item["slug"]: item for item in restaurants}
@@ -107,6 +122,7 @@ for left, right in (
     ("bud-and-alleys-pizza-bar-seaside", "bud-and-alleys-seaside"),
     ("cowgirl-kitchen-blue-mountain-beach", "cowgirl-kitchen-rosemary-beach"),
     ("goatfeathers-seafood-market-inlet-beach", "goatfeathers-seafood-market-east-location-seagrove-beach"),
+    ("beach-happy-cafe-seagrove-beach", "beach-happy-cafe-watercolor"),
 ):
     check(by_slug_early[left]["image"] and by_slug_early[left]["image"] != by_slug_early[right]["image"], f"{left} and {right} should use different photos")
 for item in photos:
@@ -261,9 +277,26 @@ oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"',
 check("/images/restaurants/o-ku-alys-beach/01.jpg" in oku_hero, "O-Ku hero should be the supplied cover")
 check('class="profile-film"' in oku and "/images/restaurants/o-ku-alys-beach/02.jpg" in oku, "O-Ku profile should show the extra photos")
 steam = (ROOT / "restaurants" / "steamboat-grill-30a-seagrove-beach" / "index.html").read_text(encoding="utf-8")
-steam_hero = steam.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
-check('class="ph"' in steam_hero and 'class="mono"' in steam_hero, "a listing without a photo should keep the monogram")
-check("<img" not in steam_hero and 'class="profile-film"' not in steam, "Steamboat should stay a monogram")
+steam_hero = steam.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check("/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg" in steam_hero, "Steamboat hero should be the supplied cover")
+check(
+    'class="profile-film"' in steam
+    and "/images/restaurants/steamboat-grill-30a-seagrove-beach/02.webp" in steam
+    and "/images/restaurants/steamboat-grill-30a-seagrove-beach/03.jpg" in steam,
+    "Steamboat profile should show the extra photos",
+)
+happy = (ROOT / "restaurants" / "beach-happy-cafe-seagrove-beach" / "index.html").read_text(encoding="utf-8")
+happy_hero = happy.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check("/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg" in happy_hero, "Beach Happy Seagrove hero should be the supplied cover")
+check(
+    "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg" in happy
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg" in happy,
+    "Beach Happy Seagrove profile should show the extra photos",
+)
+plain = (ROOT / "restaurants" / "nigels-bananas-seaside" / "index.html").read_text(encoding="utf-8")
+plain_hero = plain.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check('class="ph"' in plain_hero and 'class="mono"' in plain_hero, "a listing without a photo should keep the monogram")
+check("<img" not in plain_hero and 'class="profile-film"' not in plain, "Nigel's should stay a monogram")
 check("Black%20Heart" not in directory and "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
 for town_slug, town_alt in (

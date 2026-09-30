@@ -106,7 +106,11 @@ assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$
 
 const steam = jsonLd(read("restaurants/steamboat-grill-30a-seagrove-beach/index.html"));
 const steamRestaurant = steam["@graph"].find((node) => node["@type"] === "Restaurant");
-assert.equal(JSON.stringify(steamRestaurant).includes("image"), false);
+assert.match(steamRestaurant.image, /\/images\/restaurants\/steamboat-grill-30a-seagrove-beach\/01\.jpg$/);
+
+const happy = jsonLd(read("restaurants/beach-happy-cafe-seagrove-beach/index.html"));
+const happyRestaurant = happy["@graph"].find((node) => node["@type"] === "Restaurant");
+assert.match(happyRestaurant.image, /\/images\/restaurants\/beach-happy-cafe-seagrove-beach\/01\.jpg$/);
 
 const stinkys = jsonLd(read("restaurants/stinkys-fish-camp-dune-allen-beach/index.html"));
 const stinkysRestaurant = stinkys["@graph"].find((node) => node["@type"] === "Restaurant");
