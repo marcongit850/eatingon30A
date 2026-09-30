@@ -141,7 +141,15 @@ export function featuredAutoRotate(count, prefersReducedMotion = false, paused =
   return (Number(count) || 0) > 1;
 }
 
-export function describeFilters(filters, areaNames, emptyLabel = "Where to eat") {
+export function filtersAreActive(filters) {
+  return FILTER_KEYS.some((key) => filters && filters[key]);
+}
+
+export function documentTitle(baseTitle, filters, activeTitle) {
+  return filtersAreActive(filters) ? activeTitle : baseTitle;
+}
+
+export function describeFilters(filters, areaNames, emptyLabel = "Restaurants on 30A") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
   if (filters.cuisine) parts.push(filters.cuisine);
@@ -223,6 +231,7 @@ function bootDirectory() {
   const title = document.querySelector("#listing-title");
   const empty = document.querySelector("#empty");
   const areaNames = readAreaNames();
+  const baseTitle = document.title;
 
   const apply = (filters, pushUrl) => {
     let shown = 0;
@@ -237,7 +246,7 @@ function bootDirectory() {
       count.textContent = shown === 1 ? "1 restaurant" : `${shown} restaurants`;
     }
     if (empty) empty.hidden = shown !== 0;
-    document.title = `${label} | Eating on 30A`;
+    document.title = documentTitle(baseTitle, filters, `${label} | Eating on 30A`);
     if (pushUrl) syncUrl(filters);
     document.documentElement.classList.remove("js-filter");
   };
@@ -284,6 +293,7 @@ function bootMap() {
   const title = document.querySelector("#listing-title");
   const note = document.querySelector("#map-note");
   const areaNames = readAreaNames();
+  const baseTitle = document.title;
   if (typeof L === "undefined") {
     if (note) note.textContent = "The map library did not load.";
     return;
@@ -328,7 +338,7 @@ function bootMap() {
       note.hidden = visible.length !== 0;
       note.textContent = visible.length === 0 ? "No restaurants match these filters." : "";
     }
-    document.title = `${label} map | Eating on 30A`;
+    document.title = documentTitle(baseTitle, filters, `${label} map | Eating on 30A`);
     if (bounds.length === 1) map.setView(bounds[0], 15);
     else if (bounds.length > 1) map.fitBounds(bounds, { padding: [32, 32], maxZoom: 14 });
     else map.setView([30.32, -86.12], 11);

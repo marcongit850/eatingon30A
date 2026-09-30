@@ -38,7 +38,7 @@ check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} det
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
 check("full restaurant CSV" not in home.lower(), "homepage should not say the CSV is withheld")
 check("<h1>Where to eat<br> on 30A.</h1>" in home, "homepage headline should say where to eat on 30A")
-check('<h1 id="listing-title">Where to eat</h1>' in directory, "directory heading should be Where to eat")
+check('<h1 id="listing-title">Restaurants on 30A</h1>' in directory, "directory heading should name restaurants on 30A")
 check("Filter by beach town, meal, or a few words." in directory, "directory intro should name the filters")
 check(
     'name="laurensFavorite"' in directory and ">Lauren’s Favorites</span>" in directory,
@@ -75,7 +75,7 @@ for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
 check(len(areas) == len({item["areaSlug"] for item in restaurants}), f"town pages should match listed areas, got {len(areas)}")
 for area in areas:
-    check(f'href="/restaurants/?area={area["slug"]}"' in home, f"homepage missing area filter {area['slug']}")
+    check(f'href="/areas/{area["slug"]}/"' in home, f"homepage missing area page {area['slug']}")
     check((ROOT / "areas" / area["slug"] / "index.html").exists(), f"missing town page {area['slug']}")
 
 for restaurant in restaurants:
@@ -163,7 +163,7 @@ check("images/restaurants/" in readme and "`01` is the cover" in readme, "README
 check("does not call Google Places" in readme, "README should keep Google Places off")
 check("popup-address" in site_js and "markerPopup" in site_js, "map popups should include the street address")
 check('>View restaurant</a>' in site_js and "View profile" not in site_js, "map popup CTA should say View restaurant")
-check('emptyLabel = "Where to eat"' in site_js, "unfiltered directory title should be Where to eat")
+check('emptyLabel = "Restaurants on 30A"' in site_js, "unfiltered directory title should name restaurants on 30A")
 pin_rule = styles.split(".leaflet-marker-icon.pin", 1)
 check(len(pin_rule) == 2 and "background:" in pin_rule[1][:400], "map pins must paint a fill on Leaflet's marker class")
 check(".leaflet-div-icon.pin" not in styles, "pin styles must not depend on the class Leaflet drops")
@@ -257,7 +257,7 @@ check(
 )
 check("de29ed_1473adbe1b4b4c068a746d2bd7c0fc46" not in home, "homepage should drop the old Wix hero")
 check(
-    'property="og:image" content="https://eatingon30a.352marc.workers.dev/images/hero-beachside-dining.jpg"' in home,
+    f'property="og:image" content="{build.ORIGIN}/images/hero-beachside-dining.jpg"' in home,
     "homepage share image should be the beachside dining photo",
 )
 for hero_name in ("images/hero-beachside-dining.jpg", "images/hero-beachside-dining.webp"):
@@ -292,7 +292,7 @@ for area_page in (ROOT / "areas").glob("*/index.html"):
     check("Watch a short clip" not in text, f"{area_page.parent.name} still has a clip sentence")
     check(re.search(r"\bplaces\b", text) is None, f"{area_page.parent.name} still says places")
     check("youtube.com" not in text and "youtu.be" not in text, f"{area_page.parent.name} still links to YouTube")
-    check("<h1>" in text and 'class="lede"' in text and 'class="card-grid"' in text, f"{area_page.parent.name} lost the town page")
+    check("<h1" in text and 'class="lede"' in text and 'class="card-grid"' in text, f"{area_page.parent.name} lost the town page")
 config = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 featured = config.get("featured") or []
 by_slug = {item["slug"]: item for item in restaurants}
@@ -325,7 +325,8 @@ check("Read the profile" not in home, "featured cover should not put the profile
 check("View restaurant" in home, "featured cover CTA should say View restaurant")
 llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
 check("CSV" not in llms and "custom domain" not in llms, "llms.txt should stay visitor-facing")
-check("https://eatingon30a.352marc.workers.dev" in (ROOT / "site.config.json").read_text(encoding="utf-8"), "public origin should be the current workers.dev host")
+check(config["origin"] == "https://www.eatingon30a.com", "public origin should be the live www host")
+check("workers.dev" not in config["origin"], "public origin should not be the workers.dev preview")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")
 check("leaflet.js" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing Leaflet")
@@ -382,7 +383,7 @@ for town_slug, town_alt in (
     check(f'src="{town_src}"' in areas_index, f"towns page should show the {town_slug} photo")
     town_page = (ROOT / "areas" / town_slug / "index.html").read_text(encoding="utf-8")
     check(f'src="{town_src}"' in town_page, f"{town_slug} page should use its town photo")
-    card = home.split(f'href="/restaurants/?area={town_slug}"', 1)[1].split("</a>", 1)[0]
+    card = home.split(f'href="/areas/{town_slug}/"', 1)[1].split("</a>", 1)[0]
     check('class="ph"' not in card, f"{town_slug} homepage card should not keep the placeholder")
 
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")

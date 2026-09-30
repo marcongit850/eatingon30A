@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { FEATURED_ROTATE_MS, describeFilters, featuredAutoRotate, featuredIndex, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
+import { FEATURED_ROTATE_MS, describeFilters, documentTitle, featuredAutoRotate, featuredIndex, filtersAreActive, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -186,8 +186,16 @@ test("filter label names the town", () => {
     { "inlet-beach": "Inlet Beach" }
   );
   assert.equal(label, "Breakfast in Inlet Beach");
-  assert.equal(describeFilters(blank, {}), "Where to eat");
+  assert.equal(describeFilters(blank, {}), "Restaurants on 30A");
   assert.equal(describeFilters(blank, {}, "Along the coast"), "Along the coast");
+  assert.equal(filtersAreActive(blank), false);
+  assert.equal(filtersAreActive({ ...blank, area: "seaside" }), true);
+  const base = "Restaurants on Scenic Highway 30A | Eating on 30A";
+  assert.equal(documentTitle(base, blank, "Restaurants on 30A | Eating on 30A"), base);
+  assert.equal(
+    documentTitle(base, { ...blank, meal: "Dinner" }, "Dinner | Eating on 30A"),
+    "Dinner | Eating on 30A",
+  );
 });
 
 test("public json does not carry place ids or owner ids", () => {
