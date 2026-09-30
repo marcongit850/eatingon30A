@@ -86,6 +86,13 @@ for restaurant in restaurants:
     page = path.read_text(encoding="utf-8")
     check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 missing {restaurant['name']}")
     check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
+    claim_href = build.e(build.claim_listing_href(restaurant["name"]))
+    check(
+        'class="listing-claim"' in page and f'href="{claim_href}"' in page and ">Claim or correct this listing</a>" in page,
+        f"detail page missing claim link {restaurant['slug']}",
+    )
+    claim_bit = page.split('class="listing-claim"', 1)[1].split("</p>", 1)[0]
+    check("—" not in claim_bit and "–" not in claim_bit, f"claim link copy uses a dash {restaurant['slug']}")
     check("maps.googleapis" not in page and "airtable" not in page.lower(), f"detail page calls a paid API {restaurant['slug']}")
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")
@@ -196,6 +203,9 @@ check(all(index >= 0 for index in contact_order) and contact_order == sorted(con
 for request_type in ("update", "edit", "deletion", "new"):
     check(f'value="{request_type}"' in contact, f"contact form missing request type {request_type}")
 check('src="/listing.js"' in contact, "contact page should load the listing form script")
+listing_js = (ROOT / "listing.js").read_text(encoding="utf-8")
+check('params.get("restaurant")' in listing_js and 'params.get("subject")' in listing_js, "listing form should read restaurant and subject query params")
+check('[name="restaurant"]' in listing_js and '[name="details"]' in listing_js, "listing form should prefill the restaurant and details fields")
 listing_js = (ROOT / "listing.js").read_text(encoding="utf-8")
 check("/api/listing" in listing_js, "listing script should post to the worker")
 check("town" not in listing_js, "listing script should not send a town")

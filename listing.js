@@ -32,7 +32,24 @@
     return null;
   }
 
+  function fillFromQuery(form) {
+    var params = new URLSearchParams(window.location.search);
+    var restaurant = params.get("restaurant");
+    var subject = params.get("subject");
+    var restaurantField = form.querySelector('[name="restaurant"]');
+    var detailsField = form.querySelector('[name="details"]');
+    if (restaurant && restaurantField && !restaurantField.value) {
+      var restaurantMax = restaurantField.maxLength > 0 ? restaurantField.maxLength : 160;
+      restaurantField.value = restaurant.slice(0, restaurantMax);
+    }
+    if (subject && detailsField && !detailsField.value) {
+      var detailsMax = detailsField.maxLength > 0 ? detailsField.maxLength : 4000;
+      detailsField.value = subject.slice(0, detailsMax);
+    }
+  }
+
   function bind(form) {
+    fillFromQuery(form);
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       var body = payload(form);
