@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { describeFilters, featuredIndex, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
+import { FEATURED_ROTATE_MS, describeFilters, featuredAutoRotate, featuredIndex, filtersFromParams, mapListCard, markerPopup, matches, monogram, spreadOverlaps, stepFeatured } from "../site.js";
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
@@ -140,6 +140,19 @@ test("featured arrows cycle every listing and wrap", () => {
   assert.equal(stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29)), 1, 4), stepFeatured(featuredIndex(4, Date.UTC(2026, 8, 29, 18)), 1, 4));
   assert.equal(stepFeatured(1, 0, 4), 1);
   assert.equal(stepFeatured(0, 1, 0), 0);
+});
+
+test("featured cover auto-rotates unless motion is reduced or the section is held", () => {
+  assert.equal(FEATURED_ROTATE_MS, 8000);
+  assert.equal(featuredAutoRotate(3), true);
+  assert.equal(featuredAutoRotate(3, false, false), true);
+  assert.equal(featuredAutoRotate(3, true), false);
+  assert.equal(featuredAutoRotate(3, false, true), false);
+  assert.equal(featuredAutoRotate(3, true, true), false);
+  assert.equal(featuredAutoRotate(1), false);
+  assert.equal(featuredAutoRotate(0), false);
+  const start = featuredIndex(4, Date.UTC(2026, 8, 29));
+  assert.equal(stepFeatured(start, 1, 4), (start + 1) % 4);
 });
 
 test("filter label names the town", () => {
