@@ -371,6 +371,34 @@
     "image": "/images/restaurants/beach-happy-cafe-watercolor/01.jpg"
   },
   {
+    "slug": "beach-happy-cafe-seagrove-beach",
+    "name": "Beach Happy Cafe",
+    "area": "Seagrove Beach",
+    "areaSlug": "seagrove-beach",
+    "meals": [
+      "Breakfast",
+      "Lunch",
+      "Drinks"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Cafe",
+      "Coffee"
+    ],
+    "price": "$$",
+    "lat": 30.3131031,
+    "lng": -86.0902244,
+    "address": "5311 E County Hwy 30A Unit 2, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-5263",
+    "search": "beach happy cafe seagrove beach  seagrove beach american breakfast lunch drinks cafe coffee cafe / coffee beach happy cafe in seagrove serves coffee, breakfast, and light bites, and stays open into the evening for cocktails. beach happy cafe seagrove cafe coffee cocktails american casual dining seagrove beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
     "slug": "big-bad-breakfast-inlet-beach",
     "name": "Big Bad Breakfast",
     "area": "Inlet Beach",
@@ -424,6 +452,35 @@
     "kids": true,
     "music": false,
     "image": "/images/restaurants/black-bear-bread-co-seaside/01.jpg"
+  },
+  {
+    "slug": "black-bear-bread-co-grayton-beach",
+    "name": "Black Bear Bread Co.",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Breakfast",
+      "Lunch"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Bakery",
+      "Sandwiches",
+      "Cafe",
+      "Coffee"
+    ],
+    "price": "$$",
+    "lat": 30.3402886,
+    "lng": -86.1649941,
+    "address": "26 Logan Ln Unit G, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-4528",
+    "search": "black bear bread co. grayton beach  grayton beach american breakfast lunch bakery sandwiches cafe coffee cafe / coffee black bear bread co. in the shops of grayton bakes pastries and naturally leavened breads and serves breakfast and lunch with stumptown coffee. black bear bread co. grayton cafe coffee bakery sandwiches american casual dining grayton beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
   },
   {
     "slug": "blue-mountain-bakery-blue-mountain-beach",
@@ -583,6 +640,32 @@
     "image": "/images/restaurants/bud-and-alleys-seaside/01.jpg"
   },
   {
+    "slug": "bud-and-alleys-pizza-bar-seaside",
+    "name": "Bud & Alley\u2019s Pizza Bar + Trattoria",
+    "area": "Seaside",
+    "areaSlug": "seaside",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Italian"
+    ],
+    "foods": [
+      "Pizza"
+    ],
+    "price": "$$",
+    "lat": 30.3194598,
+    "lng": -86.1376636,
+    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-5900",
+    "search": "bud & alley\u2019s pizza bar + trattoria seaside  seaside italian lunch dinner pizza restaurant bud & alley\u2019s pizza bar + trattoria serves wood-fired neapolitan pizza and house-made dishes roadside at bud & alley\u2019s in seaside. hours are seasonal. bud & alley\u2019s pizza bar trattoria restaurant pizza italian casual dining seaside $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
     "slug": "bud-and-alleys-taco-bar-seaside",
     "name": "Bud & Alley\u2019s Taco Bar",
     "area": "Seaside",
@@ -632,6 +715,31 @@
     "image": "/images/restaurants/buddys-seafood-market/01.jpg"
   },
   {
+    "slug": "cafe-tango-blue-mountain-beach",
+    "name": "Cafe Tango",
+    "area": "Blue Mountain Beach",
+    "areaSlug": "blue-mountain-beach",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "Mediterranean"
+    ],
+    "foods": [
+      "Tapas"
+    ],
+    "price": "$$",
+    "lat": 30.3466453,
+    "lng": -86.2192814,
+    "address": "14 Viki St, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-0054",
+    "search": "cafe tango blue mountain beach  blue mountain beach mediterranean dinner tapas restaurant cafe tango serves spanish and mediterranean dinner in a cottage on scenic highway 30a in blue mountain beach. reservations are required, and the restaurant is closed mondays. cafe tango caf\u00e9 tango restaurant tapas mediterranean spanish romantic blue mountain beach $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "image": null
+  },
+  {
     "slug": "cafe-thirty-a-seagrove-beach",
     "name": "Caf\u00e9 Thirty-A",
     "area": "Seagrove Beach",
@@ -657,6 +765,31 @@
     "kids": false,
     "music": false,
     "image": "/images/restaurants/cafe-thirty-a-seagrove-beach/01.jpg"
+  },
+  {
+    "slug": "caliza-restaurant-alys-beach",
+    "name": "Caliza Restaurant",
+    "area": "Alys Beach",
+    "areaSlug": "alys-beach",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "American"
+    ],
+    "price": "$$",
+    "lat": 30.2868494,
+    "lng": -86.0276416,
+    "address": "23 Nonesuch Way, Alys Beach, FL 32461, USA",
+    "phone": "(850) 213-5700",
+    "search": "caliza restaurant alys beach  alys beach american dinner american restaurant caliza restaurant serves casual american dinner outdoors by the pools at alys beach. dinner is open to the public tuesday through saturday; daytime pool access is often limited to members and guests. restaurant services are closed december 1 through march 1. caliza restaurant american casual dining alys beach pool dinner $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
   },
   {
     "slug": "canopy-road-cafe-inlet-beach",
@@ -709,6 +842,61 @@
     "kids": true,
     "music": false,
     "image": "/images/restaurants/canopy-road-cafe-seagrove-beach/01.jpg"
+  },
+  {
+    "slug": "caribe-and-crumb-gulf-place",
+    "name": "Caribe & Crumb",
+    "area": "Gulf Place",
+    "areaSlug": "gulf-place",
+    "meals": [
+      "Breakfast",
+      "Lunch"
+    ],
+    "cuisines": [
+      "Venezuelan"
+    ],
+    "foods": [
+      "Bakery",
+      "Cafe",
+      "Arepas"
+    ],
+    "price": "$$",
+    "lat": 30.3486564,
+    "lng": -86.2317965,
+    "address": "118 Spires Ln Suite 1A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "",
+    "search": "caribe & crumb gulf place  gulf place venezuelan breakfast lunch bakery cafe arepas cafe / coffee caribe & crumb is a venezuelan bakery and cafe at gulf place, with arepas, pastries, coffee, and savory plates. caribe & crumb cafe coffee bakery arepas venezuelan casual dining gulf place $$",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
+    "slug": "chanticleer-eatery-grayton-beach",
+    "name": "Chanticleer Eatery",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American",
+      "Southern"
+    ],
+    "foods": [
+      "Sandwiches"
+    ],
+    "price": "$$",
+    "lat": 30.3388961,
+    "lng": -86.1662888,
+    "address": "55 Clayton Ln, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-9065",
+    "search": "chanticleer eatery grayton beach  grayton beach american southern lunch dinner sandwiches restaurant chanticleer eatery serves made-from-scratch american comfort food in grayton beach, with sandwiches and salads at lunch and a fuller dinner menu. chanticleer eatery restaurant sandwiches american southern casual dining grayton beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
   },
   {
     "slug": "charlies-cafe-rosemary-beach",
@@ -1206,6 +1394,33 @@
     "kids": true,
     "music": false,
     "image": "/images/restaurants/goatfeathers-seafood-restaurant-dune-allen-beach/01.jpg"
+  },
+  {
+    "slug": "grayton-corner-cafe-grayton-beach",
+    "name": "Grayton Corner Cafe",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Lunch"
+    ],
+    "cuisines": [
+      "American",
+      "Southern"
+    ],
+    "foods": [
+      "Cafe",
+      "Wine"
+    ],
+    "price": "$$",
+    "lat": 30.3393995,
+    "lng": -86.1656116,
+    "address": "14 Clayton Ln #16, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 792-6331",
+    "search": "grayton corner cafe grayton beach  grayton beach american southern lunch cafe wine restaurant grayton corner cafe serves homestyle lunch in grayton beach and keeps a small wine shop. 30a.com also lists saturday supper from 6pm to 10pm. grayton corner cafe restaurant cafe wine american southern casual dining grayton beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
   },
   {
     "slug": "grayton-seafood-co-grayton-beach",
@@ -2179,6 +2394,31 @@
     "image": "/images/restaurants/restaurant-paradis-rosemary-beach/01.jpg"
   },
   {
+    "slug": "roux-30a-grayton-beach",
+    "name": "Roux 30A",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Tasting Menu"
+    ],
+    "price": "$$$",
+    "lat": 30.3407265,
+    "lng": -86.1667883,
+    "address": "114 Logan Ln Ste 1A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-0899",
+    "search": "roux 30a grayton beach  grayton beach american dinner tasting menu restaurant roux 30a serves a reservation-only chef tasting menu in an intimate grayton beach dining room. michelin recommended, with seatings at 5pm and 7pm. roux 30a restaurant tasting menu american fine dining romantic grayton beach $$$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "image": null
+  },
+  {
     "slug": "salty-butcher",
     "name": "Salty Butcher",
     "area": "Seagrove Beach",
@@ -2572,6 +2812,33 @@
     "image": "/images/restaurants/surfing-deer-seagrove-beach/01.jpg"
   },
   {
+    "slug": "tahona-tacos-and-tequileria-rosemary-beach",
+    "name": "Tahona Tacos & Tequileria",
+    "area": "Rosemary Beach",
+    "areaSlug": "rosemary-beach",
+    "meals": [
+      "Lunch",
+      "Dinner",
+      "Drinks"
+    ],
+    "cuisines": [
+      "Mexican"
+    ],
+    "foods": [
+      "Tacos"
+    ],
+    "price": "$$",
+    "lat": 30.2795019,
+    "lng": -86.0169886,
+    "address": "74 Town Hall Rd, 1st Floor, Rosemary Beach, FL 32461, USA",
+    "phone": "(850) 213-4600",
+    "search": "tahona tacos & tequileria rosemary beach  rosemary beach mexican lunch dinner drinks tacos bar & restaurant tahona tacos & tequileria serves latin american tacos and agave cocktails on the first floor of rosemary beach town center. walk-in only. tahona tacos tequileria bar restaurant tacos mexican latin tequila rosemary beach $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
+  },
+  {
     "slug": "the-big-chill-watersound",
     "name": "The Big Chill",
     "area": "Watersound",
@@ -2732,6 +2999,35 @@
     "kids": true,
     "music": false,
     "image": "/images/restaurants/the-perfect-pig-gulf-place/01.jpg"
+  },
+  {
+    "slug": "the-perfect-pig-watercolor",
+    "name": "The Perfect Pig",
+    "area": "WaterColor",
+    "areaSlug": "watercolor",
+    "meals": [
+      "Breakfast",
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American",
+      "Southern"
+    ],
+    "foods": [
+      "Breakfast Spot",
+      "Sandwiches"
+    ],
+    "price": "$$",
+    "lat": 30.3274897,
+    "lng": -86.1256961,
+    "address": "28 Watercolor Way, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 533-1522",
+    "search": "the perfect pig watercolor  watercolor american southern breakfast lunch dinner breakfast spot sandwiches restaurant the perfect pig on watercolor way serves southern-inspired breakfast, lunch, and dinner. reservations are by phone. the perfect pig watercolor restaurant breakfast spot sandwiches american southern casual dining watercolor $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": null
   },
   {
     "slug": "the-red-bar-grayton-beach",

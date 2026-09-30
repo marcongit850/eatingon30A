@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 113, f"full CSV should stay at 113 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 113, "public json should include every published restaurant")
+check(len(source) == 124, f"full CSV should stay at 124 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 124, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -73,7 +73,21 @@ missing_coords = [item["slug"] for item in restaurants if not isinstance(item.ge
 check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
 photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
-check(missing_photos == ["steamboat-grill-30a-seagrove-beach"], f"only Steamboat Grill should keep a monogram, got {missing_photos}")
+expected_monograms = [
+    "beach-happy-cafe-seagrove-beach",
+    "black-bear-bread-co-grayton-beach",
+    "bud-and-alleys-pizza-bar-seaside",
+    "cafe-tango-blue-mountain-beach",
+    "caliza-restaurant-alys-beach",
+    "caribe-and-crumb-gulf-place",
+    "chanticleer-eatery-grayton-beach",
+    "grayton-corner-cafe-grayton-beach",
+    "roux-30a-grayton-beach",
+    "steamboat-grill-30a-seagrove-beach",
+    "tahona-tacos-and-tequileria-rosemary-beach",
+    "the-perfect-pig-watercolor",
+]
+check(sorted(missing_photos) == expected_monograms, f"new listings should keep a monogram until they have photos, got {missing_photos}")
 check(len(photos) == 112, f"expected 112 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(build.listing_photos("steamboat-grill-30a-seagrove-beach") == [], "Steamboat has no photo folder")
