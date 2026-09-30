@@ -35,7 +35,8 @@
       "Breakfast"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Coffee",
@@ -46,7 +47,7 @@
     "lng": -86.0163142,
     "address": "3 Main St, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 231-8858",
-    "search": "3rd cup rosemary beach  rosemary beach american breakfast coffee cafe cafe / coffee 3rd cup is a cozy coffee shop perfect for a morning stop. relaxed and welcoming. 3rd cup cafe coffee coffee cafe american casual dining rosemary beach $",
+    "search": "3rd cup rosemary beach  rosemary beach american cafe breakfast coffee cafe cafe / coffee 3rd cup is a cozy coffee shop perfect for a morning stop. relaxed and welcoming. 3rd cup cafe coffee coffee cafe american casual dining rosemary beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -141,7 +142,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Coffee",
@@ -152,7 +154,7 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-1965",
-    "search": "amavida coffee roasters seaside town center seaside | town center american lunch coffee cafe cafe / coffee amavida coffee roasters serves quality coffee in a relaxed caf\u00e9 environment. a go-to for coffee lovers. amavida coffee roasters cafe coffee coffee cafe american cafe seaside $",
+    "search": "amavida coffee roasters seaside town center seaside | town center american cafe lunch coffee cafe cafe / coffee amavida coffee roasters serves quality coffee in a relaxed caf\u00e9 environment. a go-to for coffee lovers. amavida coffee roasters cafe coffee coffee cafe american cafe seaside $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -167,7 +169,8 @@
       "Breakfast"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Coffee",
@@ -178,7 +181,7 @@
     "lng": -86.01635569999999,
     "address": "104 N Barrett Square, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 213-1965",
-    "search": "amavida coffee roasters rosemary beach  rosemary beach american breakfast coffee cafe cafe / coffee amavida coffee roasters serves high-quality coffee in a casual caf\u00e9 setting. a local favorite. amavida coffee roasters cafe coffee coffee cafe american casual dining rosemary beach $",
+    "search": "amavida coffee roasters rosemary beach  rosemary beach american cafe breakfast coffee cafe cafe / coffee amavida coffee roasters serves high-quality coffee in a casual caf\u00e9 setting. a local favorite. amavida coffee roasters cafe coffee coffee cafe american casual dining rosemary beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -351,7 +354,8 @@
       "Dinner"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Coffee",
@@ -362,7 +366,7 @@
     "lng": -86.0196426,
     "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
     "phone": "(850) 534-0844",
-    "search": "beach & brew on 30a seacrest  seacrest beach american lunch dinner coffee cafe cafe / coffee beach & brew provides coffee and light bites in a relaxed setting. a simple stop for breakfast. beach & brew on 30a cafe coffee coffee cafe american grab go seacrest $",
+    "search": "beach & brew on 30a seacrest  seacrest beach american cafe lunch dinner coffee cafe cafe / coffee beach & brew provides coffee and light bites in a relaxed setting. a simple stop for breakfast. beach & brew on 30a cafe coffee coffee cafe american grab go seacrest $",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -378,7 +382,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -391,7 +396,7 @@
     "lng": -86.1449276,
     "address": "4 Watercolor Blvd S, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 399-4028",
-    "search": "beach happy cafe watercolor  watercolor american breakfast lunch cafe coffee smoothies ice cream cafe / coffee beach happy cafe is a grab-and-go spot for coffee, breakfast, and light bites. perfect for a quick start to your day. beach happy cafe cafe coffee cafe coffee smoothies ice cream american grab go watercolor $$",
+    "search": "beach happy cafe watercolor  watercolor american cafe breakfast lunch cafe coffee smoothies ice cream cafe / coffee beach happy cafe is a grab-and-go spot for coffee, breakfast, and light bites. perfect for a quick start to your day. beach happy cafe cafe coffee cafe coffee smoothies ice cream american grab go watercolor $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -408,7 +413,8 @@
       "Drinks"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -419,7 +425,7 @@
     "lng": -86.0902244,
     "address": "5311 E County Hwy 30A Unit 2, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 660-5263",
-    "search": "beach happy cafe seagrove beach  seagrove beach american breakfast lunch drinks cafe coffee cafe / coffee beach happy cafe in seagrove serves coffee, breakfast, and light bites, and stays open into the evening for cocktails. beach happy cafe seagrove cafe coffee cocktails american casual dining seagrove beach $$",
+    "search": "beach happy cafe seagrove beach  seagrove beach american cafe breakfast lunch drinks cafe coffee cafe / coffee beach happy cafe in seagrove serves coffee, breakfast, and light bites, and stays open into the evening for cocktails. beach happy cafe seagrove cafe coffee cocktails american casual dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -461,7 +467,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Bakery",
@@ -474,7 +481,7 @@
     "lng": -86.13652379999999,
     "address": "2311 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 738-6771",
-    "search": "black bear bread co. seaside  seaside american breakfast lunch bakery sandwiches cafe coffee cafe / coffee black bear bread co. is known for artisan breads, pastries, and coffee in a cozy caf\u00e9 setting. perfect for breakfast or lunch. black bear bread co. cafe coffee bakery sandwiches cafe coffee american casual dining seaside $$",
+    "search": "black bear bread co. seaside  seaside american cafe breakfast lunch bakery sandwiches cafe coffee cafe / coffee black bear bread co. is known for artisan breads, pastries, and coffee in a cozy caf\u00e9 setting. perfect for breakfast or lunch. black bear bread co. cafe coffee bakery sandwiches cafe coffee american casual dining seaside $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -490,7 +497,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Bakery",
@@ -503,7 +511,7 @@
     "lng": -86.1649941,
     "address": "26 Logan Ln Unit G, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-4528",
-    "search": "black bear bread co. grayton beach  grayton beach american breakfast lunch bakery sandwiches cafe coffee cafe / coffee black bear bread co. in the shops of grayton bakes pastries and naturally leavened breads and serves breakfast and lunch with stumptown coffee. black bear bread co. grayton cafe coffee bakery sandwiches american casual dining grayton beach $$",
+    "search": "black bear bread co. grayton beach  grayton beach american cafe breakfast lunch bakery sandwiches cafe coffee cafe / coffee black bear bread co. in the shops of grayton bakes pastries and naturally leavened breads and serves breakfast and lunch with stumptown coffee. black bear bread co. grayton cafe coffee bakery sandwiches american casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -545,7 +553,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -556,7 +565,7 @@
     "lng": -86.2038516,
     "address": "2290 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 660-2955",
-    "search": "blue mountain beach creamery blue mountain beach  blue mountain beach american desserts ice cream dessert dessert blue mountain beach creamery offers a wide selection of ice cream flavors in a fun, family-friendly setting. a great way to cool off after the beach. blue mountain beach creamery dessert ice cream dessert american casual dining blue mountain beach $",
+    "search": "blue mountain beach creamery blue mountain beach  blue mountain beach american dessert desserts ice cream dessert dessert blue mountain beach creamery offers a wide selection of ice cream flavors in a fun, family-friendly setting. a great way to cool off after the beach. blue mountain beach creamery dessert ice cream dessert american casual dining blue mountain beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -780,15 +789,17 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "Seafood"
     ],
-    "foods": [],
+    "foods": [
+      "Seafood Market"
+    ],
     "price": "$$",
     "lat": 30.3131398,
     "lng": -86.09131359999999,
     "address": "5231 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-3684",
-    "search": "buddys seafood market seagrove beach  seagrove beach american lunch  food market / prepared food buddys seafood market provides fresh local seafood and prepared items for takeout or cooking at home. a convenient seafood stop along 30a. buddys seafood market food market prepared food american casual dining seagrove beach $$",
+    "search": "buddys seafood market seagrove beach  seagrove beach seafood lunch seafood market food market / prepared food buddys seafood market provides fresh local seafood and prepared items for takeout or cooking at home. a convenient seafood stop along 30a. buddys seafood market food market prepared food american casual dining seagrove beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -858,14 +869,14 @@
       "American"
     ],
     "foods": [
-      "American"
+      "Grill"
     ],
     "price": "$$",
     "lat": 30.2868494,
     "lng": -86.0276416,
     "address": "23 Nonesuch Way, Alys Beach, FL 32461, USA",
     "phone": "(850) 213-5700",
-    "search": "caliza restaurant alys beach  alys beach american dinner american restaurant caliza restaurant serves casual american dinner outdoors by the pools at alys beach. dinner is open to the public tuesday through saturday; daytime pool access is often limited to members and guests. restaurant services are closed december 1 through march 1. caliza restaurant american casual dining alys beach pool dinner $$",
+    "search": "caliza restaurant alys beach  alys beach american dinner grill restaurant caliza restaurant serves casual american dinner outdoors by the pools at alys beach. dinner is open to the public tuesday through saturday; daytime pool access is often limited to members and guests. restaurant services are closed december 1 through march 1. caliza restaurant american casual dining alys beach pool dinner $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1013,7 +1024,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Dessert"
@@ -1023,7 +1035,7 @@
     "lng": -86.02856790000001,
     "address": "67 Somerset Street Unit 102, Alys Beach, FL 32461, USA",
     "phone": "(850) 909-0200",
-    "search": "charlie\u2019s delights alys beach  alys beach american desserts dessert dessert charlie\u2019s delights serves ice cream, coffee, and sweet treats in the heart of alys beach. a fun stop for dessert and quick bites. charlie\u2019s delights charlies delights dessert dessert desserts american alys beach $",
+    "search": "charlie\u2019s delights alys beach  alys beach american dessert desserts dessert dessert charlie\u2019s delights serves ice cream, coffee, and sweet treats in the heart of alys beach. a fun stop for dessert and quick bites. charlie\u2019s delights charlies delights dessert dessert desserts american alys beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1222,7 +1234,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -1233,7 +1246,7 @@
     "lng": -86.1370153,
     "address": "121 Central Square, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-4770",
-    "search": "dawson\u2019s yogurt & fudge seaside town center seaside american desserts ice cream dessert dessert dawson\u2019s yogurt & fudge has served frozen yogurt, soft serve, and house-made fudge in seaside\u2019s central square since 1988. opening and closing times are seasonal. dawson's yogurt and fudge ice cream dessert seaside central square $",
+    "search": "dawson\u2019s yogurt & fudge seaside town center seaside american dessert desserts ice cream dessert dessert dawson\u2019s yogurt & fudge has served frozen yogurt, soft serve, and house-made fudge in seaside\u2019s central square since 1988. opening and closing times are seasonal. dawson's yogurt and fudge ice cream dessert seaside central square $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1248,7 +1261,8 @@
       "Breakfast"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Donuts",
@@ -1260,7 +1274,7 @@
     "lng": -86.1099179,
     "address": "4042 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 687-1036",
-    "search": "dough sea dough seagrove beach  seagrove beach american breakfast donuts coffee bakery cafe / coffee dough sea dough makes yeast and cake donuts, breakfast sandwiches, and coffee on county highway 30a in seagrove beach. dough sea dough donuts breakfast coffee bakery seagrove beach $",
+    "search": "dough sea dough seagrove beach  seagrove beach american cafe breakfast donuts coffee bakery cafe / coffee dough sea dough makes yeast and cake donuts, breakfast sandwiches, and coffee on county highway 30a in seagrove beach. dough sea dough donuts breakfast coffee bakery seagrove beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1328,7 +1342,8 @@
       "Dinner"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -1340,7 +1355,7 @@
     "lng": -86.0287674,
     "address": "23 North Somerset, Alys Beach, FL 32461, USA",
     "phone": "(850) 641-0043",
-    "search": "fonville press market & caf\u00e9 alys beach  alys beach american breakfast lunch dinner cafe market coffee cafe / coffee fonville press is a market, coffee shop, and caf\u00e9 on north somerset in alys beach. breakfast and lunch run until 3pm, and dinner is served until 8pm. fonville press market cafe coffee breakfast lunch dinner american alys beach $$",
+    "search": "fonville press market & caf\u00e9 alys beach  alys beach american cafe breakfast lunch dinner cafe market coffee cafe / coffee fonville press is a market, coffee shop, and caf\u00e9 on north somerset in alys beach. breakfast and lunch run until 3pm, and dinner is served until 8pm. fonville press market cafe coffee breakfast lunch dinner american alys beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1379,10 +1394,12 @@
     "areaSlug": "seaside",
     "meals": [
       "Lunch",
-      "Dinner"
+      "Dinner",
+      "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Dessert",
@@ -1393,7 +1410,7 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "",
-    "search": "frost bites seaside airstream row seaside | airstream row american lunch dinner dessert snowcones dessert frost bites specializes in cold, sweet treats perfect for hot beach days. a fun stop for dessert. frost bites dessert dessert snowcones american casual dining seaside $",
+    "search": "frost bites seaside airstream row seaside | airstream row american dessert lunch dinner desserts dessert snowcones dessert frost bites specializes in cold, sweet treats perfect for hot beach days. a fun stop for dessert. frost bites dessert dessert snowcones american casual dining seaside $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1617,7 +1634,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Cookies & Sweets",
@@ -1628,7 +1646,7 @@
     "lng": -86.00926720000001,
     "address": "12805 US-98 Suite B101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 641-0103",
-    "search": "great american cookies inlet beach 30avenue inlet beach | 30avenue american desserts cookies & sweets dessert dessert great american cookies specializes in sweet treats and desserts. a quick sugar fix. great american cookies dessert cookies sweets dessert american grab go inlet beach $",
+    "search": "great american cookies inlet beach 30avenue inlet beach | 30avenue american dessert desserts cookies & sweets dessert dessert great american cookies specializes in sweet treats and desserts. a quick sugar fix. great american cookies dessert cookies sweets dessert american grab go inlet beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1721,10 +1739,12 @@
     "areaSlug": "seaside",
     "meals": [
       "Lunch",
-      "Dinner"
+      "Dinner",
+      "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -1735,7 +1755,7 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-2029",
-    "search": "heavenly\u2019s shortcakes & ice cream seaside  seaside american lunch dinner ice cream dessert dessert heavenly\u2019s ice cream offers a variety of sweet treats in a relaxed setting. perfect for dessert. heavenly\u2019s shortcakes & ice cream dessert ice cream dessert american casual dining seaside $",
+    "search": "heavenly\u2019s shortcakes & ice cream seaside  seaside american dessert lunch dinner desserts ice cream dessert dessert heavenly\u2019s ice cream offers a variety of sweet treats in a relaxed setting. perfect for dessert. heavenly\u2019s shortcakes & ice cream dessert ice cream dessert american casual dining seaside $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1751,7 +1771,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -1763,7 +1784,7 @@
     "lng": -86.1669981,
     "address": "85 Defuniak St, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-1734",
-    "search": "hibiscus caf\u00e9 grayton beach  grayton beach american breakfast lunch cafe breakfast spot coffee cafe / coffee hibiscus caf\u00e9 serves breakfast at the hibiscus coffee & guesthouse on defuniak street. the guesthouse site says the onsite caf\u00e9 is operated by raw & juicy. hibiscus cafe breakfast coffee grayton beach raw and juicy $",
+    "search": "hibiscus caf\u00e9 grayton beach  grayton beach american cafe breakfast lunch cafe breakfast spot coffee cafe / coffee hibiscus caf\u00e9 serves breakfast at the hibiscus coffee & guesthouse on defuniak street. the guesthouse site says the onsite caf\u00e9 is operated by raw & juicy. hibiscus cafe breakfast coffee grayton beach raw and juicy $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1831,7 +1852,8 @@
       "Dinner"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Irish"
     ],
     "foods": [
       "Sandwiches"
@@ -1841,7 +1863,7 @@
     "lng": -86.20402059999999,
     "address": "2298 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 267-0101",
-    "search": "johnny mctighe\u2019s irish pub blue mountain beach  blue mountain beach american lunch dinner sandwiches bar & restaurant johnny mctighe\u2019s irish pub brings hearty comfort food, cold pints, and a welcoming neighborhood vibe to blue mountain beach. happy hour is 3pm-6pm monday through saturday. johnny mctighe\u2019s irish pub bar restaurant sandwiches american irish pub bar blue mountain beach beach $$",
+    "search": "johnny mctighe\u2019s irish pub blue mountain beach  blue mountain beach american irish lunch dinner sandwiches bar & restaurant johnny mctighe\u2019s irish pub brings hearty comfort food, cold pints, and a welcoming neighborhood vibe to blue mountain beach. happy hour is 3pm-6pm monday through saturday. johnny mctighe\u2019s irish pub bar restaurant sandwiches american irish pub bar blue mountain beach beach $$",
     "outdoor": false,
     "kids": true,
     "music": true,
@@ -1856,7 +1878,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream"
@@ -1866,7 +1889,7 @@
     "lng": -86.0153472,
     "address": "8 Georgetown Ave, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 399-4000",
-    "search": "kilwins rosemary beach  rosemary beach american desserts ice cream dessert kilwins serves ice cream and sweets in a fun, casual environment. a classic dessert stop. kilwins dessert ice cream desserts american casual dining rosemary beach $",
+    "search": "kilwins rosemary beach  rosemary beach american dessert desserts ice cream dessert kilwins serves ice cream and sweets in a fun, casual environment. a classic dessert stop. kilwins dessert ice cream desserts american casual dining rosemary beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2012,7 +2035,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -2023,7 +2047,7 @@
     "lng": -86.00922249999999,
     "address": "12805 US-98, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-0404",
-    "search": "marble slab creamery inlet beach 30avenue inlet beach | 30avenue american desserts ice cream dessert dessert marble slab creamery offers customizable ice cream treats in a fun environment. a dessert favorite. marble slab creamery dessert ice cream dessert american casual dining inlet beach $",
+    "search": "marble slab creamery inlet beach 30avenue inlet beach | 30avenue american dessert desserts ice cream dessert dessert marble slab creamery offers customizable ice cream treats in a fun environment. a dessert favorite. marble slab creamery dessert ice cream dessert american casual dining inlet beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2194,7 +2218,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Dessert",
@@ -2205,7 +2230,7 @@
     "lng": -86.1371192,
     "address": "124 Quincy Cir, Santa Rosa Beach, FL 32459, USA",
     "phone": "",
-    "search": "nigel\u2019s bananas seaside ruskin place seaside american desserts dessert ice cream dessert nigel\u2019s bananas in ruskin place dips frozen bananas and ice cream bars and serves floats, craft sodas, beer, and wine. nigel's bananas frozen bananas ice cream dessert ruskin place seaside $",
+    "search": "nigel\u2019s bananas seaside ruskin place seaside american dessert desserts dessert ice cream dessert nigel\u2019s bananas in ruskin place dips frozen bananas and ice cream bars and serves floats, craft sodas, beer, and wine. nigel's bananas frozen bananas ice cream dessert ruskin place seaside $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2326,7 +2351,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -2337,7 +2363,7 @@
     "lng": -86.2293839,
     "address": "4368 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 622-0011",
-    "search": "pecan jacks gulf place  gulf place american desserts ice cream dessert dessert pecan jacks is a must-visit for homemade ice cream, pralines, and sweet treats. perfect for satisfying your dessert cravings. pecan jacks dessert ice cream dessert american casual dining gulf place $$",
+    "search": "pecan jacks gulf place  gulf place american dessert desserts ice cream dessert dessert pecan jacks is a must-visit for homemade ice cream, pralines, and sweet treats. perfect for satisfying your dessert cravings. pecan jacks dessert ice cream dessert american casual dining gulf place $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2352,7 +2378,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -2363,7 +2390,7 @@
     "lng": -86.0995254,
     "address": "4771 E County Hwy 30A, Seagrove Beach, FL 32459, USA",
     "phone": "(850) 622-0011",
-    "search": "pecan jacks seagrove beach  seagrove beach american desserts ice cream dessert dessert pecan jacks in seagrove beach scoops small-batch ice cream and sells pralines, brittle, and chocolates on county highway 30a. pecan jacks ice cream pralines candy dessert seagrove beach $$",
+    "search": "pecan jacks seagrove beach  seagrove beach american dessert desserts ice cream dessert dessert pecan jacks in seagrove beach scoops small-batch ice cream and sells pralines, brittle, and chocolates on county highway 30a. pecan jacks ice cream pralines candy dessert seagrove beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2591,7 +2618,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Juice & Bowls",
@@ -2604,7 +2632,7 @@
     "lng": -86.0304211,
     "address": "147 West La Garza Lane, Alys Beach, FL 32461, USA",
     "phone": "(850) 909-0230",
-    "search": "raw & juicy alys beach  alys beach american breakfast lunch juice & bowls smoothies coffee cafe cafe / coffee raw & juicy focuses on healthy bowls and juices in a casual environment. great for a light meal. raw & juicy cafe coffee juice bowls smoothies coffee cafe american casual dining alys beach $$",
+    "search": "raw & juicy alys beach  alys beach american cafe breakfast lunch juice & bowls smoothies coffee cafe cafe / coffee raw & juicy focuses on healthy bowls and juices in a casual environment. great for a light meal. raw & juicy cafe coffee juice bowls smoothies coffee cafe american casual dining alys beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -2725,13 +2753,15 @@
     "cuisines": [
       "American"
     ],
-    "foods": [],
+    "foods": [
+      "Sandwiches"
+    ],
     "price": "$$",
     "lat": 30.3121634,
     "lng": -86.099245,
     "address": "4749 E County Hwy 30A #101, Santa Rosa Beach, FL 32459, USA",
     "phone": "(448) 333-1050",
-    "search": "salty butcher seagrove beach  seagrove beach american lunch  quick service salty butcher offers gourmet sandwiches, meats, and casual lunch favorites in a modern setting. a great quick stop in seagrove beach. salty butcher quick service american casual dining seagrove beach $$",
+    "search": "salty butcher seagrove beach  seagrove beach american lunch sandwiches quick service salty butcher offers gourmet sandwiches, meats, and casual lunch favorites in a modern setting. a great quick stop in seagrove beach. salty butcher quick service american casual dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -2825,7 +2855,8 @@
       "Breakfast"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Coffee",
@@ -2836,7 +2867,7 @@
     "lng": -86.1149664,
     "address": "3723 E County Hwy 30A Ste 9, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 660-5198",
-    "search": "seagrove coffee & donuts seagrove beach  seagrove beach american breakfast coffee donuts cafe / coffee seagrove coffee & donuts is perfect for coffee and breakfast on the go. a quick and easy stop. seagrove coffee & donuts cafe coffee coffee donuts american casual dining seagrove beach $",
+    "search": "seagrove coffee & donuts seagrove beach  seagrove beach american cafe breakfast coffee donuts cafe / coffee seagrove coffee & donuts is perfect for coffee and breakfast on the go. a quick and easy stop. seagrove coffee & donuts cafe coffee coffee donuts american casual dining seagrove beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3063,7 +3094,8 @@
       "Desserts"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Ice Cream",
@@ -3074,7 +3106,7 @@
     "lng": -86.01635030000001,
     "address": "5 Main St suite 2a, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 231-3655",
-    "search": "sugar shak rosemary beach  rosemary beach american desserts ice cream dessert dessert sugar shak offers sweet treats in a casual setting. perfect for dessert. sugar shak dessert ice cream dessert american casual dining rosemary beach $",
+    "search": "sugar shak rosemary beach  rosemary beach american dessert desserts ice cream dessert dessert sugar shak offers sweet treats in a casual setting. perfect for dessert. sugar shak dessert ice cream dessert american casual dining rosemary beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -3463,18 +3495,23 @@
     "area": "Seagrove Beach",
     "areaSlug": "seagrove-beach",
     "meals": [
+      "Breakfast",
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
-    "foods": [],
+    "foods": [
+      "Coffee",
+      "Cafe"
+    ],
     "price": "$",
     "lat": 30.31223689999999,
     "lng": -86.0991186,
     "address": "4771 E County Hwy 30A a101, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-3170",
-    "search": "turbo coffee seagrove beach  seagrove beach american lunch  cafe / coffee turbo coffee serves craft coffee, espresso drinks, and light caf\u00e9 fare in a stylish atmosphere. a popular stop for coffee lovers in seagrove. turbo coffee cafe coffee american casual dining seagrove beach $",
+    "search": "turbo coffee seagrove beach  seagrove beach american cafe breakfast lunch coffee cafe cafe / coffee turbo coffee serves craft coffee, espresso drinks, and light caf\u00e9 fare in a stylish atmosphere. a popular stop for coffee lovers in seagrove. turbo coffee cafe coffee american casual dining seagrove beach $",
     "outdoor": true,
     "kids": true,
     "music": false,
