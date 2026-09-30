@@ -17,7 +17,7 @@
     "price": "$",
     "lat": 30.2793121,
     "lng": -86.0163142,
-    "address": "3 Main St, Panama City, FL 32461, USA",
+    "address": "3 Main St, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 231-8858",
     "search": "3rd cup rosemary beach  rosemary beach american breakfast coffee cafe cafe / coffee 3rd cup is a cozy coffee shop perfect for a morning stop. relaxed and welcoming. 3rd cup cafe coffee coffee cafe american casual dining rosemary beach $",
     "outdoor": true,
@@ -44,7 +44,7 @@
     "lat": 30.320615,
     "lng": -86.1370358,
     "address": "87 Central Square, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-1999",
+    "phone": "(850) 231-7327",
     "search": "87 central square seaside  seaside american lunch dinner bistro restaurant 87 central square offers a mix of casual dining and drinks in a central location. a convenient and versatile option. 87 central square restaurant bistro american casual dining seaside $$$",
     "outdoor": true,
     "kids": true,
@@ -484,7 +484,6 @@
     "area": "Grayton Beach",
     "areaSlug": "grayton-beach",
     "meals": [
-      "Lunch",
       "Dinner"
     ],
     "cuisines": [
@@ -497,8 +496,8 @@
     "lat": 30.3364885,
     "lng": -86.1655972,
     "address": "80 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-9167",
-    "search": "borago grayton beach  grayton beach italian lunch dinner pasta restaurant borago offers classic italian pasta dishes in a cozy, casual setting. a great spot for a relaxed dinner. borago restaurant pasta italian casual dining grayton beach $$",
+    "phone": "(850) 213-4156",
+    "search": "borago grayton beach  grayton beach italian dinner pasta restaurant borago offers classic italian pasta dishes in a cozy, casual setting. a great spot for a relaxed dinner. borago restaurant pasta italian casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -712,31 +711,6 @@
     "image": "/images/restaurants/canopy-road-cafe-seagrove-beach/01.jpg"
   },
   {
-    "slug": "charlies-delights",
-    "name": "Charlies Delights",
-    "area": "Alys Beach",
-    "areaSlug": "alys-beach",
-    "meals": [
-      "Desserts"
-    ],
-    "cuisines": [
-      "American"
-    ],
-    "foods": [
-      "Dessert"
-    ],
-    "price": "$",
-    "lat": 30.2856373,
-    "lng": -86.02856790000001,
-    "address": "67 Somerset Street Unit 102, Alys Beach, FL 32461, USA",
-    "phone": "(850) 909-0200",
-    "search": "charlies delights alys beach  alys beach american desserts dessert dessert charlie\u2019s delights serves ice cream, coffee, and sweet treats in the heart of alys beach. a fun stop for dessert and quick bites. charlies delights dessert dessert desserts american alys beach $",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "image": "/images/restaurants/charlies-delights/01.jpg"
-  },
-  {
     "slug": "charlies-cafe-rosemary-beach",
     "name": "Charlie\u2019s Caf\u00e9",
     "area": "Rosemary Beach",
@@ -763,6 +737,31 @@
     "image": "/images/restaurants/charlies-cafe-rosemary-beach/01.jpg"
   },
   {
+    "slug": "charlies-delights",
+    "name": "Charlie\u2019s Delights",
+    "area": "Alys Beach",
+    "areaSlug": "alys-beach",
+    "meals": [
+      "Desserts"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Dessert"
+    ],
+    "price": "$",
+    "lat": 30.2856373,
+    "lng": -86.02856790000001,
+    "address": "67 Somerset Street Unit 102, Alys Beach, FL 32461, USA",
+    "phone": "(850) 909-0200",
+    "search": "charlie\u2019s delights alys beach  alys beach american desserts dessert dessert charlie\u2019s delights serves ice cream, coffee, and sweet treats in the heart of alys beach. a fun stop for dessert and quick bites. charlie\u2019s delights charlies delights dessert dessert desserts american alys beach $",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": "/images/restaurants/charlies-delights/01.jpg"
+  },
+  {
     "slug": "chiringo-grayton-beach",
     "name": "Chiringo",
     "area": "Grayton Beach",
@@ -781,7 +780,7 @@
     "lat": 30.3295287,
     "lng": -86.16579940000001,
     "address": "63 Hotz Ave, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-7734",
+    "phone": "(850) 399-1604",
     "search": "chiringo grayton beach  grayton beach seafood lunch dinner tacos bar & restaurant chiringo brings coastal flavors and tacos to a beachfront setting with a laid-back vibe. perfect for a casual meal by the water. chiringo bar restaurant tacos seafood casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
@@ -884,7 +883,7 @@
     "lat": 30.33599,
     "lng": -86.163129,
     "address": "51 Uptown Grayton Cir, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 534-0844",
+    "phone": "(850) 608-8221",
     "search": "crackings grayton beach  grayton beach american breakfast breakfast spot restaurant crackings is a favorite for breakfast and brunch, known for generous portions and a welcoming atmosphere. a must for morning dining. crackings restaurant breakfast spot american casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
@@ -1383,7 +1382,7 @@
     "lat": 30.3399335,
     "lng": -86.1653673,
     "address": "37 Logan Ln, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-9800",
+    "phone": "(850) 231-0787",
     "search": "hurricane oyster bar grayton beach  grayton beach seafood lunch dinner oyster bar restaurant hurricane oyster bar offers oysters and seafood in a casual, no-frills environment. a go-to for simple, fresh flavors. hurricane oyster bar restaurant oyster bar seafood casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
@@ -1457,41 +1456,15 @@
       "Ice Cream"
     ],
     "price": "$",
-    "lat": 30.2816213,
-    "lng": -86.01901319999999,
-    "address": "10343 E County Hwy 30A, Alys Beach, FL 32461, USA",
-    "phone": "(850) 231-2399",
+    "lat": 30.2809614,
+    "lng": -86.0153472,
+    "address": "8 Georgetown Ave, Rosemary Beach, FL 32461, USA",
+    "phone": "(850) 399-4000",
     "search": "kilwins rosemary beach  rosemary beach american desserts ice cream dessert kilwins serves ice cream and sweets in a fun, casual environment. a classic dessert stop. kilwins dessert ice cream desserts american casual dining rosemary beach $",
     "outdoor": false,
     "kids": true,
     "music": false,
     "image": "/images/restaurants/kilwins-rosemary-beach/01.jpg"
-  },
-  {
-    "slug": "la-cocina-seacrest",
-    "name": "La Cocina",
-    "area": "Seacrest",
-    "areaSlug": "seacrest",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "Mexican"
-    ],
-    "foods": [
-      "Tacos"
-    ],
-    "price": "$$",
-    "lat": 30.2816635,
-    "lng": -86.0196426,
-    "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
-    "phone": "(850) 231-1160",
-    "search": "la cocina seacrest  seacrest beach mexican lunch dinner tacos restaurant la cocina serves mexican favorites in a relaxed environment. a solid casual dining option. la cocina restaurant tacos mexican casual dining seacrest $$",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "image": "/images/restaurants/la-cocina-seacrest/01.jpg"
   },
   {
     "slug": "la-crema-tapas-and-chocolate-rosemary-beach",
@@ -1519,6 +1492,32 @@
     "kids": false,
     "music": false,
     "image": "/images/restaurants/la-crema-tapas-and-chocolate-rosemary-beach/01.jpg"
+  },
+  {
+    "slug": "la-cocina-seacrest",
+    "name": "LaCo",
+    "area": "Seacrest",
+    "areaSlug": "seacrest",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Mexican"
+    ],
+    "foods": [
+      "Tacos"
+    ],
+    "price": "$$",
+    "lat": 30.2816635,
+    "lng": -86.0196426,
+    "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 231-4021",
+    "search": "laco seacrest  seacrest beach mexican lunch dinner tacos restaurant laco, formerly la cocina, serves latin-inspired lunch and dinner with a coastal twist in seacrest beach. laco la cocina restaurant tacos mexican latin casual dining seacrest $$",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "image": "/images/restaurants/la-cocina-seacrest/01.jpg"
   },
   {
     "slug": "local-cantina",
@@ -2145,7 +2144,7 @@
     "lat": 30.3486892,
     "lng": -86.23189909999999,
     "address": "118 Spires Ln unit 2A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 267-0053",
+    "phone": "(850) 830-7754",
     "search": "renaissance french restaurant gulf place  gulf place french lunch dinner bistro restaurant renaissance french restaurant offers classic french cuisine in an intimate, upscale setting. ideal for a romantic dinner or special occasion. renaissance french restaurant restaurant bistro french fine dining romantic gulf place $$$",
     "outdoor": true,
     "kids": false,
@@ -2643,7 +2642,7 @@
     "lat": 30.3194598,
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-1999",
+    "phone": "(850) 273-8189",
     "search": "the daytrader tiki bar & restaurant seaside  seaside seafood asian lunch dinner tacos bar & restaurant the daytrader tiki bar offers tropical drinks and casual bites in a fun waterfront setting. a relaxed spot for drinks and food. the daytrader tiki bar & restaurant bar restaurant tacos seafood asian waterfront casual dining seaside $$$",
     "outdoor": true,
     "kids": false,
@@ -2698,7 +2697,7 @@
     "lat": 30.310756,
     "lng": -86.10576809999999,
     "address": "4281 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 660-1591",
+    "phone": "(850) 213-0701",
     "search": "the perfect pig seagrove beach  seagrove beach american breakfast lunch dinner breakfast spot sandwiches restaurant the perfect pig offers breakfast, lunch, and dinner with southern-inspired flavors. a versatile favorite. the perfect pig restaurant breakfast spot sandwiches american fine dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
@@ -2724,9 +2723,9 @@
       "Sandwiches"
     ],
     "price": "$$",
-    "lat": 30.3470336,
-    "lng": -86.2281009,
-    "address": "4281 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "lat": 30.3480433,
+    "lng": -86.2303397,
+    "address": "7 Town Center Loop, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 660-1591",
     "search": "the perfect pig gulf place  gulf place american southern breakfast lunch dinner breakfast spot sandwiches restaurant the perfect pig blends southern comfort and coastal flavors with standout breakfast, brunch, and smoked meats. a versatile dining spot all day long. the perfect pig restaurant breakfast spot sandwiches american southern casual dining gulf place $$",
     "outdoor": true,
@@ -2833,7 +2832,7 @@
     "lat": 30.3230844,
     "lng": -86.14425849999999,
     "address": "1735 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 534-5722",
+    "phone": "(850) 231-1323",
     "search": "the wine bar watercolor  watercolor american lunch dinner wine bar & restaurant the wine bar offers a curated selection of wines in an upscale yet relaxed environment. ideal for drinks and small plates. the wine bar bar restaurant wine american wine bar upscale watercolor $$",
     "outdoor": true,
     "kids": false,
@@ -2841,10 +2840,10 @@
     "image": "/images/restaurants/the-wine-bar-watercolor/01.jpg"
   },
   {
-    "slug": "tichelis-pizza-rosemary-beach",
+    "slug": "tichelis-pizza-seacrest",
     "name": "Ticheli\u2019s Pizza",
-    "area": "Rosemary Beach",
-    "areaSlug": "rosemary-beach",
+    "area": "Seacrest",
+    "areaSlug": "seacrest",
     "meals": [
       "Lunch",
       "Dinner"
@@ -2860,11 +2859,11 @@
     "lng": -86.01915749999999,
     "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
     "phone": "(850) 502-3777",
-    "search": "ticheli\u2019s pizza rosemary beach  rosemary beach italian lunch dinner pizza restaurant ticheli\u2019s pizza serves classic pizza in a laid-back setting. a reliable casual option. ticheli\u2019s pizza restaurant pizza italian casual dining rosemary beach $$",
+    "search": "ticheli\u2019s pizza seacrest  seacrest beach italian lunch dinner pizza restaurant ticheli\u2019s pizza serves classic pizza in a laid-back setting. a reliable casual option. ticheli\u2019s pizza restaurant pizza italian casual dining seacrest $$",
     "outdoor": true,
     "kids": true,
     "music": false,
-    "image": "/images/restaurants/tichelis-pizza-rosemary-beach/01.jpg"
+    "image": "/images/restaurants/tichelis-pizza-seacrest/01.jpg"
   },
   {
     "slug": "turbo-coffee",
@@ -2915,33 +2914,6 @@
     "kids": true,
     "music": false,
     "image": "/images/restaurants/village-market-cafe-bar-watersound-origins/01.jpg"
-  },
-  {
-    "slug": "vue-on-30a-dune-allen-beach",
-    "name": "Vue on 30A",
-    "area": "Dune Allen Beach",
-    "areaSlug": "dune-allen-beach",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "American",
-      "Seafood"
-    ],
-    "foods": [
-      "Steak"
-    ],
-    "price": "$$$",
-    "lat": 30.3482891,
-    "lng": -86.2363701,
-    "address": "4801 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 267-1240",
-    "search": "vue on 30a dune allen beach  dune allen beach american seafood lunch dinner steak restaurant perched high above the gulf, vue on 30a delivers stunning views alongside an elevated dining experience. with fresh seafood and steaks, it\u2019s ideal for a romantic night out. vue on 30a restaurant steak american seafood fine dining waterfront romantic dune allen beach $$$",
-    "outdoor": true,
-    "kids": false,
-    "music": false,
-    "image": "/images/restaurants/vue-on-30a-dune-allen-beach/01.jpg"
   },
   {
     "slug": "wild-bills-beach-dogs-seaside",

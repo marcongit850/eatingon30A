@@ -1054,7 +1054,10 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
                 "name": "Restaurants along 30A",
                 "url": ORIGIN + "/restaurants/",
                 "isPartOf": {"@id": ORIGIN + "/#website"},
-                "description": "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. All 114 listings are here.",
+                "description": (
+                    "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. "
+                    f"All {len(restaurants)} listings are here."
+                ),
             },
             {
                 "@type": "ItemList",
@@ -1077,7 +1080,8 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         ROOT / "restaurants" / "index.html",
         layout(
             "Restaurants along 30A | Eating on 30A",
-            "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. All 114 listings are here.",
+            "Search restaurants on Scenic Highway 30A in Walton County, Florida, by town, meal, and cuisine. "
+            f"All {len(restaurants)} listings are here.",
             "/restaurants/",
             "restaurants",
             body,

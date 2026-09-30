@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 114, f"full CSV should stay at 114 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 114, "public json should include every published restaurant")
+check(len(source) == 113, f"full CSV should stay at 113 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 113, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -74,7 +74,7 @@ check(not missing_coords, f"listings missing address or coordinates: {missing_co
 photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 check(missing_photos == ["steamboat-grill-30a-seagrove-beach"], f"only Steamboat Grill should keep a monogram, got {missing_photos}")
-check(len(photos) == 113, f"expected 113 restaurant photos, got {len(photos)}")
+check(len(photos) == 112, f"expected 112 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(build.listing_photos("steamboat-grill-30a-seagrove-beach") == [], "Steamboat has no photo folder")
 oku_photo = build.listing_photos("o-ku-alys-beach")
@@ -182,7 +182,7 @@ check("1 restaurant on the map" in site_js and "restaurants on the map" in site_
 check("place on the map" not in site_js, "map count should not say place")
 check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
 dune = (ROOT / "areas" / "dune-allen-beach" / "index.html").read_text(encoding="utf-8")
-check("Show 7 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
+check("Show 6 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
 check("Gulf Place" in (ROOT / "areas" / "gulf-place" / "index.html").read_text(encoding="utf-8"), "Gulf Place stays a place name")
 for area_page in (ROOT / "areas").glob("*/index.html"):
     text = area_page.read_text(encoding="utf-8")
