@@ -1262,7 +1262,7 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro"><p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
-        "<p class=\"lede\">The same filters as the directory. Each pin uses the address and coordinates stored with that restaurant. Open a pin for the name, the street address, and the profile.</p>"
+        "<p class=\"lede\">Explore restaurants on the map using the same filters as the directory. Tap a pin to see the restaurant name, street address, and full profile.</p>"
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
