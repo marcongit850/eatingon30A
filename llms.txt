@@ -58,8 +58,8 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Café Thirty-A](https://eatingon30a.352marc.workers.dev/restaurants/cafe-thirty-a-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
 - [Canopy Road Café](https://eatingon30a.352marc.workers.dev/restaurants/canopy-road-cafe-inlet-beach/): Inlet Beach on Scenic Highway 30A.
 - [Canopy Road Café](https://eatingon30a.352marc.workers.dev/restaurants/canopy-road-cafe-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
-- [Charlies Delights](https://eatingon30a.352marc.workers.dev/restaurants/charlies-delights/): Alys Beach on Scenic Highway 30A.
 - [Charlie’s Café](https://eatingon30a.352marc.workers.dev/restaurants/charlies-cafe-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Charlie’s Delights](https://eatingon30a.352marc.workers.dev/restaurants/charlies-delights/): Alys Beach on Scenic Highway 30A.
 - [Chiringo](https://eatingon30a.352marc.workers.dev/restaurants/chiringo-grayton-beach/): Grayton Beach on Scenic Highway 30A.
 - [Cowgirl Kitchen](https://eatingon30a.352marc.workers.dev/restaurants/cowgirl-kitchen-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
 - [Cowgirl Kitchen (Blue Mountain)](https://eatingon30a.352marc.workers.dev/restaurants/cowgirl-kitchen-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
@@ -87,8 +87,8 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Idyll Hounds Proper](https://eatingon30a.352marc.workers.dev/restaurants/idyll-hounds-proper-inlet-beach/): Inlet Beach on Scenic Highway 30A.
 - [Johnny McTighe’s Irish Pub](https://eatingon30a.352marc.workers.dev/restaurants/johnny-mctighes-irish-pub-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
 - [Kilwins](https://eatingon30a.352marc.workers.dev/restaurants/kilwins-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
-- [La Cocina](https://eatingon30a.352marc.workers.dev/restaurants/la-cocina-seacrest/): Seacrest on Scenic Highway 30A.
 - [La Crema Tapas & Chocolate](https://eatingon30a.352marc.workers.dev/restaurants/la-crema-tapas-and-chocolate-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [LaCo](https://eatingon30a.352marc.workers.dev/restaurants/la-cocina-seacrest/): Seacrest on Scenic Highway 30A.
 - [Local Cantina](https://eatingon30a.352marc.workers.dev/restaurants/local-cantina/): Seagrove Beach on Scenic Highway 30A.
 - [Local Catch Bar & Grill](https://eatingon30a.352marc.workers.dev/restaurants/local-catch-bar-and-grill-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
 - [Lola Coastal Italian](https://eatingon30a.352marc.workers.dev/restaurants/lola-coastal-italian-seacrest/): Seacrest on Scenic Highway 30A.
@@ -139,10 +139,9 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [The Shrimp Shack](https://eatingon30a.352marc.workers.dev/restaurants/the-shrimp-shack-seaside/): Seaside on Scenic Highway 30A.
 - [The Summer Kitchen Café](https://eatingon30a.352marc.workers.dev/restaurants/the-summer-kitchen-cafe-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
 - [The Wine Bar](https://eatingon30a.352marc.workers.dev/restaurants/the-wine-bar-watercolor/): WaterColor on Scenic Highway 30A.
-- [Ticheli’s Pizza](https://eatingon30a.352marc.workers.dev/restaurants/tichelis-pizza-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
+- [Ticheli’s Pizza](https://eatingon30a.352marc.workers.dev/restaurants/tichelis-pizza-seacrest/): Seacrest on Scenic Highway 30A.
 - [Turbo Coffee](https://eatingon30a.352marc.workers.dev/restaurants/turbo-coffee/): Seagrove Beach on Scenic Highway 30A.
 - [Village Market Café + Bar](https://eatingon30a.352marc.workers.dev/restaurants/village-market-cafe-bar-watersound-origins/): Watersound Origins on Scenic Highway 30A.
-- [Vue on 30A](https://eatingon30a.352marc.workers.dev/restaurants/vue-on-30a-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
 - [Wild Bill’s Beach Dogs](https://eatingon30a.352marc.workers.dev/restaurants/wild-bills-beach-dogs-seaside/): Seaside on Scenic Highway 30A.
 - [Wild Nectar](https://eatingon30a.352marc.workers.dev/restaurants/wild-nectar-seaside/): Seaside on Scenic Highway 30A.
 
