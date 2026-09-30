@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 136, f"full CSV should stay at 136 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 136, "public json should include every published restaurant")
+check(len(source) == 135, f"full CSV should stay at 135 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 135, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -88,7 +88,7 @@ expected_monograms = [
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 124, f"expected 124 restaurant photos, got {len(photos)}")
+check(len(photos) == 123, f"expected 123 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
@@ -218,7 +218,7 @@ check("1 restaurant on the map" in site_js and "restaurants on the map" in site_
 check("place on the map" not in site_js, "map count should not say place")
 check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
 dune = (ROOT / "areas" / "dune-allen-beach" / "index.html").read_text(encoding="utf-8")
-check("Show 6 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
+check("Show 5 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
 check("Gulf Place" in (ROOT / "areas" / "gulf-place" / "index.html").read_text(encoding="utf-8"), "Gulf Place stays a place name")
 for area_page in (ROOT / "areas").glob("*/index.html"):
     text = area_page.read_text(encoding="utf-8")

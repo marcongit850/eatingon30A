@@ -73,7 +73,7 @@
     "lng": -86.1370358,
     "address": "87 Central Square, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-7327",
-    "search": "87 central square seaside  seaside american lunch dinner bistro restaurant 87 central square offers a mix of casual dining and drinks in a central location. a convenient and versatile option. 87 central square restaurant bistro american casual dining seaside $$$",
+    "search": "87 central square seaside  seaside american lunch dinner bistro restaurant 87 central square is a seaside gathering spot on central square. the bar opens at 11am and the dining room at 4pm. 87 central square restaurant bistro american casual dining seaside $$$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -98,9 +98,9 @@
     "price": "$$$",
     "lat": 30.27989839999999,
     "lng": -86.0092701,
-    "address": "12805 US-98 t 101, Inlet Beach, FL 32461, USA",
+    "address": "12805 US-98 Suite T101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 493-6437",
-    "search": "aja 30a inlet beach 30avenue inlet beach | 30avenue asian japanese lunch dinner sushi restaurant aja 30a offers asian-inspired cuisine in an upscale setting. a great dinner option. aja 30a restaurant sushi asian japanese grab go inlet beach $$$",
+    "search": "aja 30a inlet beach 30avenue inlet beach | 30avenue asian japanese lunch dinner sushi restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$",
     "outdoor": true,
     "kids": false,
     "music": false,
@@ -231,7 +231,7 @@
     "price": "$$",
     "lat": 30.280693,
     "lng": -86.0096013,
-    "address": "12805 US-98 Suite R 101, Inlet Beach, FL 32461, USA",
+    "address": "12805 US-98 Suite R101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-0555",
     "search": "amici 30a italian kitchen inlet beach 30avenue inlet beach | 30avenue italian lunch dinner pasta restaurant amici italian kitchen serves classic italian dishes in a casual environment. a welcoming spot. amici 30a italian kitchen restaurant pasta italian casual dining inlet beach $$",
     "outdoor": true,
@@ -257,7 +257,7 @@
     "price": "$$",
     "lat": 30.2816501,
     "lng": -86.00922249999999,
-    "address": "12805 US-98 q 101, Inlet Beach, FL 32461, USA",
+    "address": "12805 US-98 Suite Q101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-0555",
     "search": "amigos 30a mexican kitchen inlet beach 30avenue inlet beach | 30avenue mexican lunch dinner tacos restaurant amigos mexican kitchen offers traditional mexican fare in a relaxed setting. a go-to for tacos. amigos 30a mexican kitchen restaurant tacos mexican casual dining inlet beach $$",
     "outdoor": true,
@@ -527,7 +527,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Bakery",
@@ -538,7 +539,7 @@
     "lng": -86.2035238,
     "address": "2217 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 267-0400",
-    "search": "blue mountain bakery blue mountain beach  blue mountain beach american breakfast lunch bakery cafe cafe / coffee blue mountain bakery is a cozy spot for fresh pastries, coffee, and light bites. perfect for a relaxed morning along 30a. blue mountain bakery cafe coffee bakery cafe american casual dining blue mountain beach $$",
+    "search": "blue mountain bakery blue mountain beach  blue mountain beach american cafe breakfast lunch bakery cafe cafe / coffee blue mountain bakery is a cozy spot for fresh pastries, coffee, and light bites. perfect for a relaxed morning along 30a. blue mountain bakery cafe coffee bakery cafe american casual dining blue mountain beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -592,7 +593,7 @@
     "lng": -86.1088933,
     "address": "4101 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-4544",
-    "search": "boggy boys pizza seagrove beach  seagrove beach italian american lunch dinner pizza restaurant boggy boys pizza serves new york-style pies, garlic knuckles, and slices on county highway 30a in seagrove beach, with beer and wine at this shop. boggy boys pizza new york pizza seagrove beach $$",
+    "search": "boggy boys pizza seagrove beach  seagrove beach italian american lunch dinner pizza restaurant boggy boys pizza serves new york-style pies, garlic knuckles, and slices on county highway 30a in seagrove beach, with beer and wine at this shop. formerly brozinni pizzeria. boggy boys pizza new york pizza seagrove beach $$",
     "outdoor": false,
     "kids": true,
     "music": true,
@@ -648,32 +649,6 @@
     "kids": true,
     "music": true,
     "image": null
-  },
-  {
-    "slug": "brozinni-pizzeria-seagrove-beach",
-    "name": "Brozinni Pizzeria",
-    "area": "Seagrove Beach",
-    "areaSlug": "seagrove-beach",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "Italian"
-    ],
-    "foods": [
-      "Pizza"
-    ],
-    "price": "$$",
-    "lat": 30.3369,
-    "lng": -86.1661567,
-    "address": "41 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-2060",
-    "search": "brozinni pizzeria seagrove beach  seagrove beach italian lunch dinner pizza restaurant brozinni pizzeria serves classic new york-style pizza in a casual setting. a go-to for pizza lovers. brozinni pizzeria restaurant pizza italian casual dining seagrove beach $$",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "image": "/images/restaurants/brozinni-pizzeria-seagrove-beach/01.jpg"
   },
   {
     "slug": "brunos-pizza-watersound",
@@ -836,7 +811,6 @@
     "area": "Seagrove Beach",
     "areaSlug": "seagrove-beach",
     "meals": [
-      "Lunch",
       "Dinner"
     ],
     "cuisines": [
@@ -851,7 +825,7 @@
     "lng": -86.11194859999999,
     "address": "3899 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-2166",
-    "search": "caf\u00e9 thirty-a seagrove beach  seagrove beach american seafood lunch dinner bistro restaurant caf\u00e9 thirty-a delivers an upscale dining experience with refined coastal cuisine. a top choice for date nights. caf\u00e9 thirty-a restaurant bistro american seafood casual dining seagrove beach $$$",
+    "search": "caf\u00e9 thirty-a seagrove beach  seagrove beach american seafood dinner bistro restaurant caf\u00e9 thirty-a is a seagrove dinner restaurant on scenic highway 30a, open from 4:30pm. reservations are required. caf\u00e9 thirty-a restaurant bistro american seafood casual dining seagrove beach $$$",
     "outdoor": true,
     "kids": false,
     "music": false,
@@ -995,11 +969,12 @@
     "area": "Rosemary Beach",
     "areaSlug": "rosemary-beach",
     "meals": [
-      "Lunch",
-      "Dinner"
+      "Breakfast",
+      "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe"
@@ -1009,7 +984,7 @@
     "lng": -86.01550399999999,
     "address": "46 N Barrett Square #101, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 213-3462",
-    "search": "charlie\u2019s caf\u00e9 rosemary beach  rosemary beach american lunch dinner cafe cafe / coffee charlie\u2019s caf\u00e9 offers breakfast and lunch in a casual environment. a simple and reliable option. charlie\u2019s caf\u00e9 cafe coffee cafe american casual dining rosemary beach $$",
+    "search": "charlie\u2019s caf\u00e9 rosemary beach  rosemary beach american cafe breakfast lunch cafe cafe / coffee charlie\u2019s caf\u00e9 serves breakfast and lunch at 46 n barrett square in rosemary beach, including bowls, sandwiches, and coffee. charlie\u2019s caf\u00e9 cafe coffee cafe american casual dining rosemary beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1073,6 +1048,7 @@
     "area": "Rosemary Beach",
     "areaSlug": "rosemary-beach",
     "meals": [
+      "Breakfast",
       "Lunch",
       "Dinner"
     ],
@@ -1087,7 +1063,7 @@
     "lng": -86.0170035,
     "address": "54 Main St, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 213-0058",
-    "search": "cowgirl kitchen rosemary beach  rosemary beach american lunch dinner sandwiches restaurant cowgirl kitchen provides casual dining with a variety of comfort foods. a dependable stop. cowgirl kitchen restaurant sandwiches american casual dining rosemary beach $$",
+    "search": "cowgirl kitchen rosemary beach  rosemary beach american breakfast lunch dinner sandwiches restaurant cowgirl kitchen on main street in rosemary beach serves breakfast, lunch, and dinner. cowgirl kitchen restaurant sandwiches american casual dining rosemary beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1177,8 +1153,10 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch",
-      "Dinner"
+      "Dinner",
+      "Desserts"
     ],
     "cuisines": [
       "French"
@@ -1190,9 +1168,9 @@
     "price": "$$",
     "lat": 30.3194598,
     "lng": -86.1376636,
-    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "address": "2215 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "",
-    "search": "crepes du soleil seaside airstream row seaside | airstream row french lunch dinner crepes dessert food truck crepes du soleil offers sweet and savory crepes in a charming setting. a unique and delicious option for breakfast or dessert. crepes du soleil food truck crepes dessert french casual dining seaside $$",
+    "search": "crepes du soleil seaside airstream row seaside | airstream row french breakfast lunch dinner desserts crepes dessert food truck cr\u00eapes du soleil is an airstream on seaside\u2019s row, with sweet and savory crepes for breakfast, lunch, dinner, and dessert. crepes du soleil food truck crepes dessert french casual dining seaside $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1204,7 +1182,6 @@
     "area": "Inlet Beach",
     "areaSlug": "inlet-beach",
     "meals": [
-      "Lunch",
       "Dinner"
     ],
     "cuisines": [
@@ -1217,9 +1194,9 @@
     "price": "$$$",
     "lat": 30.2810188,
     "lng": -86.01035060000001,
-    "address": "12805 US-98 D101, Alys Beach, FL 32461, USA",
+    "address": "12805 US-98 Suite D101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-0111",
-    "search": "cuvee 30a inlet beach 30avenue inlet beach | 30avenue american seafood lunch dinner bistro restaurant cuvee 30a delivers upscale dining with a refined menu. perfect for a special evening. cuvee 30a restaurant bistro american seafood fine dining romantic inlet beach $$$",
+    "search": "cuvee 30a inlet beach 30avenue inlet beach | 30avenue american seafood dinner bistro restaurant cuvee 30a is chef tim creehan\u2019s dinner restaurant at 30avenue in inlet beach, open monday through saturday from 4pm. cuvee 30a restaurant bistro american seafood fine dining romantic inlet beach $$$",
     "outdoor": true,
     "kids": false,
     "music": false,
@@ -1379,7 +1356,7 @@
     "price": "$$",
     "lat": 30.2982357,
     "lng": -86.02559269999999,
-    "address": "11285 US Hwy 98 E a102, Inlet Beach, FL 32461, USA",
+    "address": "11285 US Hwy 98 E Unit A102, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-0555",
     "search": "friends 30a burger bar watersound origins town center watersound origins | town center american lunch dinner burgers restaurant friends 30a burger bar serves classic burgers in a casual setting. a simple, satisfying option. friends 30a burger bar restaurant burgers american casual dining watersound origins $$",
     "outdoor": true,
@@ -1487,9 +1464,9 @@
     "price": "$$",
     "lat": 30.2816501,
     "lng": -86.00922249999999,
-    "address": "12805 US-98, Inlet Beach, FL 32461, USA",
-    "phone": "(850) 909-0888",
-    "search": "goatfeathers seafood market inlet beach 30avenue inlet beach | 30avenue seafood lunch dinner seafood market food market / prepared food goatfeathers seafood market offers fresh seafood for takeout. ideal for quick meals. goatfeathers seafood market food market prepared food seafood market seafood grab go inlet beach $$",
+    "address": "12805 US-98 Suite O101, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 909-0090",
+    "search": "goatfeathers seafood market inlet beach 30avenue inlet beach | 30avenue seafood lunch dinner seafood market food market / prepared food goatfeathers\u2019 30avenue market and cafe in inlet beach sells fresh seafood to go and plates to eat there. goatfeathers seafood market food market prepared food seafood market seafood grab go inlet beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1511,11 +1488,11 @@
       "Seafood Market"
     ],
     "price": "$$",
-    "lat": 30.3128778,
-    "lng": -86.1124777,
-    "address": "3865 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-5959",
-    "search": "goatfeathers seafood market (east) seagrove beach  seagrove beach seafood lunch dinner seafood market food market / prepared food goatfeathers seafood market provides fresh seafood to-go. ideal for quick meals or cooking at home. goatfeathers seafood market (east) food market prepared food seafood market seafood grab go seagrove beach $$",
+    "lat": 30.3113968,
+    "lng": -86.1099179,
+    "address": "4042 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-4004",
+    "search": "goatfeathers seafood market (east) seagrove beach  seagrove beach seafood lunch dinner seafood market food market / prepared food goatfeathers\u2019 seagrove market sells local seafood to go at 4042 e county highway 30a, open daily from 10am to 6pm. goatfeathers seafood market (east) food market prepared food seafood market seafood grab go seagrove beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -1541,7 +1518,7 @@
     "lng": -86.2212809,
     "address": "3865 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 267-2627",
-    "search": "goatfeathers seafood restaurant dune allen beach  dune allen beach seafood lunch dinner seafood market restaurant a longtime local favorite, goatfeathers serves up fresh, no-frills seafood in a relaxed setting. it\u2019s a go-to spot for fried baskets and casual coastal dining. goatfeathers seafood restaurant restaurant seafood market seafood casual dining dune allen beach $$",
+    "search": "goatfeathers seafood restaurant dune allen beach  dune allen beach seafood lunch dinner seafood market restaurant goatfeathers\u2019 dining room at 3865 w county highway 30a is marked temporarily closed on the restaurant\u2019s site. the west seafood market at the same address is still listed there. goatfeathers seafood restaurant restaurant seafood market seafood casual dining dune allen beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1607,7 +1584,9 @@
     "name": "Grayton Seafood Co.",
     "area": "Grayton Beach",
     "areaSlug": "grayton-beach",
-    "meals": [],
+    "meals": [
+      "Dinner"
+    ],
     "cuisines": [
       "Seafood"
     ],
@@ -1619,7 +1598,7 @@
     "lng": -86.16355209999999,
     "address": "50 Uptown Grayton Cir, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 534-0900",
-    "search": "grayton seafood co. grayton beach  grayton beach seafood  raw bar restaurant grayton seafood co. serves fresh seafood and raw bar favorites in a relaxed setting. a solid choice for a classic seafood meal. grayton seafood co. restaurant raw bar seafood casual dining grayton beach $$",
+    "search": "grayton seafood co. grayton beach  grayton beach seafood dinner raw bar restaurant grayton seafood co. serves fresh seafood and raw bar favorites at dinner in grayton beach. grayton seafood co. restaurant raw bar seafood casual dining grayton beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1658,6 +1637,7 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch",
       "Dinner"
     ],
@@ -1672,8 +1652,8 @@
     "lat": 30.3206462,
     "lng": -86.1372932,
     "address": "83 Central Square, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-7327",
-    "search": "great southern cafe seaside town center seaside | town center american southern lunch dinner bistro restaurant great southern cafe blends southern flavors with coastal cuisine in a lively setting. a popular choice for any meal. great southern cafe restaurant bistro american southern casual dining seaside $$",
+    "phone": "(850) 752-9191",
+    "search": "great southern cafe seaside town center seaside | town center american southern breakfast lunch dinner bistro restaurant great southern cafe is jim shirley\u2019s seaside restaurant on central square, blending southern cooking with gulf seafood. open daily from 8am, with breakfast until 10:45am. great southern cafe restaurant bistro american southern casual dining seaside $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -1682,8 +1662,8 @@
   {
     "slug": "growler-garage-30a-dune-allen-beach",
     "name": "Growler Garage 30A",
-    "area": "Dune Allen Beach",
-    "areaSlug": "dune-allen-beach",
+    "area": "Gulf Place",
+    "areaSlug": "gulf-place",
     "meals": [
       "Lunch",
       "Dinner"
@@ -1691,15 +1671,13 @@
     "cuisines": [
       "American"
     ],
-    "foods": [
-      "Sandwiches"
-    ],
+    "foods": [],
     "price": "$$",
     "lat": 30.34733069999999,
     "lng": -86.2293839,
-    "address": "4368 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 660-3612",
-    "search": "growler garage 30a dune allen beach  dune allen beach american lunch dinner sandwiches bar & restaurant growler garage offers a rotating selection of craft beers and casual eats in a laid-back setting. perfect for beer lovers looking to hang out and explore new brews. growler garage 30a bar restaurant sandwiches american bar dune allen beach $$",
+    "address": "4368 W County Hwy 30A Suite 101, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-1965",
+    "search": "growler garage 30a gulf place  gulf place american lunch dinner  bar & restaurant growler garage is a craft-beer taproom in gulf place, across from the ed walline beach access, with growlers to go. growler garage 30a bar restaurant sandwiches american bar dune allen beach $$",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -1834,7 +1812,7 @@
     "price": "$$",
     "lat": 30.2812105,
     "lng": -86.0101327,
-    "address": "12805 US-98 E101, Alys Beach, FL 32461, USA",
+    "address": "12805 US-98 Suite E101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 909-9041",
     "search": "idyll hounds proper inlet beach 30avenue inlet beach | 30avenue american lunch dinner sandwiches bar & restaurant idyll hounds proper serves sandwiches and drinks in a casual setting. a great hangout spot. idyll hounds proper bar restaurant sandwiches american casual dining inlet beach $$",
     "outdoor": true,
@@ -1954,7 +1932,8 @@
     "area": "Seagrove Beach",
     "areaSlug": "seagrove-beach",
     "meals": [
-      "Lunch"
+      "Lunch",
+      "Dinner"
     ],
     "cuisines": [
       "Mexican"
@@ -1967,7 +1946,7 @@
     "lng": -86.099245,
     "address": "4749 E County Hwy 30A #103, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 931-2199",
-    "search": "local cantina seagrove beach  seagrove beach mexican lunch tacos bar & restaurant local cantina offers tacos, margaritas, and mexican-inspired dishes in a lively casual setting. a fun option for drinks and casual dining in seagrove beach. local cantina bar restaurant tacos mexican casual dining seagrove beach $$",
+    "search": "local cantina seagrove beach  seagrove beach mexican lunch dinner tacos bar & restaurant local cantina offers tacos, margaritas, and mexican-inspired dishes in a lively casual setting. a fun option for drinks and casual dining in seagrove beach. local cantina bar restaurant tacos mexican casual dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -2071,9 +2050,9 @@
     "price": "$$",
     "lat": 30.3194598,
     "lng": -86.1376636,
-    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "",
-    "search": "meltdown on 30a seaside airstream row seaside | airstream row american lunch dinner sandwiches food truck meltdown on 30a focuses on gourmet grilled cheese sandwiches in a quick, casual setting. comfort food done right. meltdown on 30a food truck sandwiches american fast casual seaside $$",
+    "address": "2235 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-0952",
+    "search": "meltdown on 30a seaside airstream row seaside | airstream row american lunch dinner sandwiches food truck meltdown on 30a is an airstream on seaside\u2019s row, making grilled cheese sandwiches. meltdown on 30a food truck sandwiches american fast casual seaside $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -2306,11 +2285,11 @@
       "Raw Bar"
     ],
     "price": "$$$",
-    "lat": 30.3136195,
-    "lng": -86.0916446,
-    "address": "5235 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "lat": 30.3137206,
+    "lng": -86.0919494,
+    "address": "33 Heron\u2019s Watch Way, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 534-3045",
-    "search": "old florida fish house seagrove beach  seagrove beach seafood japanese sushi lunch dinner raw bar bar & restaurant old florida fish house offers seafood with waterfront views in a relaxed setting. a scenic dining option. old florida fish house bar restaurant raw bar seafood japanese sushi casual dining seagrove beach $$$",
+    "search": "old florida fish house seagrove beach  seagrove beach seafood japanese sushi lunch dinner raw bar bar & restaurant old florida fish house sits on eastern lake at 33 heron\u2019s watch way, with gulf seafood, a sushi bar, and lunch and dinner. old florida fish house bar restaurant raw bar seafood japanese sushi casual dining seagrove beach $$$",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -2590,7 +2569,8 @@
       "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -2602,7 +2582,7 @@
     "lng": -86.1227498,
     "address": "100 S Andalusia Ave, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-3023",
-    "search": "prema organic caf\u00e9 seagrove beach  seagrove beach american breakfast lunch cafe juice & bowls smoothies cafe / coffee prema organic caf\u00e9 focuses on healthy, organic options in a relaxed setting. great for light meals. prema organic caf\u00e9 cafe coffee cafe juice bowls smoothies american casual dining seagrove beach $$",
+    "search": "prema organic caf\u00e9 seagrove beach  seagrove beach american cafe breakfast lunch cafe juice & bowls smoothies cafe / coffee prema organic caf\u00e9 serves organic bowls, juices, and coffee in seagrove. prema organic caf\u00e9 cafe coffee cafe juice bowls smoothies american casual dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3118,7 +3098,6 @@
     "area": "Seagrove Beach",
     "areaSlug": "seagrove-beach",
     "meals": [
-      "Lunch",
       "Dinner"
     ],
     "cuisines": [
@@ -3133,7 +3112,7 @@
     "lng": -86.1296546,
     "address": "2743 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-4200",
-    "search": "surfing deer seagrove beach  seagrove beach american seafood lunch dinner bistro restaurant surfing deer provides upscale dining with creative dishes in a refined setting. perfect for a special night out. surfing deer restaurant bistro american seafood casual dining seagrove beach $$$",
+    "search": "surfing deer seagrove beach  seagrove beach american seafood dinner bistro restaurant surfing deer serves dinner in seagrove at the corner of county highway 30a and 395. open monday through saturday from 4:30pm, closed sunday. surfing deer restaurant bistro american seafood casual dining seagrove beach $$$",
     "outdoor": true,
     "kids": false,
     "music": false,
@@ -3178,13 +3157,15 @@
     "cuisines": [
       "American"
     ],
-    "foods": [],
+    "foods": [
+      "Food Hall"
+    ],
     "price": "$$",
-    "lat": 30.3012936,
-    "lng": -86.0649395,
-    "address": "36 Hub Ln Building A, Watersound, FL 32461, USA",
-    "phone": "",
-    "search": "the big chill watersound the big chill watersound | the big chill american lunch dinner  food hall / vendor the big chill offers a variety of food options with a family-friendly atmosphere. a fun spot for groups. the big chill food hall vendor american casual dining live music watersound $$",
+    "lat": 30.3012018,
+    "lng": -86.0641901,
+    "address": "20 Hub Lane, Watersound, FL 32461, USA",
+    "phone": "(850) 213-0782",
+    "search": "the big chill watersound the big chill watersound | the big chill american lunch dinner food hall food hall / vendor the big chill is a watersound food hall on county highway 30a, with counters for burgers, barbecue, tacos, seafood, pizza, coffee, and ice cream. the big chill food hall vendor american casual dining live music watersound $$",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -3251,21 +3232,23 @@
     "areaSlug": "inlet-beach",
     "meals": [
       "Breakfast",
-      "Lunch"
+      "Lunch",
+      "Dinner"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Dessert"
     ],
     "foods": [
       "Donuts",
       "Bakery"
     ],
     "price": "$$",
-    "lat": 30.297359,
-    "lng": -86.0255451,
-    "address": "12983 US Hwy 98 E, Vernon, FL 32462, USA",
+    "lat": 30.2792059,
+    "lng": -86.00851,
+    "address": "12983 US-98 E, Inlet Beach, FL 32413, USA",
     "phone": "(850) 213-3127",
-    "search": "the donut hole inlet beach 98 corridor inlet beach | 98 corridor american breakfast lunch donuts bakery restaurant the donut hole is famous for donuts and breakfast favorites in a family-friendly setting. a must-visit. the donut hole restaurant donuts bakery american casual dining inlet beach $$",
+    "search": "the donut hole inlet beach 98 corridor inlet beach | 98 corridor american dessert breakfast lunch dinner donuts bakery restaurant the donut hole is a bakery and diner at the east end of 30a, known for fresh donuts and pies plus breakfast, lunch, and dinner. the donut hole restaurant donuts bakery american casual dining inlet beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3282,7 +3265,8 @@
       "Dinner"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Southern"
     ],
     "foods": [
       "Breakfast Spot",
@@ -3293,7 +3277,7 @@
     "lng": -86.10576809999999,
     "address": "4281 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-0701",
-    "search": "the perfect pig seagrove beach  seagrove beach american breakfast lunch dinner breakfast spot sandwiches restaurant the perfect pig offers breakfast, lunch, and dinner with southern-inspired flavors. a versatile favorite. the perfect pig restaurant breakfast spot sandwiches american fine dining seagrove beach $$",
+    "search": "the perfect pig seagrove beach  seagrove beach american southern breakfast lunch dinner breakfast spot sandwiches restaurant the perfect pig in seagrove serves southern breakfast, lunch, and dinner, including biscuits, grits, and sandwiches, with a break from 3pm to 5pm. the perfect pig restaurant breakfast spot sandwiches american fine dining seagrove beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3416,11 +3400,12 @@
     "area": "Rosemary Beach",
     "areaSlug": "rosemary-beach",
     "meals": [
-      "Lunch",
-      "Dinner"
+      "Breakfast",
+      "Lunch"
     ],
     "cuisines": [
-      "American"
+      "American",
+      "Cafe"
     ],
     "foods": [
       "Cafe",
@@ -3431,7 +3416,7 @@
     "lng": -86.0172992,
     "address": "78 Main St, Rosemary Beach, FL 32461, USA",
     "phone": "(850) 213-0521",
-    "search": "the summer kitchen caf\u00e9 rosemary beach  rosemary beach american lunch dinner cafe sandwiches restaurant the summer kitchen caf\u00e9 provides casual breakfast and lunch options. a relaxed daytime stop. the summer kitchen caf\u00e9 restaurant cafe sandwiches american casual dining rosemary beach $$",
+    "search": "the summer kitchen caf\u00e9 rosemary beach  rosemary beach american cafe breakfast lunch cafe sandwiches restaurant the summer kitchen caf\u00e9 was rosemary beach\u2019s first restaurant. it is in the red building under the rosemary beach inn on main street, with breakfast and lunch daily from 7:30am to 3pm. the summer kitchen caf\u00e9 restaurant cafe sandwiches american casual dining rosemary beach $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3531,14 +3516,14 @@
       "Southern"
     ],
     "foods": [
-      "Sandwiches"
+      "Bistro"
     ],
     "price": "$$",
     "lat": 30.29568859999999,
     "lng": -86.0231543,
     "address": "86 N Watersound Parkway, Inlet Beach, FL 32461, USA",
     "phone": "(850) 563-8110",
-    "search": "village market caf\u00e9 + bar watersound origins town center watersound origins | town center seafood southern lunch dinner sandwiches restaurant village market caf\u00e9 + bar combines casual dining with drinks in a central location. a versatile choice. village market caf\u00e9 + bar restaurant sandwiches seafood southern casual dining bar watersound origins $$",
+    "search": "village market caf\u00e9 + bar watersound origins town center watersound origins | town center seafood southern lunch dinner bistro restaurant village market caf\u00e9 + bar is the watersound town center sister of seagrove village market, with seafood, southern plates, a full bar, and a takeaway counter. village market caf\u00e9 + bar restaurant sandwiches seafood southern casual dining bar watersound origins $$",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -3550,6 +3535,7 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch",
       "Dinner"
     ],
@@ -3562,9 +3548,9 @@
     "price": "$",
     "lat": 30.3194598,
     "lng": -86.1376636,
-    "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "",
-    "search": "wild bill\u2019s beach dogs seaside airstream row seaside | airstream row american lunch dinner hot dogs food truck wild bill\u2019s beach dogs offers classic hot dogs in a laid-back beach setting. a simple and satisfying stop. wild bill\u2019s beach dogs food truck hot dogs american casual dining seaside $",
+    "address": "2235 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 231-0802",
+    "search": "wild bill\u2019s beach dogs seaside airstream row seaside | airstream row american breakfast lunch dinner hot dogs food truck wild bill\u2019s beach dogs is an airstream on seaside\u2019s row, serving wagyu hot dogs and opening at 8am with kolaches. wild bill\u2019s beach dogs food truck hot dogs american casual dining seaside $",
     "outdoor": true,
     "kids": true,
     "music": false,
