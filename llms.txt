@@ -55,7 +55,6 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Boggy Boys Pizza](https://eatingon30a.352marc.workers.dev/restaurants/boggy-boys-pizza-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
 - [Borago](https://eatingon30a.352marc.workers.dev/restaurants/borago-grayton-beach/): Grayton Beach on Scenic Highway 30A.
 - [Boxcar Annie](https://eatingon30a.352marc.workers.dev/restaurants/boxcar-annie-blue-mountain-beach/): Blue Mountain Beach on Scenic Highway 30A.
-- [Brozinni Pizzeria](https://eatingon30a.352marc.workers.dev/restaurants/brozinni-pizzeria-seagrove-beach/): Seagrove Beach on Scenic Highway 30A.
 - [Bruno’s Pizza](https://eatingon30a.352marc.workers.dev/restaurants/brunos-pizza-watersound/): Watersound on Scenic Highway 30A.
 - [Bud & Alley’s](https://eatingon30a.352marc.workers.dev/restaurants/bud-and-alleys-seaside/): Seaside on Scenic Highway 30A.
 - [Bud & Alley’s Pizza Bar + Trattoria](https://eatingon30a.352marc.workers.dev/restaurants/bud-and-alleys-pizza-bar-seaside/): Seaside on Scenic Highway 30A.
@@ -94,7 +93,7 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Grayton Seafood Co.](https://eatingon30a.352marc.workers.dev/restaurants/grayton-seafood-co-grayton-beach/): Grayton Beach on Scenic Highway 30A.
 - [Great American Cookies](https://eatingon30a.352marc.workers.dev/restaurants/great-american-cookies-inlet-beach/): Inlet Beach on Scenic Highway 30A.
 - [Great Southern Cafe](https://eatingon30a.352marc.workers.dev/restaurants/great-southern-cafe-seaside/): Seaside on Scenic Highway 30A.
-- [Growler Garage 30A](https://eatingon30a.352marc.workers.dev/restaurants/growler-garage-30a-dune-allen-beach/): Dune Allen Beach on Scenic Highway 30A.
+- [Growler Garage 30A](https://eatingon30a.352marc.workers.dev/restaurants/growler-garage-30a-dune-allen-beach/): Gulf Place on Scenic Highway 30A.
 - [Havana Beach Bar & Grill](https://eatingon30a.352marc.workers.dev/restaurants/havana-beach-bar-and-grill-rosemary-beach/): Rosemary Beach on Scenic Highway 30A.
 - [Heavenly’s Shortcakes & Ice Cream](https://eatingon30a.352marc.workers.dev/restaurants/heavenlys-shortcakes-and-ice-cream-seaside/): Seaside on Scenic Highway 30A.
 - [Hibiscus Café](https://eatingon30a.352marc.workers.dev/restaurants/hibiscus-cafe-grayton-beach/): Grayton Beach on Scenic Highway 30A.
