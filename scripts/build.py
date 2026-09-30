@@ -958,6 +958,43 @@ def area_names(areas: list[dict]) -> str:
     return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def view_switch(current: str) -> str:
+    """List and Map links beside the filters. Query state is copied onto both."""
+    choices = (
+        ("list", "/restaurants/", "List"),
+        ("map", "/map/", "Map"),
+    )
+    links = []
+    for key, path, label in choices:
+        current_attr = ' aria-current="page"' if key == current else ""
+        links.append(f'<a href="{path}" data-view-href="{path}"{current_attr}>{label}</a>')
+    script = (
+        "<script>!function(){var q=location.search;if(!q)return;"
+        "var nodes=document.querySelectorAll('[data-view-href]');"
+        "for(var i=0;i<nodes.length;i++)nodes[i].href=nodes[i].getAttribute('data-view-href')+q;"
+        "}();</script>"
+    )
+    return (
+        '<div class="view-field"><span>View</span>'
+        f'<nav class="view-switch" aria-label="List or map">{"".join(links)}</nav></div>'
+        + script
+    )
+
+
+def browse_by_area(areas: list[dict]) -> str:
+    """Town pages under the listings, away from the filter controls."""
+    items = "".join(
+        f'<li><a href="/areas/{e(area["slug"])}/">{e(area["fullName"])}</a></li>'
+        for area in areas
+    )
+    return (
+        '<section class="browse-areas" id="browse-areas" aria-labelledby="browse-areas-title">'
+        '<h2 id="browse-areas-title">Browse by area</h2>'
+        f'<ul class="area-index">{items}</ul>'
+        "</section>"
+    )
+
+
 def filter_form(areas: list[dict], cuisines: list[str]) -> str:
     area_options = ['<option value="">All towns</option>']
     for area in areas:
@@ -1224,10 +1261,6 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         "&&document.documentElement.classList.add('js-filter')}();</script>\n"
     )
     cards = "".join(card(restaurant) for restaurant in restaurants)
-    town_links = "".join(
-        f'<a class="text-link" href="/areas/{e(area["slug"])}/">{e(area["fullName"])} restaurants</a>'
-        for area in areas
-    )
     description = (
         "Restaurants on Scenic Highway 30A in Walton County, Florida. "
         f"Search by town, meal, and cuisine. All {len(restaurants)} listings are here."
@@ -1238,11 +1271,12 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         '<p class="kicker">Directory</p>'
         '<h1 id="listing-title">Restaurants on 30A</h1>'
         '<p class="lede">Find restaurants along Scenic Highway 30A in Walton County. Filter by beach town, meal, or a few words.</p>'
-        f'<nav class="section-links" aria-label="Town guides">{town_links}</nav>'
+        f"{view_switch('list')}"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
-        f'<div id="cards" class="card-grid">{cards}</div></div>'
+        f'<div id="cards" class="card-grid">{cards}</div>'
+        f"{browse_by_area(areas)}</div>"
     )
     extra = pending + json_ld(
         graph(
@@ -1475,6 +1509,7 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
         '<p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
         "<p class=\"lede\">Explore restaurants on the map using the same filters as the directory. Tap a pin to see the restaurant name, street address, and full profile.</p>"
+        + view_switch("map")
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'

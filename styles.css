@@ -448,10 +448,75 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
 .button.secondary:hover { background: var(--gulf-deep); color: #f7f2ea; }
 .action-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
 
+.view-field {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1.5rem 0 0;
+  width: max-content;
+}
+.view-field > span {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.view-switch {
+  display: flex;
+  border: 1px solid var(--gulf-deep);
+}
+.view-switch a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.4rem;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gulf-deep);
+  background: transparent;
+}
+.view-switch a + a { border-left: 1px solid var(--gulf-deep); }
+.view-switch a[aria-current="page"] {
+  background: var(--gulf-deep);
+  color: #f7f2ea;
+}
+.view-switch a:hover,
+.view-switch a:focus-visible {
+  background: #1a3c38;
+  color: #f7f2ea;
+}
+.browse-areas {
+  margin-top: 3.6rem;
+  padding-top: 2.1rem;
+  border-top: 1px solid var(--line);
+}
+.browse-areas h2 {
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  margin: 0 0 0.85rem;
+}
+.area-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.area-index a {
+  color: var(--muted);
+  font-size: 0.98rem;
+  font-weight: 300;
+  text-decoration: none;
+}
+.area-index a:hover,
+.area-index a:focus-visible { color: var(--gulf); }
 .filters {
   display: grid;
   gap: 1.15rem 1.4rem;
-  margin: 1.6rem 0 1.3rem;
+  margin: 1.15rem 0 1.3rem;
   padding: 0.2rem 0 1.2rem;
   border-bottom: 1px solid var(--line);
   background: transparent;
