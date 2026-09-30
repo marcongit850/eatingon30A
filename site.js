@@ -132,6 +132,13 @@ export function stepFeatured(index, delta, count) {
   return ((current + move) % total + total) % total;
 }
 
+export const FEATURED_ROTATE_MS = 8000;
+
+export function featuredAutoRotate(count, prefersReducedMotion = false, paused = false) {
+  if (prefersReducedMotion || paused) return false;
+  return (Number(count) || 0) > 1;
+}
+
 export function describeFilters(filters, areaNames, emptyLabel = "Where to eat") {
   const parts = [];
   if (filters.meal) parts.push(filters.meal);
@@ -398,6 +405,32 @@ function bootFeatured() {
     status.textContent = name ? `${name}, ${index + 1} of ${slots.length}` : "";
   };
 
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reducedMotion = motion.matches;
+  let pointerInside = false;
+  let focusInside = root.contains(document.activeElement);
+  let timer = 0;
+
+  const clearTimer = () => {
+    if (!timer) return;
+    window.clearInterval(timer);
+    timer = 0;
+  };
+
+  const syncTimer = () => {
+    clearTimer();
+    const paused = pointerInside || focusInside || document.hidden;
+    if (!featuredAutoRotate(slots.length, reducedMotion, paused)) return;
+    timer = window.setInterval(() => {
+      show(stepFeatured(index, 1, slots.length), false);
+    }, FEATURED_ROTATE_MS);
+  };
+
+  const stepBy = (delta) => {
+    show(stepFeatured(index, delta, slots.length), true);
+    syncTimer();
+  };
+
   show(index, false);
 
   root.addEventListener("click", (event) => {
@@ -405,7 +438,7 @@ function bootFeatured() {
     if (!(target instanceof Element)) return;
     const button = target.closest("[data-featured-step]");
     if (!button || !root.contains(button)) return;
-    show(stepFeatured(index, Number(button.getAttribute("data-featured-step")), slots.length), true);
+    stepBy(Number(button.getAttribute("data-featured-step")));
   });
 
   root.addEventListener("keydown", (event) => {
@@ -414,9 +447,39 @@ function bootFeatured() {
     const target = event.target;
     if (!(target instanceof Element) || !target.closest(".cover-arrow")) return;
     event.preventDefault();
-    const delta = event.key === "ArrowLeft" ? -1 : 1;
-    show(stepFeatured(index, delta, slots.length), true);
+    stepBy(event.key === "ArrowLeft" ? -1 : 1);
   });
+
+  root.addEventListener("mouseenter", () => {
+    pointerInside = true;
+    syncTimer();
+  });
+  root.addEventListener("mouseleave", () => {
+    pointerInside = false;
+    syncTimer();
+  });
+  root.addEventListener("focusin", () => {
+    focusInside = true;
+    syncTimer();
+  });
+  root.addEventListener("focusout", (event) => {
+    const next = event.relatedTarget;
+    if (next instanceof Node && root.contains(next)) return;
+    focusInside = false;
+    syncTimer();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearTimer();
+    else syncTimer();
+  });
+  window.addEventListener("pagehide", clearTimer);
+  motion.addEventListener("change", () => {
+    reducedMotion = motion.matches;
+    syncTimer();
+  });
+
+  syncTimer();
 }
 
 function boot() {

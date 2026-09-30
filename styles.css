@@ -743,6 +743,34 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   text-transform: uppercase;
   font-size: 0.66rem;
 }
+.site-footer a.footer-also {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.9rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1.45rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgba(247, 242, 234, 0.16);
+  color: rgba(247, 242, 234, 0.86);
+  font-size: 0.95rem;
+  font-weight: 300;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+}
+.footer-also span { min-width: 0; }
+.footer-also img {
+  display: block;
+  width: 8.5rem;
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 0.45rem;
+}
+.footer-also:hover,
+.footer-also:focus-visible { color: #f7f2ea; }
 
 html.js-filter #cards .card { display: none; }
 :focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }

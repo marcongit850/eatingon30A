@@ -244,6 +244,10 @@ check('aria-label="Previous featured"' in home and 'aria-label="Next featured"' 
 check('data-featured-step="-1"' in home and 'data-featured-step="1"' in home, "featured arrows should step through the list")
 check('class="cover-controls" hidden' in home, "featured arrows stay hidden until the page script runs")
 check("stepFeatured" in site_js and "data-featured-step" in site_js, "page script should cycle the featured cover")
+check("featuredAutoRotate" in site_js and "FEATURED_ROTATE_MS = 8000" in site_js, "featured cover should auto-rotate every 8 seconds")
+check("mouseenter" in site_js and "focusin" in site_js, "featured auto-rotate should pause for pointer and focus")
+check("visibilitychange" in site_js and "pagehide" in site_js, "featured auto-rotate should clear its timer when the page is hidden")
+check("prefers-reduced-motion: reduce" in site_js, "featured auto-rotate should respect reduced motion")
 check("mapListCard" in site_js and "map-thumb" in site_js and "openPopup" in site_js, "map list should use compact cards and still open the pin")
 check("#map-list .map-hit" in styles and "#map-list .map-thumb" in styles, "map list cards should stay compact")
 check(".cover-arrow" in styles and "min-width: 44px" in styles, "featured arrows should stay large enough to tap")
@@ -326,6 +330,17 @@ check(
 check("<em>Eating</em>" not in shared_header, "header should not keep the text wordmark")
 check('class="footer-mark"' in shared_footer and 'src="/images/eating-on-30a-logo.png"' in shared_footer, "footer should use the Eating on 30A logo")
 check('alt="Eating on 30A"' in shared_footer and "<em>Eating</em>" not in shared_footer, "footer logo needs alt text")
+check("Be sure to also check out" in shared_footer, "footer should point visitors to the sister guide")
+check(
+    'class="footer-also"' in shared_footer and 'href="https://eatingindestin.352marc.workers.dev"' in shared_footer,
+    "footer promo should link Eating in Destin",
+)
+check(
+    'src="/images/eating-in-destin-logo.png"' in shared_footer and 'alt="Eating in Destin"' in shared_footer,
+    "footer promo should use the Destin logo with alt text",
+)
+check((ROOT / "images" / "eating-in-destin-logo.png").is_file(), "Destin logo should be a local file")
+check("a.footer-also" in styles and "width: 8.5rem" in styles, "Destin promo should stay a small footer line")
 check("logo.svg" not in shared_header and "logo.svg" not in shared_footer and not (ROOT / "logo.svg").exists(), "the masthead file should stay out of the site")
 check((ROOT / "images" / "eating-on-30a-logo.png").is_file(), "transparent logo file should be in images")
 check('href="/favicon.png"' in home and 'href="/apple-touch-icon.png"' in home, "home should link the circle favicon")
