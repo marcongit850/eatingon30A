@@ -732,6 +732,14 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   text-transform: uppercase;
 }
 .chips a { text-decoration: none; }
+.music-note {
+  margin: 0.55rem 0 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 300;
+  line-height: 1.4;
+}
 .profile-grid { display: grid; gap: 2rem; padding: 1.6rem 0 2.4rem; }
 .profile-story p {
   font-family: var(--serif);

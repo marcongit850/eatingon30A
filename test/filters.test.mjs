@@ -72,6 +72,7 @@ test("amenity filters require a yes flag", () => {
   assert.ok(happyFood.length > 0 && happyFood.every((item) => item.happyFood === true));
   assert.ok(happyDrinks.length > 0 && happyDrinks.every((item) => item.happyDrinks === true));
   assert.ok(music.length > 0 && music.every((item) => item.music === true));
+  assert.ok(music.some((item) => item.slug === "fish-out-of-water-watercolor"));
   assert.equal(describeFilters({ ...blank, groups: "yes", reservations: "yes" }, {}), "Takes reservations · Good for groups 12+");
 });
 
