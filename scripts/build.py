@@ -94,6 +94,13 @@ ABOUT_TOWNS = (
     "Explore the communities along 30A, including Dune Allen, Gulf Place, Blue Mountain Beach, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
 )
+ABOUT_STORY = (
+    "Eating on 30A is backed by more than 20 years of experience in publishing, local marketing, and promotional products. "
+    "Over the years, our team has produced entertainment guides, restaurant and dining directories, apartment guides, community maps, and other local publications designed to connect people with the businesses and places around them.",
+    "That experience is now being brought to Eating on 30A, and the site is already gaining momentum. "
+    "Local vacation rental and property management companies are beginning to share Eating on 30A with their guests, while social media is helping introduce the site to more locals and visitors looking for places to eat along 30A.",
+    "Our goal is simple: build a useful, accurate, and easy-to-navigate dining resource that benefits visitors, locals, restaurants, and the businesses that serve the 30A community.",
+)
 PRINT_GUIDES = (
     "Looking ahead, we’ll also be launching a printed version of the \"Eating In\" guides in 2027, "
     "bringing the same curated experience into a high-quality physical format you can bring along."
@@ -3185,6 +3192,7 @@ def build_guides(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     return specs
 def build_about() -> None:
     covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
+    story = "".join(f"<p>{e(paragraph)}</p>" for paragraph in ABOUT_STORY)
     body = (
         '<div class="wrap page-intro">'
         '<div class="about-lead"><div class="prose">'
@@ -3193,6 +3201,7 @@ def build_about() -> None:
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT_LEAD)}</p>"
         f"<p>{e(ABOUT_TOWNS)}</p>"
+        f"{story}"
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
         '<aside class="window-decal" aria-labelledby="window-decal-heading">'
         f'<img src="{e(WINDOW_DECAL_IMAGE)}" width="900" height="900" alt="{e(WINDOW_DECAL_ALT)}">'

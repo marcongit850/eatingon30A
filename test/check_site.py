@@ -281,6 +281,11 @@ for banned in ("CSV files", "Google Places", "OpenStreetMap tiles", "monogram in
 check("editorial" not in about.lower(), "about should not call the site an editorial guide")
 check("CSV" not in about and "OpenStreetMap" not in about and "Google Places" not in about, "about should stay free of build talk")
 check(f"<p>{build.ABOUT_LEAD}</p><p>{build.ABOUT_TOWNS}</p>" in about, "about page should use the two visitor paragraphs")
+story_html = "".join(f"<p>{build.e(paragraph)}</p>" for paragraph in build.ABOUT_STORY)
+check(
+    f"<p>{build.ABOUT_TOWNS}</p>{story_html}" in about,
+    "about page should append the experience paragraphs under the visitor copy",
+)
 check("a feel for the place" not in about.split("<main", 1)[-1].split("</main>", 1)[0], "about body should use the new guide copy")
 contact = (ROOT / "contact" / "index.html").read_text(encoding="utf-8")
 for banned in ("github.com", "GitHub", "restaurants.csv", "locations.csv", "README", "CSV", "Wix", "custom domain"):
@@ -344,9 +349,11 @@ check(
 check("—" not in about and "–" not in about, "about page should not use em or en dashes")
 check('class="print-covers"' in about, "about page should show the print covers together")
 lead_at = about.find(build.ABOUT_LEAD)
+story_at = about.find(build.ABOUT_STORY[0])
+button_at = about.find(">See the restaurants</a>")
 decal_at = about.find('class="window-decal"')
 print_at = about.find('class="print-guides"')
-check(0 <= lead_at < decal_at < print_at, "window decal should sit between the intro and the print guides")
+check(0 <= lead_at < story_at < button_at < decal_at < print_at, "experience copy should sit under the intro and before the window decal")
 decal_section = about.split('class="window-decal"', 1)[1].split("</aside>", 1)[0]
 check('id="window-decal-heading">Get a Free Window Decal</h2>' in decal_section, "about page should use Marc's window decal heading")
 check(
