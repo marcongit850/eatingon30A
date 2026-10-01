@@ -96,7 +96,7 @@
           }
           form.reset();
           status(form, result.data.delivered
-            ? "Thanks. We’ll send coupons to that address."
+            ? "Thanks. We’ll send coupons or updates to that address."
             : "Thanks. We have your signup.", false);
           remember();
           var dialog = document.getElementById("subscribe-popup");

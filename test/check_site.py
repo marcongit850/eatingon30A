@@ -631,11 +631,19 @@ check((ROOT / "favicon.png").is_file() and (ROOT / "favicon.ico").is_file(), "fa
 check((ROOT / "apple-touch-icon.png").is_file() and (ROOT / "images" / "eating-favicon-512.png").is_file(), "apple touch and 512 favicon should exist")
 check(not (ROOT / "favicon.svg").exists(), "old svg favicon should be removed")
 check("brand-logo" not in styles and "subscribe-band" in styles and "subscribe-popup" in styles, "subscribe styles should stay in place")
-check("Yes, I want coupons!" in shared_footer and 'name="email"' in shared_footer, "footer subscribe is missing the coupon fields")
+check("Yes, I want coupons or updates!" in shared_footer and 'name="email"' in shared_footer and 'name="coupons"' in shared_footer, "footer subscribe is missing the signup fields")
+check("Yes, I want coupons!" not in shared_footer and "Exclusive restaurant coupons" not in shared_footer, "subscribe copy should not be coupons-only")
 check(">Local<" in shared_footer and ">Visitor<" in shared_footer, "footer subscribe should offer Local and Visitor")
-check('id="subscribe-popup"' in shared_footer and "Exclusive restaurant coupons" in shared_footer, "coupon popup and footer headline")
+check(
+    'id="subscribe-popup"' in shared_footer
+    and "Coupons or restaurant updates" in shared_footer
+    and "Subscribe to get coupons or restaurant updates!" in shared_footer,
+    "subscribe popup and footer should offer coupons or updates",
+)
 subscribe_js = (ROOT / "subscribe.js").read_text(encoding="utf-8")
 check("30000" in subscribe_js and "localStorage" in subscribe_js, "popup should wait 30s and remember dismiss in localStorage")
+check("We’ll send coupons or updates to that address." in subscribe_js, "delivered signup should mention coupons or updates")
+check("We’ll send coupons to that address." not in subscribe_js, "success message should not be coupons-only")
 worker_js = (ROOT / "worker.js").read_text(encoding="utf-8")
 check("CONTACT_EMAIL" in worker_js and "RESEND_API_KEY" in worker_js and "SUBSCRIBE_FROM" in worker_js, "signup mail should name its env vars")
 check('pathname === "/api/listing"' in worker_js and "reply_to" in worker_js, "listing mail should use the same Resend secrets and a reply address")
