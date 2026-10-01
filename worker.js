@@ -26,6 +26,41 @@ const LISTING_TYPES = {
   other: "Other",
 };
 const LISTING_TYPE_ERROR = "Choose update, edit, deletion, new listing, or other.";
+export const MAX_BODY = 32000;
+const WINDOW_MS = 60 * 1000;
+export const MAX_PER_WINDOW = 5;
+const recentHits = new Map();
+
+export function resetFormRateLimit() {
+  recentHits.clear();
+}
+
+function clientIp(request) {
+  return request.headers.get("cf-connecting-ip") || "unknown";
+}
+
+function rateLimited(ip, now = Date.now()) {
+  const stamps = (recentHits.get(ip) || []).filter((time) => now - time < WINDOW_MS);
+  if (stamps.length >= MAX_PER_WINDOW) {
+    recentHits.set(ip, stamps);
+    return true;
+  }
+  stamps.push(now);
+  recentHits.set(ip, stamps);
+  if (recentHits.size > 1000) {
+    for (const [key, times] of recentHits) {
+      const fresh = times.filter((time) => now - time < WINDOW_MS);
+      if (fresh.length) recentHits.set(key, fresh);
+      else recentHits.delete(key);
+    }
+  }
+  return false;
+}
+
+export function honeypotFilled(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  return ["company", "hp_field", "website"].some((key) => String(data[key] ?? "").trim() !== "");
+}
 
 export function parseSubscribe(body) {
   if (!body || typeof body !== "object") return { error: "Send the signup as JSON." };
@@ -207,73 +242,72 @@ function thanksPage(message, status) {
   });
 }
 
-async function readBody(request) {
+function formError(html, error, status) {
+  return html ? thanksPage(error, status) : json({ ok: false, error }, status);
+}
+
+async function readLimitedBody(request) {
   const type = request.headers.get("content-type") || "";
-  if (type.includes("application/json")) {
+  const html = !type.includes("application/json");
+  const declared = Number(request.headers.get("content-length") || 0);
+  if (Number.isFinite(declared) && declared > MAX_BODY) return { html, tooLarge: true };
+  let raw = "";
+  try {
+    raw = await request.text();
+  } catch {
+    return { html, unreadable: true };
+  }
+  if (raw.length > MAX_BODY) return { html, tooLarge: true };
+  if (!html) {
     try {
-      return { html: false, parsed: parseSubscribe(await request.json()) };
+      return { html, data: raw ? JSON.parse(raw) : null };
     } catch {
-      return { html: false, parsed: { error: "Send the signup as JSON." } };
+      return { html, badJson: true };
     }
   }
-  const form = await request.formData();
-  return {
-    html: true,
-    parsed: parseSubscribe({
-      email: form.get("email"),
-      audience: form.get("audience"),
-      coupons: form.get("coupons") === "yes",
-    }),
-  };
+  const params = new URLSearchParams(raw);
+  const data = {};
+  for (const key of params.keys()) data[key] = params.get(key);
+  return { html, data };
+}
+
+function blockedForm(request, loaded, tooLargeMessage, badJsonMessage) {
+  if (loaded.tooLarge) return formError(loaded.html, tooLargeMessage, 413);
+  if (loaded.unreadable || loaded.badJson) return formError(loaded.html, badJsonMessage, 400);
+  if (rateLimited(clientIp(request))) {
+    return formError(loaded.html, "Please wait a minute and try again.", 429);
+  }
+  return null;
 }
 
 export async function handleSubscribe(request, env, fetchImpl = fetch) {
   if (request.method !== "POST") return json({ ok: false, error: "Use POST." }, 405);
-  const { html, parsed } = await readBody(request);
-  if (parsed.error) {
-    return html ? thanksPage(parsed.error, 400) : json({ ok: false, error: parsed.error }, 400);
+  const loaded = await readLimitedBody(request);
+  const blocked = blockedForm(request, loaded, "That signup is too long.", "Send the signup as JSON.");
+  if (blocked) return blocked;
+  if (honeypotFilled(loaded.data)) {
+    return loaded.html ? thanksPage("Thanks. We have your signup.", 200) : json({ ok: true, delivered: false, recorded: false }, 200);
   }
+  const parsed = parseSubscribe(loaded.data);
+  if (parsed.error) return formError(loaded.html, parsed.error, 400);
   const result = await deliverSubscribe(parsed.value, env, fetchImpl);
-  if (!result.ok) {
-    return html ? thanksPage(result.error, 502) : json(result, 502);
-  }
-  return html ? thanksPage("Thanks. We have your signup.", 200) : json(result, 200);
-}
-
-async function readListingBody(request) {
-  const type = request.headers.get("content-type") || "";
-  if (type.includes("application/json")) {
-    try {
-      return { html: false, parsed: parseListing(await request.json()) };
-    } catch {
-      return { html: false, parsed: { error: "Send the request as JSON." } };
-    }
-  }
-  const form = await request.formData();
-  return {
-    html: true,
-    parsed: parseListing({
-      restaurant: form.get("restaurant"),
-      town: form.get("town"),
-      type: form.get("type"),
-      details: form.get("details"),
-      name: form.get("name"),
-      email: form.get("email"),
-    }),
-  };
+  if (!result.ok) return formError(loaded.html, result.error, 502);
+  return loaded.html ? thanksPage("Thanks. We have your signup.", 200) : json(result, 200);
 }
 
 export async function handleListing(request, env, fetchImpl = fetch) {
   if (request.method !== "POST") return json({ ok: false, error: "Use POST." }, 405);
-  const { html, parsed } = await readListingBody(request);
-  if (parsed.error) {
-    return html ? thanksPage(parsed.error, 400) : json({ ok: false, error: parsed.error }, 400);
+  const loaded = await readLimitedBody(request);
+  const blocked = blockedForm(request, loaded, "That note is too long.", "Send the request as JSON.");
+  if (blocked) return blocked;
+  if (honeypotFilled(loaded.data)) {
+    return loaded.html ? thanksPage("Thanks. We have your note.", 200) : json({ ok: true, delivered: false }, 200);
   }
+  const parsed = parseListing(loaded.data);
+  if (parsed.error) return formError(loaded.html, parsed.error, 400);
   const result = await deliverListing(parsed.value, env, fetchImpl);
-  if (!result.ok) {
-    return html ? thanksPage(result.error, 502) : json(result, 502);
-  }
-  return html ? thanksPage("Thanks. We have your note.", 200) : json(result, 200);
+  if (!result.ok) return formError(loaded.html, result.error, 502);
+  return loaded.html ? thanksPage("Thanks. We have your note.", 200) : json(result, 200);
 }
 
 export default {

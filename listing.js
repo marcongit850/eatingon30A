@@ -17,6 +17,7 @@
       details: String(data.get("details") || "").trim(),
       name: String(data.get("name") || "").trim(),
       email: String(data.get("email") || "").trim(),
+      company: String(data.get("company") || "").trim(),
     };
   }
 

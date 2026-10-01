@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { canonicalRedirect, robotsTagForHost } from "../worker.js";
+import worker, { canonicalRedirect, robotsTagForHost } from "../worker.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const config = JSON.parse(readFileSync(join(root, "site.config.json"), "utf8"));
@@ -260,6 +260,39 @@ assert.equal(canonicalRedirect(new URL("https://www.eatingon30a.com/")), null);
 assert.equal(canonicalRedirect(new URL("https://eatingon30a.352marc.workers.dev/restaurants/")), null);
 assert.equal(robotsTagForHost("eatingon30a.352marc.workers.dev"), "noindex");
 assert.equal(robotsTagForHost("www.eatingon30a.com"), "");
+
+const previewPage = await worker.fetch(new Request("https://eatingon30a.352marc.workers.dev/map/"), {
+  ASSETS: {
+    fetch() {
+      return Promise.resolve(new Response("<html></html>", { status: 200, headers: { "content-type": "text/html" } }));
+    },
+  },
+});
+assert.equal(previewPage.status, 200);
+assert.equal(previewPage.headers.get("x-robots-tag"), "noindex");
+
+const livePage = await worker.fetch(new Request("https://www.eatingon30a.com/map/"), {
+  ASSETS: {
+    fetch() {
+      return Promise.resolve(new Response("<html></html>", { status: 200, headers: { "content-type": "text/html" } }));
+    },
+  },
+});
+assert.equal(livePage.status, 200);
+assert.equal(livePage.headers.get("x-robots-tag"), null);
+
+let assetsOnRedirect = false;
+const apexPage = await worker.fetch(new Request("https://eatingon30a.com/restaurants/"), {
+  ASSETS: {
+    fetch() {
+      assetsOnRedirect = true;
+      return Promise.resolve(new Response("asset"));
+    },
+  },
+});
+assert.equal(assetsOnRedirect, false);
+assert.equal(apexPage.status, 301);
+assert.equal(apexPage.headers.get("location"), "https://www.eatingon30a.com/restaurants/");
 
 const llms = read("llms.txt");
 const llmsFull = read("llms-full.txt");

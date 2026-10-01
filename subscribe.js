@@ -61,6 +61,7 @@
       email: String(data.get("email") || "").trim(),
       audience: audience ? String(audience) : "",
       coupons: data.get("coupons") === "yes",
+      company: String(data.get("company") || "").trim(),
     };
   }
 

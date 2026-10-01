@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import worker, { deliverListing, handleListing, parseListing } from "../worker.js";
+import worker, { deliverListing, handleListing, MAX_BODY, MAX_PER_WINDOW, parseListing } from "../worker.js";
 
 const note = {
   restaurant: "Bud & Alley's",
@@ -152,4 +152,70 @@ test("the worker routes /api/listing without touching static assets", async () =
   assert.equal(assets, false);
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true, delivered: false });
+});
+
+function postListing(body, ip, env = {}, fetchImpl = fetch) {
+  const request = new Request("https://eatingon30a.example/api/listing", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": ip },
+    body: JSON.stringify(body),
+  });
+  return handleListing(request, env, fetchImpl);
+}
+
+test("an empty honeypot still accepts a full-length listing note", async () => {
+  let called = false;
+  const response = await postListing(
+    { ...note, details: "a".repeat(4000), company: "" },
+    "203.0.113.20",
+    {
+      RESEND_API_KEY: "re_test",
+      CONTACT_EMAIL: "marc@example.com",
+      SUBSCRIBE_FROM: "from@example.com",
+    },
+    () => {
+      called = true;
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    },
+  );
+  assert.equal(called, true);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, delivered: true });
+});
+
+test("a filled listing honeypot returns fake success and does not send mail", async () => {
+  let called = false;
+  const response = await postListing({ ...note, hp_field: "filled" }, "203.0.113.21", {
+    RESEND_API_KEY: "re_test",
+    CONTACT_EMAIL: "marc@example.com",
+    SUBSCRIBE_FROM: "from@example.com",
+  }, () => {
+    called = true;
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(called, false);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, delivered: false });
+});
+
+test("an oversized listing note is rejected", async () => {
+  const request = new Request("https://eatingon30a.example/api/listing", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.22" },
+    body: "x".repeat(MAX_BODY + 1),
+  });
+  const response = await handleListing(request, {});
+  assert.equal(response.status, 413);
+  assert.deepEqual(await response.json(), { ok: false, error: "That note is too long." });
+});
+
+test("listing posts from one address are rate limited", async () => {
+  const ip = "203.0.113.23";
+  for (let i = 0; i < MAX_PER_WINDOW; i += 1) {
+    const response = await postListing(note, ip, {});
+    assert.equal(response.status, 200);
+  }
+  const blocked = await postListing(note, ip, {});
+  assert.equal(blocked.status, 429);
+  assert.deepEqual(await blocked.json(), { ok: false, error: "Please wait a minute and try again." });
 });

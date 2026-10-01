@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deliverSubscribe, handleSubscribe, parseSubscribe } from "../worker.js";
+import { deliverSubscribe, handleSubscribe, honeypotFilled, MAX_BODY, MAX_PER_WINDOW, parseSubscribe } from "../worker.js";
 
 const signup = { email: "guest@example.com", audience: "local", coupons: true };
 
@@ -262,4 +262,82 @@ test("a form post still thanks the visitor when Sheets is down and Resend succee
   assert.equal(sheetBody.audience, "visitor");
   assert.equal(sheetBody.coupons, true);
   assert.equal(sheetBody.site, "30A");
+});
+
+function postSubscribe(body, ip, env = {}, fetchImpl = fetch) {
+  const request = new Request("https://eatingon30a.example/api/subscribe", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": ip },
+    body: JSON.stringify(body),
+  });
+  return handleSubscribe(request, env, fetchImpl);
+}
+
+test("an empty honeypot still delivers a real signup", async () => {
+  let called = false;
+  const response = await postSubscribe({ ...signup, company: "  " }, "203.0.113.10", resendEnv, () => {
+    called = true;
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(called, true);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, delivered: true, recorded: false });
+});
+
+test("a filled honeypot returns fake success and does not send mail", async () => {
+  assert.equal(honeypotFilled({ company: "Acme" }), true);
+  assert.equal(honeypotFilled({ website: "https://spam.example" }), true);
+  assert.equal(honeypotFilled({ company: "" }), false);
+  let called = false;
+  const response = await postSubscribe({ ...signup, company: "Acme Bots" }, "203.0.113.11", resendEnv, () => {
+    called = true;
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(called, false);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, delivered: false, recorded: false });
+});
+
+test("a honeypot form post thanks the visitor without sending mail", async () => {
+  let called = false;
+  const request = new Request("https://eatingon30a.example/api/subscribe", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", "cf-connecting-ip": "203.0.113.12" },
+    body: new URLSearchParams({ email: "guest@example.com", company: "Acme" }),
+  });
+  const response = await handleSubscribe(request, resendEnv, () => {
+    called = true;
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(called, false);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  assert.match(await response.text(), /Thanks\. We have your signup\./);
+});
+
+test("an oversized signup is rejected", async () => {
+  const request = new Request("https://eatingon30a.example/api/subscribe", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.13" },
+    body: JSON.stringify({ email: "guest@example.com", note: "x".repeat(MAX_BODY) }),
+  });
+  const response = await handleSubscribe(request, resendEnv);
+  assert.equal(response.status, 413);
+  assert.deepEqual(await response.json(), { ok: false, error: "That signup is too long." });
+});
+
+test("subscribe posts from one address are rate limited", async () => {
+  const ip = "203.0.113.14";
+  for (let i = 0; i < MAX_PER_WINDOW; i += 1) {
+    const response = await postSubscribe(signup, ip, {});
+    assert.equal(response.status, 200);
+  }
+  let called = false;
+  const blocked = await postSubscribe(signup, ip, resendEnv, () => {
+    called = true;
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(called, false);
+  assert.equal(blocked.status, 429);
+  assert.deepEqual(await blocked.json(), { ok: false, error: "Please wait a minute and try again." });
 });
