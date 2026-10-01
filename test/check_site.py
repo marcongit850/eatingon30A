@@ -435,6 +435,29 @@ if card:
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "Stinky's should use the supplied cover")
 check("/images/restaurants/stinkys-fish-camp-logo.jpg" in stinkys, "Stinky's logo should be a local file")
+sons_logo = ROOT / "images" / "restaurants" / "3-sons-bar-b-q-logo.png"
+check(sons_logo.is_file(), "3 Sons logo should be a local file")
+check(sons_logo.stat().st_size < 150_000, "3 Sons logo should stay light for the web")
+sons = (ROOT / "restaurants" / "3-sons-bar-b-q-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
+check("/images/restaurants/3-sons-bar-b-q-logo.png" in sons, "3 Sons listing should use the local logo")
+check('class="logo"' in sons and 'class="hero-logo"' in sons, "3 Sons listing page should show the logo")
+check(
+    "https://www.eatingon30a.com/images/restaurants/3-sons-bar-b-q-logo.png" in sons,
+    "3 Sons schema logo should be the local file",
+)
+sons_card = directory[directory.find('id="r-3-sons-bar-b-q-dune-allen-beach"'):]
+sons_card = sons_card[:2200]
+check('class="card-logo"' in sons_card and "/images/restaurants/3-sons-bar-b-q-logo.png" in sons_card, "3 Sons card should show the logo")
+nigels_card = directory[directory.find('id="r-nigels-bananas-seaside"'):][:1800]
+check('class="mono"' in nigels_card and "card-logo" not in nigels_card, "a listing without a logo should keep the monogram")
+stinkys_card = directory[directory.find('id="r-stinkys-fish-camp-dune-allen-beach"'):][:1800]
+check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys_card and "card-logo" not in stinkys_card, "Stinky's card should keep its cover photo")
+logo_pages = [
+    path.parent.name
+    for path in (ROOT / "restaurants").glob("*/index.html")
+    if "3-sons-bar-b-q-logo.png" in path.read_text(encoding="utf-8")
+]
+check(logo_pages == ["3-sons-bar-b-q-dune-allen-beach"], f"3 Sons logo should stay on its listing, got {logo_pages}")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
 oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
