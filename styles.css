@@ -680,6 +680,15 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   display: block;
 }
 .profile-head { padding: 2.5rem 0 0.2rem; }
+.profile-head h1 .place {
+  display: block;
+  margin-top: 0.35em;
+  font-size: 0.4em;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
 .profile-head .eyebrow { font-size: 1.45rem; }
 .profile-head .eyebrow a { text-decoration: none; }
 .crumbs { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 1.1rem; }
@@ -703,6 +712,7 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   color: var(--ink);
   letter-spacing: -0.02em;
 }
+.profile-story p + p { margin-top: 0.9rem; }
 .facts { display: grid; gap: 0; margin: 0; }
 .facts div {
   display: grid;
