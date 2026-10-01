@@ -3441,7 +3441,7 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         + amenity_checks
         + "<h2>Social and media</h2>"
         + listing_text("facebook", "Facebook URL", maxlength="300", autocomplete="off")
-        + listing_text("instagram", "Instagram", maxlength="300", autocomplete="off", placeholder="https://instagram.com/name or @name")
+        + listing_text("instagram", "Instagram", maxlength="300", autocomplete="off")
         + listing_text("logoUrl", "Logo URL", maxlength="300", autocomplete="off")
         + listing_text("listPhotoUrl", "List photo URL", maxlength="300", autocomplete="off")
         + listing_text("detailPhotoUrl", "Detail photo URL", maxlength="300", autocomplete="off")
