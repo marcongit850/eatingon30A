@@ -395,6 +395,40 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
   max-width: 40rem;
   margin: 0;
 }
+.about-lead {
+  display: grid;
+  gap: 2.4rem;
+  align-items: start;
+}
+.window-decal { margin: 0; max-width: 21rem; }
+.window-decal img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter:
+    drop-shadow(0 0 1px rgba(16, 40, 37, 0.2))
+    drop-shadow(0 14px 26px rgba(16, 40, 37, 0.12));
+}
+.window-decal-copy { margin-top: 1.05rem; }
+.window-decal .kicker { margin-bottom: 0.35rem; }
+.window-decal h2 {
+  margin: 0 0 0.55rem;
+  max-width: 12ch;
+  font-size: clamp(1.9rem, 2.8vw, 2.45rem);
+}
+.window-decal-copy > p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 300;
+}
+@media (min-width: 900px) {
+  .about-lead {
+    grid-template-columns: minmax(0, 40rem) minmax(17rem, 21rem);
+    column-gap: clamp(2rem, 4vw, 4.5rem);
+    align-items: center;
+    justify-content: start;
+  }
+}
 .print-guides {
   margin-top: 3.2rem;
   padding-top: 2.5rem;
