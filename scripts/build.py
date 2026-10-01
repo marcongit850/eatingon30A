@@ -1577,7 +1577,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     if restaurant["kids"]:
         flags.append("Kid friendly")
     if restaurant["music"]:
-        flags.append("Live music")
+        flags.append("Live music*")
     if restaurant["laurensFavorite"]:
         flags.append("Lauren’s Favorites")
     if restaurant["happyDrinks"]:
@@ -1666,8 +1666,13 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
         f"<h1>{e(restaurant['name'])}</h1>"
         f'<ul class="chips">{"".join(chips)}</ul>'
-        "</div>"
-        '<div class="wrap profile-grid">'
+        + (
+            '<p class="music-note">Live music is seasonal and subject to change — confirm with the restaurant.</p>'
+            if restaurant["music"]
+            else ""
+        )
+        + "</div>"
+        + '<div class="wrap profile-grid">'
         f'<div class="prose profile-story"><p>{e(listing_intro(restaurant))}</p>'
         + (f'<p>{e(restaurant["notes"])}</p>' if restaurant["notes"] else "")
         + "</div>"

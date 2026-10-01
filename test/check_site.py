@@ -88,6 +88,21 @@ check("class=\"amenities\"" not in fish_page, "listing amenities should stay in 
 daytrader_page = (ROOT / "restaurants" / "the-daytrader-tiki-bar-and-restaurant-seaside" / "index.html").read_text(encoding="utf-8")
 check("Takes reservations" not in daytrader_page, "Daytrader should not claim reservations")
 check('class="listing-claim"' in fish_page, "Fish Out of Water should keep the claim link")
+fish = next(item for item in restaurants if item["slug"] == "fish-out-of-water-watercolor")
+check(fish.get("music") is True, "Fish Out of Water should keep live music as yes")
+music_note = "Live music is seasonal and subject to change — confirm with the restaurant."
+for item in restaurants:
+    page = (ROOT / "restaurants" / item["slug"] / "index.html").read_text(encoding="utf-8")
+    if item.get("music"):
+        check(
+            ">Live music*</li>" in page and music_note in page,
+            f"{item['slug']} should mark the live music chip as seasonal",
+        )
+    else:
+        check(
+            "Live music*" not in page and music_note not in page,
+            f"{item['slug']} should not show a live music chip or seasonal note",
+        )
 favorite_slugs = {
     "fish-out-of-water-watercolor",
     "raw-and-juicy-alys-beach",
