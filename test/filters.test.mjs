@@ -5,7 +5,7 @@ import { FEATURED_ROTATE_MS, describeFilters, documentTitle, featuredAutoRotate,
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
-const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "", laurensFavorite: "" };
+const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "", reservations: "", groups: "", happyfood: "", happydrinks: "", laurensFavorite: "" };
 
 test("empty filters keep the full directory", () => {
   assert.equal(restaurants.filter((item) => matches(item, blank)).length, restaurants.length);
@@ -54,6 +54,25 @@ test("amenity filters require a yes flag", () => {
   assert.ok(outdoor.length > 0);
   assert.ok(outdoor.every((item) => item.outdoor));
   assert.ok(outdoor.length < restaurants.length);
+
+  const groups = restaurants.filter((item) => matches(item, { ...blank, groups: "yes" }));
+  assert.ok(groups.length > 0);
+  assert.ok(groups.every((item) => item.groups === true));
+  assert.ok(groups.some((item) => item.slug === "fish-out-of-water-watercolor"));
+
+  const reservations = restaurants.filter((item) => matches(item, { ...blank, reservations: "yes" }));
+  assert.ok(reservations.every((item) => item.reservations === true));
+  assert.ok(reservations.some((item) => item.slug === "cafe-thirty-a-seagrove-beach"));
+  assert.ok(!reservations.some((item) => item.slug === "the-daytrader-tiki-bar-and-restaurant-seaside"));
+  assert.ok(!reservations.some((item) => item.slug === "fish-out-of-water-watercolor"));
+
+  const happyFood = restaurants.filter((item) => matches(item, { ...blank, happyfood: "yes" }));
+  const happyDrinks = restaurants.filter((item) => matches(item, { ...blank, happydrinks: "yes" }));
+  const music = restaurants.filter((item) => matches(item, { ...blank, music: "yes" }));
+  assert.ok(happyFood.length > 0 && happyFood.every((item) => item.happyFood === true));
+  assert.ok(happyDrinks.length > 0 && happyDrinks.every((item) => item.happyDrinks === true));
+  assert.ok(music.length > 0 && music.every((item) => item.music === true));
+  assert.equal(describeFilters({ ...blank, groups: "yes", reservations: "yes" }, {}), "Takes reservations · Good for groups 12+");
 });
 
 test("Lauren’s Favorites keeps only the six tagged restaurants", () => {
