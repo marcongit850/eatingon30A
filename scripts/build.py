@@ -262,6 +262,16 @@ def area_photo(slug: str, raw: str) -> str | None:
     return local_area_photo(slug)
 
 
+def restaurant_logo(raw: str, slug: str) -> str | None:
+    """CSV Logo cell. A /images/ path is a file in the repo, same as a town photo."""
+    raw = (raw or "").strip()
+    if raw.startswith("/images/"):
+        if not (ROOT / raw.lstrip("/")).is_file():
+            raise SystemExit(f"Logo file missing for {slug}: {raw}")
+        return raw
+    return wix_to_url(raw, 400, 300)
+
+
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
     raw = (raw or "").strip()
     if not raw:
@@ -433,7 +443,7 @@ def load_restaurants() -> list[dict]:
         phone = clean_text(row.get("phone"))
         list_image = wix_to_url(row.get("List Image") or "", 960, 600)
         detail_image = wix_to_url(row.get("Detail Image") or "", 1400, 780)
-        logo = wix_to_url(row.get("Logo") or "", 400, 300)
+        logo = restaurant_logo(row.get("Logo") or "", slug)
         photos = listing_photos(slug)
         dropped = photos[0] if photos else None
         card_image = dropped or list_image or detail_image
@@ -655,11 +665,33 @@ def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool 
     )
 
 
+def listing_mark(restaurant: dict, *, hero: bool = False) -> str:
+    """Cover photo, or the restaurant logo when the listing has no photo."""
+    image = restaurant["heroImage"] if hero else restaurant["cardImage"]
+    label = shot_label(restaurant)
+    if image:
+        return media_block(
+            image,
+            photo_alt(restaurant),
+            restaurant["tone"],
+            label,
+            eager=hero,
+            name=restaurant["name"],
+        )
+    if restaurant.get("logo"):
+        klass = "hero-logo" if hero else "card-logo"
+        loading = "eager" if hero else "lazy"
+        return (
+            f'<img class="{klass}" src="{e(restaurant["logo"])}" alt="{e(restaurant["name"])} logo" '
+            f'loading="{loading}">'
+        )
+    return placeholder(restaurant["tone"], label, restaurant["name"])
+
+
 def card(restaurant: dict, heading: str = "h2") -> str:
     meals = " · ".join(restaurant["meals"])
     cuisines = ", ".join(restaurant["cuisines"])
     bits = [bit for bit in (restaurant["price"], cuisines, meals) if bit]
-    label = shot_label(restaurant)
     area_line = restaurant["area"]
     if restaurant["subarea"]:
         area_line += f" · {restaurant['subarea']}"
@@ -681,9 +713,10 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     )
     note = snippet(restaurant["notes"])
     note_html = f'<p class="note">{e(note)}</p>' if note else ""
+    media_class = "card-media logo-media" if restaurant.get("logo") and not restaurant["cardImage"] else "card-media"
     return (
         f'<a {attrs}>'
-        f'<div class="card-media">{media_block(restaurant["cardImage"], photo_alt(restaurant), restaurant["tone"], label, name=restaurant["name"])}</div>'
+        f'<div class="{media_class}">{listing_mark(restaurant)}</div>'
         f'<div class="card-body"><p class="card-area">{e(area_line)}</p>'
         f'<{heading}>{e(restaurant["name"])}</{heading}>'
         f'<p class="meta">{e(" · ".join(bits))}</p>{note_html}</div></a>'
@@ -1609,7 +1642,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         )
     body = (
         '<article class="profile">'
-        f'<div class="profile-hero">{media_block(restaurant["heroImage"], photo_alt(restaurant), restaurant["tone"], shot_label(restaurant), eager=True, name=restaurant["name"])}</div>'
+        f'<div class="profile-hero">{listing_mark(restaurant, hero=True)}</div>'
         f"{filmstrip(restaurant)}"
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
