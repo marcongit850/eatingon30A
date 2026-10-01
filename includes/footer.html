@@ -2,7 +2,7 @@
   <div class="wrap subscribe-band">
     <div class="subscribe-copy">
       <p class="kicker">Stay in the know</p>
-      <h2>Exclusive restaurant coupons</h2>
+      <h2>Coupons or restaurant updates</h2>
     </div>
     <form class="subscribe-form" action="/api/subscribe" method="post" data-subscribe>
       <label>
@@ -16,7 +16,7 @@
       </fieldset>
       <label class="subscribe-choice">
         <input type="checkbox" name="coupons" value="yes">
-        <span>Yes, I want coupons!</span>
+        <span>Yes, I want coupons or updates!</span>
       </label>
       <button type="submit">Submit</button>
       <p class="subscribe-status" role="status" aria-live="polite"></p>
@@ -45,7 +45,7 @@
   <dialog id="subscribe-popup" class="subscribe-popup" aria-labelledby="subscribe-popup-title">
     <div class="subscribe-card">
       <button type="button" class="subscribe-close" data-subscribe-close aria-label="Close"><span aria-hidden="true">×</span></button>
-      <h2 id="subscribe-popup-title">Subscribe to get exclusive restaurant coupons!</h2>
+      <h2 id="subscribe-popup-title">Subscribe to get coupons or restaurant updates!</h2>
       <form class="subscribe-form" action="/api/subscribe" method="post" data-subscribe>
         <label>
           <span>Email <abbr title="required">*</abbr></span>
@@ -58,7 +58,7 @@
         </fieldset>
         <label class="subscribe-choice">
           <input type="checkbox" name="coupons" value="yes">
-          <span>Yes, I want coupons!</span>
+          <span>Yes, I want coupons or updates!</span>
         </label>
         <button type="submit">Submit</button>
         <p class="subscribe-status" role="status" aria-live="polite"></p>
