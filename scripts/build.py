@@ -301,6 +301,14 @@ def website_href(raw: str) -> str:
     return "https://" + raw
 
 
+def website_link(url: str) -> str:
+    """The restaurant's own site. Opens in a new tab; guide navigation stays in this tab."""
+    if not url:
+        return ""
+    host = re.sub(r"^www\.", "", re.sub(r"^https?://", "", url).split("/")[0])
+    return f'<a href="{e(url)}" target="_blank" rel="noopener noreferrer">{e(host)}</a>'
+
+
 def tone_for(cuisines: list[str], foods: list[str], category: str) -> str:
     blob = " ".join(cuisines + foods + [category]).lower()
     if any(word in blob for word in ("coffee", "cafe", "donut")):
@@ -1533,10 +1541,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     for flag in flags:
         chips.append(f"<li>{e(flag)}</li>")
     phone = f'<a href="{e(restaurant["tel"])}">{e(restaurant["phone"])}</a>' if restaurant["tel"] else ""
-    website = ""
-    if restaurant["website"]:
-        host = re.sub(r"^www\.", "", re.sub(r"^https?://", "", restaurant["website"]).split("/")[0])
-        website = f'<a href="{e(restaurant["website"])}" rel="noopener noreferrer">{e(host)}</a>'
+    website = website_link(restaurant["website"])
     directions = ""
     if restaurant["lat"] is not None and restaurant["lng"] is not None:
         directions = (
