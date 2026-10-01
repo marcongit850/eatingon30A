@@ -434,6 +434,32 @@ for restaurant in seafood:
 check("/restaurants/o-ku-alys-beach/" not in seafood_page, "sushi-only listings are not the Seafood cuisine")
 check("/restaurants/great-southern-cafe-seaside/" not in seafood_page, "a note that mentions Gulf seafood is not a Seafood tag")
 check(f"{build.ORIGIN}/guides/" in sitemap and f"{build.ORIGIN}/guides/best-seafood-30a/" in sitemap, "sitemap missing guides")
+guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
+picks = build.guide_picks(source, build.load_areas(source))
+check(len(picks) == 9, f"expected 9 guides, got {len(picks)}")
+check([item["slug"] for item in picks][0] == "best-seafood-30a", "seafood guide should stay first")
+for guide in picks:
+    page = (ROOT / "guides" / guide["slug"] / "index.html").read_text(encoding="utf-8")
+    check(f'<h1 class="guide-title">{guide["h1"]}</h1>' in page, f"guide heading {guide['slug']}")
+    check("FAQPage" in page, f"guide FAQ schema {guide['slug']}")
+    check(2 <= page.count("<h3>") <= 4, f"guide FAQ count {guide['slug']}")
+    check(build.e(guide["directory_href"]) in page, f"directory filter missing {guide['slug']}")
+    check(build.e(guide["map_href"]) in page, f"map filter missing {guide['slug']}")
+    check(guide["path"] in guide_index, f"guides index missing {guide['slug']}")
+    chosen = {restaurant["slug"] for restaurant in guide["restaurants"]}
+    for restaurant in source:
+        present = f"/restaurants/{restaurant['slug']}/" in page
+        if restaurant["slug"] in chosen:
+            check(present, f"{guide['slug']} missing {restaurant['slug']}")
+        else:
+            check(not present, f"{guide['slug']} should not list {restaurant['slug']}")
+    check(f"{build.ORIGIN}{guide['path']}" in sitemap, f"sitemap missing {guide['slug']}")
+check("doesn’t score a restaurant as walkable" in (ROOT / "guides" / "walkable-30a" / "index.html").read_text(encoding="utf-8"), "walkable guide should say it isn’t a walk score")
+check("doesn’t have brunch as its own meal" in (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(encoding="utf-8"), "coffee guide should say 30A has no brunch meal")
+check("Short guides for planning a meal" not in guide_index, "guides index should drop the hub blurb")
+check("organized from west to east so it’s easy to plan your stops" in seafood_page, "seafood guide should use Marc’s intro")
+check("fried shrimp baskets" in seafood_page, "seafood guide should keep the practical seafood range")
+check("listed west to east" not in (ROOT / "guides" / "breakfast-30a" / "index.html").read_text(encoding="utf-8"), "breakfast guide should not say listed west to east")
 check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
     "header should use the Eating on 30A logo",
