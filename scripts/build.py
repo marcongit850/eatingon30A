@@ -3255,6 +3255,8 @@ def build_contact() -> None:
         "<p>Just include the restaurant name and what needs to be changed or added. "
         "We review every submission and can follow up using the email address you provide.</p></div>"
         '<form class="listing-form" action="/api/listing" method="post" data-listing>'
+        '<div class="hp" aria-hidden="true"><label>Company '
+        '<input name="company" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"></label></div>'
         "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
         '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
         "<label><span>Email <abbr title=\"required\">*</abbr></span>"
