@@ -459,7 +459,14 @@ check("doesn’t have brunch as its own meal" in (ROOT / "guides" / "coffee-brun
 check("Short guides for planning a meal" not in guide_index, "guides index should drop the hub blurb")
 check("organized from west to east so it’s easy to plan your stops" in seafood_page, "seafood guide should use Marc’s intro")
 check("fried shrimp baskets" in seafood_page, "seafood guide should keep the practical seafood range")
-check("listed west to east" not in (ROOT / "guides" / "breakfast-30a" / "index.html").read_text(encoding="utf-8"), "breakfast guide should not say listed west to east")
+breakfast_guide = (ROOT / "guides" / "breakfast-30a" / "index.html").read_text(encoding="utf-8")
+check("listed west to east" not in breakfast_guide, "breakfast guide should not say listed west to east")
+check("isn’t kid friendly" not in breakfast_guide and "aren't kid friendly" not in breakfast_guide, "breakfast guide should not single out a place as not kid friendly")
+check("Pickle" not in breakfast_guide, "breakfast guide should not include Pickle’s Sandbar")
+sandbar = (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").read_text(encoding="utf-8")
+check('href="/restaurants/?meal=Breakfast"' not in sandbar, "Pickle’s Sandbar should not be tagged breakfast")
+check(">Kid friendly</li>" in sandbar, "Pickle’s Sandbar should be listed as kid friendly")
+check("21-and-over" not in sandbar and "Breakfast until" not in sandbar, "Pickle’s Sandbar should not be described as a 21-and-over breakfast bar")
 check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
     "header should use the Eating on 30A logo",

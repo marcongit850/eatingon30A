@@ -2524,7 +2524,6 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
-      "Breakfast",
       "Lunch",
       "Dinner"
     ],
@@ -2539,9 +2538,9 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A #34, Santa Rosa Beach, FL 32459, USA",
     "phone": "",
-    "search": "pickle\u2019s sandbar seaside town center seaside american breakfast lunch dinner burgers bar & restaurant pickle\u2019s sandbar is the 21-and-over bar just south of pickle\u2019s, with breakfast from 8am, the pickle\u2019s menu, and bar bites such as wings and sliders. closing time is seasonal. pickle's sandbar bar breakfast burgers cocktails seaside $$",
+    "search": "pickle\u2019s sandbar seaside town center seaside american lunch dinner burgers bar & restaurant pickle\u2019s sandbar is the bar just south of pickle\u2019s, with the pickle\u2019s menu and bar bites such as wings and sliders. closing time is seasonal. pickle's sandbar bar burgers cocktails seaside $$",
     "outdoor": true,
-    "kids": false,
+    "kids": true,
     "music": false,
     "laurensFavorite": false,
     "image": null

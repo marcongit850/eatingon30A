@@ -2117,7 +2117,6 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
         if restaurant["areaSlug"] == "watersound-origins" and restaurant["subarea"] == "Town Center"
     )
     breakfast_groups, breakfast_ranked = rank_areas(breakfast, areas)
-    breakfast_plain = [restaurant for restaurant in breakfast if not restaurant["kids"]]
     breakfast_towns = {restaurant["areaSlug"] for restaurant in breakfast}
     breakfast_missing = [area["fullName"] for area in areas if area["slug"] not in breakfast_towns]
     cafe_groups, cafe_ranked = rank_areas(cafes, areas)
@@ -2200,19 +2199,7 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
                     f"{widest_choice(breakfast_groups, breakfast_ranked)}. "
                     "If you’re eating before a beach day, start with those towns."
                 ),
-                (
-                    "Most breakfast places on 30A are easy with kids. "
-                    + (
-                        f"{breakfast_plain[0]['name']} in {breakfast_plain[0]['area']} is the one that isn’t kid friendly. "
-                        if len(breakfast_plain) == 1
-                        else (
-                            f"These aren’t kid friendly: {name_list(breakfast_plain)}. "
-                            if breakfast_plain
-                            else "The breakfast places here are kid friendly. "
-                        )
-                    )
-                    + "A lot of the morning spots also pour coffee or bake. For a cafe, a donut shop, or a later start, use the coffee guide."
-                ),
+                "A lot of the morning spots also pour coffee or bake. For a cafe, a donut shop, or a later start, use the coffee guide.",
                 (
                     f"Staying in {or_list(breakfast_missing)}? Plan a short drive. "
                     "Those communities don’t have a breakfast restaurant, so you’ll be heading to a neighbor — "
@@ -2434,7 +2421,8 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
                 (
                     "Most Seaside dinners are fine with kids. "
                     + (
-                        f"{name_list(dinner_not_kids)} aren’t listed as kid friendly."
+                        f"{name_list(dinner_not_kids)} "
+                        f"{'isn’t' if len(dinner_not_kids) == 1 else 'aren’t'} listed as kid friendly."
                         if dinner_not_kids
                         else "The dinners here are kid friendly."
                     )
@@ -2483,7 +2471,8 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
                 faq_item(
                     "Can we bring kids to dinner in Seaside?",
                     (
-                        f"Most yes. {name_list(dinner_not_kids)} aren’t listed as kid friendly."
+                        f"Most yes. {name_list(dinner_not_kids)} "
+                        f"{'isn’t' if len(dinner_not_kids) == 1 else 'aren’t'} listed as kid friendly."
                         if dinner_not_kids
                         else "Yes. The Seaside dinners here are kid friendly."
                     ),
