@@ -179,10 +179,13 @@ for restaurant in restaurants:
             if restaurant.get("image"):
                 check(str(place.get("image", "")).startswith("https://"), f"schema image {restaurant['slug']}")
     check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
-    claim_href = build.e(build.claim_listing_href(restaurant["name"]))
+    claim_href = build.e(build.claim_listing_href(restaurant["name"], restaurant["slug"]))
     check(
-        'class="listing-claim"' in page and f'href="{claim_href}"' in page and ">Claim or correct this listing</a>" in page,
-        f"detail page missing claim link {restaurant['slug']}",
+        'class="listing-claim"' in page
+        and f'href="{claim_href}"' in page
+        and ">Update this listing</a>" in page
+        and 'href="/list-your-restaurant/">List your restaurant</a>' in page,
+        f"detail page missing update and list links {restaurant['slug']}",
     )
     claim_bit = page.split('class="listing-claim"', 1)[1].split("</p>", 1)[0]
     check("—" not in claim_bit and "–" not in claim_bit, f"claim link copy uses a dash {restaurant['slug']}")
@@ -335,6 +338,38 @@ check("Enter the restaurant name." not in listing_js, "listing script should all
 check('body.type !== "other"' in listing_js, "listing script should accept an Other request")
 check("Marc" not in listing_js and "Thanks. We have your note." in listing_js, "listing script should thank without a personal name")
 check(".listing-form" in styles and ".listing-status" in styles, "listing form should use the site styles")
+check('href="/list-your-restaurant/">full listing form</a>' in contact, "contact page should link to the full listing form")
+check("For a new restaurant or a complete update" in contact, "contact page should point complete updates at the full form")
+listing_page = (ROOT / "list-your-restaurant" / "index.html").read_text(encoding="utf-8")
+check("<h1 class=\"form-title\">List your restaurant</h1>" in listing_page, "listing form page should use the list heading")
+check('rel="canonical" href="https://www.eatingon30a.com/list-your-restaurant/"' in listing_page, "listing form page should set a canonical URL")
+check("action=\"/api/list-restaurant\"" in listing_page and "data-list-restaurant" in listing_page, "listing form should post to the full endpoint")
+check('name="eo30a_hp"' in listing_page, "listing form should include a honeypot")
+check("type=\"file\"" not in listing_page, "listing form should ask for links instead of file uploads")
+check(
+    "Paste a link" not in listing_page and "email them after you submit" not in listing_page and "as a file" not in listing_page,
+    "listing form should not add an upload or contact-form note on the media links",
+)
+check("Live music*" in listing_page and "Live music is seasonal and subject to change." in listing_page, "listing form should mark live music as seasonal")
+check("—" not in listing_page and "–" not in listing_page, "listing form page should not use em or en dashes")
+check('src="/list-restaurant.js"' in listing_page, "listing form page should load its script")
+for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "logoUrl", "listPhotoUrl", "detailPhotoUrl", "videoUrl", "notes", "authorized"):
+    check(f'name="{field}"' in listing_page, f"listing form missing {field}")
+for amenity in ("outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"):
+    check(f'name="{amenity}"' in listing_page, f"listing form missing amenity {amenity}")
+options = json.loads((ROOT / "data" / "listing-form.json").read_text(encoding="utf-8"))
+for area in options["areas"]:
+    check(f'<option value="{build.e(area)}">{build.e(area)}</option>' in listing_page, f"listing form missing area {area}")
+for cuisine in options["cuisines"]:
+    check(f'name="cuisines" value="{build.e(cuisine)}"' in listing_page, f"listing form missing cuisine {cuisine}")
+for food in options["foods"]:
+    check(f'name="foods" value="{build.e(food)}"' in listing_page, f"listing form missing food {food}")
+for meal in ("Breakfast", "Brunch", "Lunch", "Dinner", "Late night"):
+    check(f'name="meals" value="{meal}"' in listing_page, f"listing form missing meal {meal}")
+list_js = (ROOT / "list-restaurant.js").read_text(encoding="utf-8")
+check("/api/list-restaurant" in list_js and "eo30a_hp" in list_js, "listing form script should post the honeypot with the form")
+check("Thanks. We have your listing." in list_js, "listing form script should thank the restaurant")
+check(f"{build.ORIGIN}/list-your-restaurant/" in sitemap, "sitemap missing the listing form")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
 check("<h2 id=\"print-guides-heading\">Coming in 2027</h2>" in about, "about page should announce printed guides coming in 2027")
 check(f"<p>{build.e(build.PRINT_GUIDES)}</p>" in about, "about page should use the print-guide paragraph")
@@ -363,6 +398,10 @@ check(
 check(
     f'Just <a class="text-link" href="{build.e(build.window_decal_href())}">contact us</a> and we will personally drop one off!' in decal_section,
     "window decal note should link contact us and keep Marc's closing line",
+)
+check(
+    'href="/list-your-restaurant/">listing form</a>' in decal_section,
+    "window decal column should link the full listing form",
 )
 check("A free window decal" not in decal_section and "include the restaurant name" not in decal_section, "about page should drop the previous decal wording")
 check("https://www.eatingon30a.com" not in decal_section, "decal note should use a relative contact link")
