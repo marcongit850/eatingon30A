@@ -150,6 +150,13 @@ for restaurant in restaurants:
     claim_bit = page.split('class="listing-claim"', 1)[1].split("</p>", 1)[0]
     check("—" not in claim_bit and "–" not in claim_bit, f"claim link copy uses a dash {restaurant['slug']}")
     check("maps.googleapis" not in page and "airtable" not in page.lower(), f"detail page calls a paid API {restaurant['slug']}")
+    site_link = build.website_link(full["website"])
+    if site_link:
+        check(site_link in page, f"restaurant website should open in a new tab {restaurant['slug']}")
+    check(
+        page.count('target="_blank"') == (1 if site_link else 0),
+        f"only the restaurant website should open in a new tab {restaurant['slug']}",
+    )
 
 for spec in guide_specs:
     guide_html = (ROOT / "guides" / spec["slug"] / "index.html").read_text(encoding="utf-8")
@@ -417,6 +424,7 @@ check("CSV" not in llms and "custom domain" not in llms, "llms.txt should stay v
 check(config["origin"] == "https://www.eatingon30a.com", "public origin should be the live www host")
 check("workers.dev" not in config["origin"], "public origin should not be the workers.dev preview")
 check("openstreetmap.org" in site_js, "map tiles must be OpenStreetMap")
+check('target="_blank"' not in site_js, "map popups and listing cards should stay in the same tab")
 check("OpenStreetMap" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing OpenStreetMap")
 check("leaflet.js" in (ROOT / "map" / "index.html").read_text(encoding="utf-8"), "map page missing Leaflet")
 check("googlePlaceId" not in json.dumps(restaurants), "public json leaked place ids")
@@ -432,6 +440,29 @@ if card:
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "Stinky's should use the supplied cover")
 check("/images/restaurants/stinkys-fish-camp-logo.jpg" in stinkys, "Stinky's logo should be a local file")
+sons_logo = ROOT / "images" / "restaurants" / "3-sons-bar-b-q-logo.png"
+check(sons_logo.is_file(), "3 Sons logo should be a local file")
+check(sons_logo.stat().st_size < 150_000, "3 Sons logo should stay light for the web")
+sons = (ROOT / "restaurants" / "3-sons-bar-b-q-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
+check("/images/restaurants/3-sons-bar-b-q-logo.png" in sons, "3 Sons listing should use the local logo")
+check('class="logo"' in sons and 'class="hero-logo"' in sons, "3 Sons listing page should show the logo")
+check(
+    "https://www.eatingon30a.com/images/restaurants/3-sons-bar-b-q-logo.png" in sons,
+    "3 Sons schema logo should be the local file",
+)
+sons_card = directory[directory.find('id="r-3-sons-bar-b-q-dune-allen-beach"'):]
+sons_card = sons_card[:2200]
+check('class="card-logo"' in sons_card and "/images/restaurants/3-sons-bar-b-q-logo.png" in sons_card, "3 Sons card should show the logo")
+nigels_card = directory[directory.find('id="r-nigels-bananas-seaside"'):][:1800]
+check('class="mono"' in nigels_card and "card-logo" not in nigels_card, "a listing without a logo should keep the monogram")
+stinkys_card = directory[directory.find('id="r-stinkys-fish-camp-dune-allen-beach"'):][:1800]
+check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys_card and "card-logo" not in stinkys_card, "Stinky's card should keep its cover photo")
+logo_pages = [
+    path.parent.name
+    for path in (ROOT / "restaurants").glob("*/index.html")
+    if "3-sons-bar-b-q-logo.png" in path.read_text(encoding="utf-8")
+]
+check(logo_pages == ["3-sons-bar-b-q-dune-allen-beach"], f"3 Sons logo should stay on its listing, got {logo_pages}")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
 oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
@@ -477,6 +508,8 @@ for town_slug, town_alt in (
 
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
 shared_footer = (ROOT / "includes" / "footer.html").read_text(encoding="utf-8")
+check('target="_blank"' not in shared_header, "header navigation should stay in the same tab")
+check('target="_blank"' not in shared_footer, "footer links should stay in the same tab")
 check('href="/restaurants/"' in shared_header and 'href="/map/"' in shared_header, "shared header is missing nav links")
 check('href="/areas/"' in shared_header and 'href="/about/"' in shared_header, "shared header is missing town or about links")
 check('href="/guides/"' in shared_header, "shared header is missing the guides link")
@@ -581,6 +614,16 @@ check(html_pages, "no html pages to check for shared chrome")
 for page in html_pages:
     text = page.read_text(encoding="utf-8")
     rel = page.relative_to(ROOT).as_posix()
+    blanks = text.count('target="_blank"')
+    parts = page.relative_to(ROOT).parts
+    if len(parts) == 3 and parts[0] == "restaurants" and parts[2] == "index.html":
+        site = full_by_slug[parts[1]]["website"]
+        expected = 1 if site else 0
+        check(blanks == expected, f"{rel} should open only the restaurant website in a new tab, got {blanks}")
+        if site:
+            check(build.website_link(site) in text, f"{rel} website link is missing new-tab attributes")
+    else:
+        check(blanks == 0, f"{rel} should keep links in the same tab")
     check('id="site-header"' in text, f"{rel} does not mount the shared header")
     check('id="site-footer"' in text, f"{rel} does not mount the shared footer")
     check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")

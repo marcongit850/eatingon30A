@@ -628,6 +628,9 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
   background: var(--gulf-deep);
 }
 .card-media img, .card-media .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-media.logo-media { background: var(--paper); }
+.card-media img.card-logo { object-fit: contain; background: var(--paper); padding: 1.15rem 0.95rem; }
+.card-media.logo-media::after { border-color: rgba(23, 36, 33, 0.16); }
 .card-media .ph { position: absolute; inset: 0; }
 .card-body { display: grid; align-content: start; gap: 0.3rem; padding: 0 0.1rem 0.2rem; }
 .card-area {
@@ -758,6 +761,22 @@ button:hover, .button:hover { background: #1a3c38; color: #f7f2ea; }
 .facts dd { margin: 0; font-weight: 300; overflow-wrap: anywhere; }
 .facts a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--coral); }
 .logo { width: 72px; height: 72px; object-fit: contain; margin: 0 0 0.8rem; background: transparent; border: 0; }
+.profile-hero:has(img.hero-logo) {
+  height: auto;
+  min-height: 0;
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  padding: 2.2rem 1.25rem 2.4rem;
+}
+.profile-hero img.hero-logo {
+  width: min(22rem, 86%);
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  background: transparent;
+}
+.profile-hero:has(img.hero-logo)::after { border-color: rgba(23, 36, 33, 0.16); }
 .more { padding-bottom: 3.5rem; }
 .more h2 { margin-bottom: 0.4rem; }
 .listing-claim {
