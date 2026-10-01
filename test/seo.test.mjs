@@ -185,8 +185,21 @@ assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
 assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
 assert.equal(locs.includes(`${ORIGIN}/guides/`), true);
-assert.equal(locs.includes(`${ORIGIN}/guides/best-seafood-30a/`), true);
-assert.equal(locs.length, 8 + 13 + 135);
+for (const slug of [
+  "best-seafood-30a",
+  "breakfast-30a",
+  "coffee-brunch-30a",
+  "kid-friendly-30a",
+  "dinner-seaside",
+  "rosemary-beach-restaurants",
+  "watercolor-restaurants",
+  "walkable-30a",
+  "laurens-favorites-30a",
+]) {
+  assert.equal(locs.includes(`${ORIGIN}/guides/${slug}/`), true, slug);
+}
+assert.equal(locs.filter((url) => url.includes("/guides/")).length, 10);
+assert.equal(locs.length, 6 + 10 + 13 + 135);
 assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
 assert.equal(sitemap.includes("workers.dev"), false);
 
@@ -204,7 +217,7 @@ assert.equal(robotsTagForHost("www.eatingon30a.com"), "");
 const llms = read("llms.txt");
 const llmsFull = read("llms-full.txt");
 assert.ok(llmsFull.length > llms.length);
-for (const url of [`${ORIGIN}/`, `${ORIGIN}/restaurants/`, `${ORIGIN}/map/`, `${ORIGIN}/areas/`, `${ORIGIN}/guides/`, `${ORIGIN}/guides/best-seafood-30a/`, `${ORIGIN}/about/`, `${ORIGIN}/contact/`, `${ORIGIN}/sitemap.xml`, `${ORIGIN}/restaurants/o-ku-alys-beach/`]) {
+for (const url of [`${ORIGIN}/`, `${ORIGIN}/restaurants/`, `${ORIGIN}/map/`, `${ORIGIN}/areas/`, `${ORIGIN}/guides/`, `${ORIGIN}/guides/best-seafood-30a/`, `${ORIGIN}/guides/breakfast-30a/`, `${ORIGIN}/guides/coffee-brunch-30a/`, `${ORIGIN}/guides/kid-friendly-30a/`, `${ORIGIN}/guides/dinner-seaside/`, `${ORIGIN}/guides/rosemary-beach-restaurants/`, `${ORIGIN}/guides/watercolor-restaurants/`, `${ORIGIN}/guides/walkable-30a/`, `${ORIGIN}/guides/laurens-favorites-30a/`, `${ORIGIN}/about/`, `${ORIGIN}/contact/`, `${ORIGIN}/sitemap.xml`, `${ORIGIN}/restaurants/o-ku-alys-beach/`]) {
   assert.ok(llms.includes(url), "llms.txt missing " + url);
   assert.ok(llmsFull.includes(url), "llms-full.txt missing " + url);
 }

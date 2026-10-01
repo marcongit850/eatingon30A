@@ -1191,8 +1191,9 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         f"<p>{e(ABOUT)}</p>"
         '<p><a class="button" href="/restaurants/">Browse the directory</a></p></div>'
         '<p class="kicker">Guides</p>'
-        '<p class="lede">Popular guides for a trip along Scenic Highway 30A. This one covers seafood restaurants.</p>'
+        '<p class="lede">Popular guides for a trip along Scenic Highway 30A. Breakfast, seafood, and the rest of the list are on the guides page.</p>'
         '<p class="section-links"><a class="text-link" href="/guides/best-seafood-30a/">Best seafood on 30A</a>'
+        '<a class="text-link" href="/guides/breakfast-30a/">Breakfast on 30A</a>'
         '<a class="text-link" href="/guides/">All guides</a></p></div>'
         "</div></section>"
     )
@@ -1716,9 +1717,10 @@ SEAFOOD_FOOD_LABELS = (
 )
 GUIDES_INDEX_TITLE = "Restaurant guides for 30A | Eating on 30A"
 GUIDES_INDEX_DESCRIPTION = (
-    "Short restaurant guides for Scenic Highway 30A in Walton County, Florida, "
-    "starting with seafood, plus links into the directory and the map."
+    "Guides for meals, towns, and favorites on Scenic Highway 30A in Walton County, Florida, "
+    "each drawn from the restaurant directory and the map."
 )
+WALKABLE_AREAS = ("seaside", "alys-beach", "rosemary-beach")
 SEAFOOD_GUIDE_TITLE = "Best seafood on 30A | Eating on 30A"
 SEAFOOD_GUIDE_DESCRIPTION = (
     "Best seafood restaurants on Scenic Highway 30A in Walton County, Florida, "
@@ -1733,6 +1735,16 @@ def require_meta(title: str, description: str) -> None:
         raise SystemExit(f"description length {len(description)}: {description}")
 
 
+def or_list(items: list[str]) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} or {items[1]}"
+    return ", ".join(items[:-1]) + f", or {items[-1]}"
+
+
 def human_list(items: list[str]) -> str:
     if not items:
         return ""
@@ -1743,16 +1755,67 @@ def human_list(items: list[str]) -> str:
     return ", ".join(items[:-1]) + f", and {items[-1]}"
 
 
+def west_to_east(restaurants: list[dict], areas: list[dict]) -> list[dict]:
+    order = {area["slug"]: index for index, area in enumerate(areas)}
+    return sorted(
+        restaurants,
+        key=lambda restaurant: (order.get(restaurant["areaSlug"], len(order)), restaurant["name"].lower()),
+    )
+
+
 def seafood_restaurants(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     """Restaurants whose Cuisine Type includes Seafood, west to east, then by name.
 
     Related food types (raw bar, oyster bar, seafood market, shrimp) sit inside
     that cuisine set. The directory and map use the same cuisine query.
     """
-    order = {area["slug"]: index for index, area in enumerate(areas)}
-    picked = [restaurant for restaurant in restaurants if SEAFOOD_CUISINE in restaurant["cuisines"]]
-    picked.sort(key=lambda restaurant: (order.get(restaurant["areaSlug"], len(order)), restaurant["name"].lower()))
-    return picked
+    return west_to_east(
+        [restaurant for restaurant in restaurants if SEAFOOD_CUISINE in restaurant["cuisines"]],
+        areas,
+    )
+
+
+def filter_href(path: str, pairs: list[tuple[str, str]]) -> str:
+    return path + "?" + urlencode(pairs)
+
+
+def area_groups(picked: list[dict], areas: list[dict]) -> list[tuple[dict, list[dict]]]:
+    groups = []
+    for area in areas:
+        group = [restaurant for restaurant in picked if restaurant["areaSlug"] == area["slug"]]
+        if group:
+            groups.append((area, group))
+    return groups
+
+
+def rank_areas(picked: list[dict], areas: list[dict]) -> tuple[list, list]:
+    groups = area_groups(picked, areas)
+    ranked = sorted(groups, key=lambda item: (-len(item[1]), item[0]["fullName"]))
+    return groups, ranked
+
+
+def name_list(rows: list[dict]) -> str:
+    return human_list([restaurant["name"] for restaurant in rows])
+
+
+def next_tier(groups: list, ranked: list) -> str:
+    if len(ranked) < 2:
+        return ""
+    count = len(ranked[1][1])
+    order = {id(area): index for index, (area, _group) in enumerate(groups)}
+    tied = [item for item in ranked[1:] if len(item[1]) == count]
+    tied.sort(key=lambda item: order.get(id(item[0]), 0))
+    names = [item[0]["fullName"] for item in tied]
+    if len(names) == 1:
+        return f"{names[0]} is next, with {count}."
+    return f"{human_list(names)} are next, with {count} each."
+
+
+def faq_item(question: str, answer: str, href: str = "", label: str = "") -> dict:
+    html = e(answer)
+    if href:
+        html += " " + text_link(href, label) + "."
+    return {"question": question, "answer": answer, "html": html}
 
 
 def place_phrase(restaurant: dict) -> str:
@@ -1794,20 +1857,40 @@ def faq_html(items: list[dict]) -> str:
     return "".join(blocks)
 
 
+def tier_names(groups: list, ranked: list) -> str:
+    """Second-place town names, west to east, with no counts."""
+    if len(ranked) < 2 or len(ranked[0][1]) == len(ranked[1][1]):
+        return ""
+    count = len(ranked[1][1])
+    order = {id(area): index for index, (area, _group) in enumerate(groups)}
+    tied = [item for item in ranked[1:] if len(item[1]) == count]
+    tied.sort(key=lambda item: order.get(id(item[0]), 0))
+    return human_list([item[0]["fullName"] for item in tied])
+
+
+def widest_choice(groups: list, ranked: list) -> str:
+    top_count = len(ranked[0][1])
+    leaders = [item[0]["fullName"] for item in ranked if len(item[1]) == top_count]
+    if len(leaders) == 1:
+        text = f"{leaders[0]} has the widest choice"
+        nxt = tier_names(groups, ranked)
+        if nxt:
+            text += f", then {nxt}"
+        return text
+    return f"{human_list(leaders)} have the widest choice"
+
+
 def seafood_faq(picked: list[dict], areas: list[dict]) -> list[dict]:
-    by_area = []
-    for area in areas:
-        group = [restaurant for restaurant in picked if restaurant["areaSlug"] == area["slug"]]
-        if group:
-            by_area.append((area, group))
-    first = by_area[0][0]["fullName"]
-    last = by_area[-1][0]["fullName"]
-    ranked = sorted(by_area, key=lambda item: (-len(item[1]), item[0]["fullName"]))
-    where = f"Listed west to east, seafood restaurants on this page start in {first} and end in {last}."
-    if len(ranked) > 1:
-        top = ranked[0][0]["fullName"]
-        second = ranked[1][0]["fullName"]
-        where = f"{where} {top} has the most, then {second}."
+    groups, ranked = rank_areas(picked, areas)
+    leaders = {item[0]["fullName"] for item in ranked if len(item[1]) == len(ranked[0][1])}
+    second_count = len(ranked[1][1]) if len(ranked) > 1 and len(ranked[0][1]) != len(ranked[1][1]) else None
+    featured = set(leaders)
+    if second_count is not None:
+        featured.update(item[0]["fullName"] for item in ranked if len(item[1]) == second_count)
+    elsewhere = [area["fullName"] for area, _group in groups if area["fullName"] not in featured]
+    where = f"{widest_choice(groups, ranked)}."
+    if elsewhere:
+        where += f" You’ll also find seafood in {human_list(elsewhere)}."
     kids = [restaurant for restaurant in picked if restaurant["kids"]]
     examples = []
     seen = set()
@@ -1820,15 +1903,11 @@ def seafood_faq(picked: list[dict], areas: list[dict]) -> list[dict]:
             break
     kid_plain = human_list([place_phrase(restaurant) for restaurant in examples])
     kids_answer = (
-        f"Yes. {len(kids)} of the {len(picked)} seafood restaurants are marked kid friendly, "
-        f"including {kid_plain}."
+        f"Yes. A few to start with: {kid_plain}. Other seafood places along 30A are kid friendly too."
     )
     waterfront = [restaurant for restaurant in picked if "Waterfront" in restaurant["vibes"]]
     water_plain = human_list([place_phrase(restaurant) for restaurant in waterfront])
-    water_answer = f"The directory tags these seafood restaurants as waterfront: {water_plain}."
-    map_answer = (
-        "Yes. The map uses the same Seafood cuisine filter as the directory, so the pins match this guide."
-    )
+    water_answer = f"On the water: {water_plain}."
     items = [
         {
             "question": "Where along 30A are the seafood restaurants?",
@@ -1854,20 +1933,9 @@ def seafood_faq(picked: list[dict], areas: list[dict]) -> list[dict]:
             {
                 "question": "Which seafood restaurants are on the water?",
                 "answer": water_answer,
-                "html": (
-                    e("The directory tags these seafood restaurants as waterfront: ")
-                    + linked_places(waterfront)
-                    + "."
-                ),
+                "html": e("On the water: ") + linked_places(waterfront) + ".",
             }
         )
-    items.append(
-        {
-            "question": "Can I see these seafood restaurants on the map?",
-            "answer": map_answer,
-            "html": e(map_answer) + " " + text_link("/map/?cuisine=Seafood", "Open the seafood map") + ".",
-        }
-    )
     return items
 
 
@@ -1882,115 +1950,956 @@ def guide_teaser(title: str, href: str, area: str, meta: str, note: str, image: 
     )
 
 
-def build_guides(restaurants: list[dict], areas: list[dict]) -> None:
-    require_meta(GUIDES_INDEX_TITLE, GUIDES_INDEX_DESCRIPTION)
-    require_meta(SEAFOOD_GUIDE_TITLE, SEAFOOD_GUIDE_DESCRIPTION)
-    picked = seafood_restaurants(restaurants, areas)
-    if not picked:
-        raise SystemExit("seafood guide needs at least one Seafood cuisine listing")
-    foods = [
+def area_record(areas: list[dict], slug: str) -> dict:
+    return next(area for area in areas if area["slug"] == slug)
+
+
+def show_label(count: int) -> str:
+    return f"Show {count} {restaurant_count_word(count, label=True)}"
+
+
+def teaser_image(picked: list[dict], areas: list[dict], area_slug: str = "") -> tuple[str, str]:
+    if area_slug:
+        area = area_record(areas, area_slug)
+        if area.get("image"):
+            return area["image"], f"{area['fullName']} on Scenic Highway 30A"
+    for restaurant in picked:
+        if restaurant["cardImage"]:
+            return restaurant["cardImage"], photo_alt(restaurant)
+    return HERO_IMAGE, HERO_ALT
+
+
+def subarea_phrase(picked: list[dict], town: str) -> str:
+    labels = []
+    counts: dict[str, int] = {}
+    elsewhere = 0
+    for restaurant in picked:
+        if not restaurant["subarea"]:
+            elsewhere += 1
+            continue
+        if restaurant["subarea"] not in counts:
+            labels.append(restaurant["subarea"])
+        counts[restaurant["subarea"]] = counts.get(restaurant["subarea"], 0) + 1
+    parts = [f"{counts[label]} in {label}" for label in labels]
+    if elsewhere:
+        parts.append(f"{elsewhere} elsewhere in {town}")
+    return human_list(parts)
+
+
+def guide_spec(
+    slug: str,
+    h1: str,
+    title: str,
+    description: str,
+    kicker: str,
+    paragraphs: list[str],
+    restaurants: list[dict],
+    directory_href: str,
+    map_href: str,
+    faqs: list[dict],
+    teaser_area: str,
+    teaser_note: str,
+    teaser: tuple[str, str],
+    llms: str,
+    extra: list[tuple[str, str]] | None = None,
+    extra_label: str = "More ways to browse",
+    directory_label: str = "",
+    map_label: str = "Map these restaurants",
+    list_name: str = "",
+) -> dict:
+    return {
+        "slug": slug,
+        "path": f"/guides/{slug}/",
+        "h1": h1,
+        "title": title,
+        "description": description,
+        "kicker": kicker,
+        "paragraphs": paragraphs,
+        "restaurants": restaurants,
+        "directory_href": directory_href,
+        "directory_label": directory_label or show_label(len(restaurants)),
+        "map_href": map_href,
+        "map_label": map_label,
+        "faqs": faqs,
+        "teaser_area": teaser_area,
+        "teaser_note": teaser_note,
+        "teaser_image": teaser[0],
+        "teaser_alt": teaser[1],
+        "llms": llms,
+        "extra": extra or [],
+        "extra_label": extra_label,
+        "list_name": list_name or h1,
+    }
+
+
+def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
+    """Every public guide, in index order, using published restaurant fields only."""
+    ranked = west_to_east(restaurants, areas)
+
+    def choose(pred) -> list[dict]:
+        return [restaurant for restaurant in ranked if pred(restaurant)]
+
+    seafood = seafood_restaurants(restaurants, areas)
+    breakfast = choose(lambda restaurant: "Breakfast" in restaurant["meals"])
+    kids = choose(lambda restaurant: restaurant["kids"])
+    seaside = choose(lambda restaurant: restaurant["areaSlug"] == "seaside")
+    dinner = choose(lambda restaurant: restaurant["areaSlug"] == "seaside" and "Dinner" in restaurant["meals"])
+    rosemary = choose(lambda restaurant: restaurant["areaSlug"] == "rosemary-beach")
+    watercolor = choose(lambda restaurant: restaurant["areaSlug"] == "watercolor")
+    walkable = choose(lambda restaurant: restaurant["areaSlug"] in WALKABLE_AREAS)
+    favorites = choose(lambda restaurant: restaurant["laurensFavorite"])
+    cafes = choose(lambda restaurant: "Cafe" in restaurant["cuisines"])
+    groups = {
+        "seafood": seafood,
+        "breakfast": breakfast,
+        "kids": kids,
+        "dinner": dinner,
+        "rosemary": rosemary,
+        "watercolor": watercolor,
+        "walkable": walkable,
+        "favorites": favorites,
+        "cafes": cafes,
+    }
+    empty = [name for name, group in groups.items() if not group]
+    if empty:
+        raise SystemExit("guide is empty: " + ", ".join(empty))
+
+    seafood_foods = [
         label
         for food, label in SEAFOOD_FOOD_LABELS
-        if any(food in restaurant["foods"] for restaurant in picked)
+        if any(food in restaurant["foods"] for restaurant in seafood)
     ]
-    count = len(picked)
-    word = restaurant_count_word(count)
-    food_line = human_list(foods)
-    intro = (
-        "Planning a trip on Scenic Highway 30A and looking for seafood? "
-        "This guide gathers the restaurants tagged Seafood in the directory, in driving order from west to east."
+    seafood_href = "/restaurants/?cuisine=Seafood"
+    seafood_map = "/map/?cuisine=Seafood"
+    breakfast_href = "/restaurants/?meal=Breakfast"
+    breakfast_map = "/map/?meal=Breakfast"
+    kids_href = "/restaurants/?kids=yes"
+    kids_map = "/map/?kids=yes"
+    dinner_href = filter_href("/restaurants/", [("area", "seaside"), ("meal", "Dinner")])
+    dinner_map = filter_href("/map/", [("area", "seaside"), ("meal", "Dinner")])
+    rosemary_href = "/restaurants/?area=rosemary-beach"
+    rosemary_map = "/map/?area=rosemary-beach"
+    watercolor_href = "/restaurants/?area=watercolor"
+    watercolor_map = "/map/?area=watercolor"
+    favorites_href = "/restaurants/?laurensFavorite=yes"
+    favorites_map = "/map/?laurensFavorite=yes"
+    cafe_href = "/restaurants/?cuisine=Cafe"
+    cafe_map = "/map/?cuisine=Cafe"
+    kid_breakfast = sum(1 for restaurant in breakfast if restaurant["kids"])
+    cafe_or_coffee = sum(
+        1
+        for restaurant in breakfast
+        if "Cafe" in restaurant["cuisines"] or "Coffee" in restaurant["foods"]
     )
-    detail = (
-        f"There are {count} {word}. The listings include {food_line}. "
-        "Open a card for the address and hours, or use the directory and the map with the Seafood filter already on."
+    breakfast_kids = sum(1 for restaurant in kids if "Breakfast" in restaurant["meals"])
+    seafood_kids = sum(1 for restaurant in kids if SEAFOOD_CUISINE in restaurant["cuisines"])
+    dinner_kids = sum(1 for restaurant in dinner if restaurant["kids"])
+    rosemary_breakfast = sum(1 for restaurant in rosemary if "Breakfast" in restaurant["meals"])
+    rosemary_dinner = sum(1 for restaurant in rosemary if "Dinner" in restaurant["meals"])
+    rosemary_seafood = sum(1 for restaurant in rosemary if SEAFOOD_CUISINE in restaurant["cuisines"])
+    watercolor_breakfast = sum(1 for restaurant in watercolor if "Breakfast" in restaurant["meals"])
+    watercolor_water = [restaurant for restaurant in watercolor if "Waterfront" in restaurant["vibes"]]
+    if not watercolor_water:
+        raise SystemExit("WaterColor guide expected a waterfront listing")
+    favorite_seafood = sum(1 for restaurant in favorites if SEAFOOD_CUISINE in restaurant["cuisines"])
+    favorite_kids = sum(1 for restaurant in favorites if restaurant["kids"])
+    cafe_breakfast = sum(1 for restaurant in cafes if "Breakfast" in restaurant["meals"])
+    cafe_coffee = sum(1 for restaurant in cafes if "Coffee" in restaurant["foods"])
+    walk_counts = []
+    for slug in WALKABLE_AREAS:
+        area = area_record(areas, slug)
+        count = sum(1 for restaurant in walkable if restaurant["areaSlug"] == slug)
+        walk_counts.append(f"{count} in {area['fullName']}")
+    town_center = sum(1 for restaurant in walkable if restaurant["subarea"] == "Town Center")
+    origins_center = sum(
+        1
+        for restaurant in restaurants
+        if restaurant["areaSlug"] == "watersound-origins" and restaurant["subarea"] == "Town Center"
     )
-    faqs = seafood_faq(picked, areas)
-    cards = "".join(card(restaurant) for restaurant in picked)
-    seafood_body = (
+    breakfast_groups, breakfast_ranked = rank_areas(breakfast, areas)
+    breakfast_plain = [restaurant for restaurant in breakfast if not restaurant["kids"]]
+    breakfast_towns = {restaurant["areaSlug"] for restaurant in breakfast}
+    breakfast_missing = [area["fullName"] for area in areas if area["slug"] not in breakfast_towns]
+    cafe_groups, cafe_ranked = rank_areas(cafes, areas)
+    cafe_not_breakfast = [restaurant for restaurant in cafes if "Breakfast" not in restaurant["meals"]]
+    rosemary_cafes = [restaurant for restaurant in cafes if restaurant["areaSlug"] == "rosemary-beach"]
+    kids_groups, kids_ranked = rank_areas(kids, areas)
+    seafood_groups, seafood_ranked = rank_areas(seafood, areas)
+    dinner_row = [restaurant for restaurant in dinner if restaurant["subarea"] == "Airstream Row"]
+    dinner_center = [restaurant for restaurant in dinner if restaurant["subarea"] == "Town Center"]
+    dinner_not_kids = [restaurant for restaurant in dinner if not restaurant["kids"]]
+    seaside_other = [restaurant for restaurant in seaside if "Dinner" not in restaurant["meals"]]
+    rosemary_seafood_rows = [restaurant for restaurant in rosemary if SEAFOOD_CUISINE in restaurant["cuisines"]]
+    rosemary_point = [restaurant for restaurant in rosemary if restaurant["subarea"]]
+    watercolor_breakfast_rows = [restaurant for restaurant in watercolor if "Breakfast" in restaurant["meals"]]
+    fav_seafood_rows = [restaurant for restaurant in favorites if SEAFOOD_CUISINE in restaurant["cuisines"]]
+    fav_other = [restaurant for restaurant in favorites if SEAFOOD_CUISINE not in restaurant["cuisines"]]
+    fav_kids_rows = [restaurant for restaurant in favorites if restaurant["kids"]]
+    fav_not_kids = [restaurant for restaurant in favorites if not restaurant["kids"]]
+    fav_multi = [(area, group) for area, group in area_groups(favorites, areas) if len(group) > 1]
+
+    watercolor_coffee = [
+        restaurant
+        for restaurant in watercolor
+        if "Cafe" in restaurant["cuisines"] or "Coffee" in restaurant["foods"]
+    ]
+    if len(watercolor_coffee) == 1:
+        spot = watercolor_coffee[0]
+        tags = []
+        if "Cafe" in spot["cuisines"]:
+            tags.append("Cafe")
+        if "Coffee" in spot["foods"]:
+            tags.append("Coffee")
+        watercolor_coffee_answer = f"{spot['name']} is the coffee stop in WaterColor."
+    elif watercolor_coffee:
+        watercolor_coffee_answer = f"{name_list(watercolor_coffee)} are tagged Cafe or Coffee."
+    else:
+        watercolor_coffee_answer = "None of the WaterColor restaurants are tagged Cafe or Coffee."
+    seafood_count = len(seafood)
+    seafood_word = restaurant_count_word(seafood_count)
+    specs = [
+        guide_spec(
+            "best-seafood-30a",
+            "Best seafood on 30A",
+            SEAFOOD_GUIDE_TITLE,
+            SEAFOOD_GUIDE_DESCRIPTION,
+            "Seafood",
+            [
+                "Looking for the best seafood along Scenic Highway 30A in South Walton, Florida? This guide brings together seafood restaurants, oyster bars, raw bars, fish markets, and casual Gulf Coast favorites located along 30A and nearby communities, organized from west to east so it’s easy to plan your stops as you explore the coast.",
+                "Seafood on 30A ranges from laid-back spots serving fried shrimp baskets, fish tacos, and oysters to waterfront restaurants, seafood markets, and more upscale dining featuring fresh fish, crab, shrimp, and other Gulf-inspired dishes. Whether you’re looking for a quick lunch after the beach, oysters and cocktails in the afternoon, fresh seafood to take back to your rental, or a full dinner out, this guide is designed to help you narrow down the options.",
+                "Use the listings to compare restaurants as you travel through the 30A area, then open any restaurant card for its location, hours, and additional details. You can also use the directory or map with the Seafood filter selected to see which options are closest to where you’re staying.",
+                "A few tips before you go: hours can change seasonally, and some popular 30A seafood restaurants can become very busy during spring break, summer, holidays, and weekends. Check current hours before making the drive, consider reservations when they’re offered, and remember that parking can be limited in some beach communities. If you’re staying in a vacation rental, don’t overlook the local seafood markets either—they can be a great option for fresh fish, steamed shrimp, prepared seafood, and an easy dinner at home.",
+                "From casual Gulf seafood to oysters, fresh catch, and seafood markets, this guide is a good starting point for finding seafood restaurants along Scenic Highway 30A and throughout South Walton.",
+            ],
+            seafood,
+            seafood_href,
+            seafood_map,
+            seafood_faq(seafood, areas),
+            "Seafood",
+            "Oyster bars, raw bars, markets, and sit-down seafood along 30A.",
+            teaser_image(seafood, areas),
+            "Seafood restaurants along Scenic Highway 30A.",
+            extra=[(filter_href("/restaurants/", [("cuisine", "Seafood"), ("kids", "yes")]), "Kid-friendly seafood")],
+            extra_label="Seafood filters",
+            list_name="Seafood restaurants on 30A",
+        ),
+        guide_spec(
+            "breakfast-30a",
+            "Breakfast on 30A",
+            "Breakfast on 30A | Eating on 30A",
+            (
+                "Breakfast restaurants on Scenic Highway 30A in Walton County, Florida, "
+                "from Gulf Place to Inlet Beach, with the directory and a map for the morning."
+            ),
+            "Breakfast",
+            [
+                (
+                    f"Breakfast along Scenic Highway 30A reaches from {breakfast_groups[0][0]['fullName']} — "
+                    f"{name_list(breakfast_groups[0][1])} — to {breakfast_groups[-1][0]['fullName']}, "
+                    f"where you’ll find {name_list(breakfast_groups[-1][1])}. "
+                    f"{widest_choice(breakfast_groups, breakfast_ranked)}. "
+                    "If you’re eating before a beach day, start with those towns."
+                ),
+                (
+                    "Most breakfast places on 30A are easy with kids. "
+                    + (
+                        f"{breakfast_plain[0]['name']} in {breakfast_plain[0]['area']} is the one that isn’t kid friendly. "
+                        if len(breakfast_plain) == 1
+                        else (
+                            f"These aren’t kid friendly: {name_list(breakfast_plain)}. "
+                            if breakfast_plain
+                            else "The breakfast places here are kid friendly. "
+                        )
+                    )
+                    + "A lot of the morning spots also pour coffee or bake. For a cafe, a donut shop, or a later start, use the coffee guide."
+                ),
+                (
+                    f"Staying in {or_list(breakfast_missing)}? Plan a short drive. "
+                    "Those communities don’t have a breakfast restaurant, so you’ll be heading to a neighbor — "
+                    "Gulf Place, Seagrove Beach, Seaside, or Rosemary Beach, depending on which part of 30A you’re on."
+                    if breakfast_missing
+                    else "Every town along 30A has at least one breakfast restaurant."
+                ),
+                "Open a card for the address and the hours. If you already know your beach town, the directory and the map can show breakfast on its own, or breakfast together with kid friendly.",
+                "Summer weekends and holidays are when the morning rooms fill up, and hours shift outside peak season. Check the card before you drive across the highway, and eat before the beach if you can.",
+            ],
+            breakfast,
+            breakfast_href,
+            breakfast_map,
+            [
+                faq_item(
+                    "Where along 30A can I get breakfast?",
+                    (
+                        f"{widest_choice(breakfast_groups, breakfast_ranked)}. "
+                        f"In {breakfast_groups[0][0]['fullName']}, look for {name_list(breakfast_groups[0][1])}. "
+                        f"In {breakfast_groups[-1][0]['fullName']}, look for {name_list(breakfast_groups[-1][1])}."
+                    ),
+                    breakfast_href,
+                    "See breakfast in the directory",
+                ),
+                faq_item(
+                    "Which 30A towns don’t have breakfast?",
+                    (
+                        f"None in {or_list(breakfast_missing)}. Plan a short drive to a neighboring town."
+                        if breakfast_missing
+                        else "Every town along 30A has at least one breakfast restaurant."
+                    ),
+                    breakfast_href,
+                    "Show the breakfast list",
+                ),
+                faq_item(
+                    "Can I get coffee with breakfast?",
+                    "Yes. A lot of breakfast places also pour coffee or bake. Cafes, donut shops, and a later morning are on the coffee guide.",
+                    "/guides/coffee-brunch-30a/",
+                    "Open coffee and brunch",
+                ),
+            ],
+            "Breakfast",
+            f"Morning along 30A. {widest_choice(breakfast_groups, breakfast_ranked)}.",
+            teaser_image(breakfast, areas),
+            "Breakfast restaurants along Scenic Highway 30A.",
+            list_name="Breakfast on 30A",
+        ),
+        guide_spec(
+            "coffee-brunch-30a",
+            "Coffee and brunch on 30A",
+            "Coffee and brunch on 30A | Eating on 30A",
+            (
+                "Coffee and cafes on Scenic Highway 30A in Walton County, Florida, for a late breakfast or coffee. "
+                "There isn’t a separate brunch category."
+            ),
+            "Coffee",
+            [
+                (
+                    "Looking for coffee or a late breakfast on Scenic Highway 30A? "
+                    "30A doesn’t have brunch as its own meal. Bakeries, donut shops, coffee roasters, and breakfast cafes are the places to go."
+                ),
+                (
+                    f"{cafe_groups[0][1][0]['name']} in {cafe_groups[0][0]['fullName']} is an easy coffee stop before Grayton Beach. "
+                    f"{widest_choice(cafe_groups, cafe_ranked)}. "
+                    + (
+                        f"In Rosemary Beach, start with {name_list(rosemary_cafes[:3])}. "
+                        if rosemary_cafes
+                        else ""
+                    )
+                    + (
+                        "Amavida has a shop in Seaside and another in Rosemary Beach."
+                        if sum(1 for restaurant in cafes if "Amavida" in restaurant["name"]) >= 2
+                        else ""
+                    )
+                ),
+                (
+                    "Most of these cafes also serve breakfast. "
+                    + (
+                        f"These don’t: {human_list([place_phrase(restaurant) for restaurant in cafe_not_breakfast])}. "
+                        "Check the card so you don’t arrive for breakfast at a lunch spot."
+                        if cafe_not_breakfast
+                        else "If you want a full morning menu, the breakfast guide is the wider list."
+                    )
+                ),
+                "Open a card for hours. The directory and the map can show just the cafes, which is the simplest way to see coffee near the town you’re staying in.",
+                "Donut and coffee shops are the quick stop on the way to the sand. A sit-down cafe is the better plan when you want an actual breakfast. Hours shrink outside summer, and the busy Seagrove shops get a line on weekend mornings.",
+            ],
+            cafes,
+            cafe_href,
+            cafe_map,
+            [
+                faq_item(
+                    "Is there brunch on 30A?",
+                    (
+                        "Not as its own meal. Breakfast, lunch, and dinner are what the guide lists. "
+                        "Coffee, bakeries, and a late breakfast are here with the cafes."
+                    ),
+                    cafe_href,
+                    "See cafes in the directory",
+                ),
+                faq_item(
+                    "Where along 30A is the coffee?",
+                    (
+                        f"{cafe_groups[0][1][0]['name']} in {cafe_groups[0][0]['fullName']} is one place to start. "
+                        f"{widest_choice(cafe_groups, cafe_ranked)}. "
+                        + (
+                            f"In Rosemary Beach, try {name_list(rosemary_cafes[:3])}."
+                            if len(rosemary_cafes) >= 1
+                            else ""
+                        )
+                    ),
+                    cafe_href,
+                    "See them in the directory",
+                ),
+                faq_item(
+                    "Do these cafes serve breakfast?",
+                    (
+                        "Most of them do. "
+                        f"These don’t: {human_list([place_phrase(restaurant) for restaurant in cafe_not_breakfast])}."
+                        if cafe_not_breakfast
+                        else "Yes. The cafes here also cover breakfast."
+                    ),
+                    breakfast_href,
+                    "Show breakfast",
+                ),
+            ],
+            "Coffee",
+            "Cafes, coffee, and a late breakfast. 30A doesn’t have brunch as its own meal.",
+            teaser_image(cafes, areas),
+            "Cafes and coffee along Scenic Highway 30A. There isn’t a separate brunch category.",
+            list_name="Coffee and cafes on 30A",
+        ),
+        guide_spec(
+            "kid-friendly-30a",
+            "Kid-friendly on 30A",
+            "Kid-friendly on 30A | Eating on 30A",
+            (
+                "Kid-friendly restaurants on Scenic Highway 30A in Walton County, Florida, "
+                "for families eating from Dune Allen Beach through Watersound Origins."
+            ),
+            "With kids",
+            [
+                (
+                    "Scenic Highway 30A is an easy place to eat with kids. "
+                    f"You’ll find family-friendly rooms from {kids_groups[0][0]['fullName']} through {kids_groups[-1][0]['fullName']}. "
+                    f"{widest_choice(kids_groups, kids_ranked)}."
+                ),
+                "You don’t have to give up the meal you wanted. Breakfast and seafood both show up here. If the full set feels like too much, narrow it to kid-friendly breakfast or kid-friendly seafood in the directory.",
+                "Not every restaurant on 30A is a family stop. If a place isn’t on this page, it isn’t listed as kid friendly. Open the card before you promise the kids a table.",
+                "Lunch after the beach is usually kinder than a late dinner with tired children. Seaside and Rosemary Beach get crowded on summer evenings, so an earlier meal is the easier plan. The guide doesn’t list high chairs, so call ahead if you need one.",
+            ],
+            kids,
+            kids_href,
+            kids_map,
+            [
+                faq_item(
+                    "Is every restaurant on 30A kid friendly?",
+                    "No. If a restaurant isn’t on this page, it isn’t listed as kid friendly. Check the card before you count on it with children.",
+                    kids_href,
+                    "Show the kid-friendly list",
+                ),
+                faq_item(
+                    "Which towns have the most kid-friendly restaurants?",
+                    (
+                        f"{widest_choice(kids_groups, kids_ranked)}. "
+                        f"You’ll still find options from {kids_groups[0][0]['fullName']} through {kids_groups[-1][0]['fullName']}."
+                    ),
+                    kids_href,
+                    "See them in the directory",
+                ),
+                faq_item(
+                    "Can we do breakfast or seafood with kids?",
+                    "Yes. Both breakfast and seafood include kid-friendly restaurants. The directory can show those two meals with the kid-friendly filter on.",
+                    filter_href("/restaurants/", [("cuisine", "Seafood"), ("kids", "yes")]),
+                    "Show kid-friendly seafood",
+                ),
+            ],
+            "Kid friendly",
+            f"Family meals along 30A. {widest_choice(kids_groups, kids_ranked)}.",
+            teaser_image(kids, areas),
+            "Kid-friendly restaurants along Scenic Highway 30A.",
+            list_name="Kid-friendly restaurants on 30A",
+        ),
+        guide_spec(
+            "dinner-seaside",
+            "Dinner in Seaside",
+            "Dinner in Seaside on 30A | Eating on 30A",
+            (
+                "Dinner in Seaside on Scenic Highway 30A in Walton County, Florida, "
+                "including Town Center, Airstream Row, and the waterfront."
+            ),
+            "Seaside",
+            [
+                (
+                    "Dinner in Seaside is a walk around town more than a drive down 30A. "
+                    "You’ll find it in Town Center, along Airstream Row, and in the rest of Seaside"
+                    + (
+                        f", including on the water at {name_list([restaurant for restaurant in dinner if 'Waterfront' in restaurant['vibes']])}."
+                        if any("Waterfront" in restaurant["vibes"] for restaurant in dinner)
+                        else "."
+                    )
+                ),
+                (
+                    (
+                        f"In Town Center, dinner is {name_list(dinner_center)}. "
+                        if dinner_center
+                        else ""
+                    )
+                    + "Airstream Row is the casual stretch — barbecue, crepes, sandwiches, and the like — mixed in with restaurants elsewhere in town."
+                ),
+                (
+                    (
+                        f"Not everything in Seaside is a dinner restaurant. {name_list(seaside_other)} cover coffee, a snack, dessert, or the market. "
+                        "They’re on the Seaside town page if you want them during the day."
+                        if seaside_other
+                        else "The Seaside town page still has the full set of restaurants, including daytime stops."
+                    )
+                ),
+                (
+                    "Most Seaside dinners are fine with kids. "
+                    + (
+                        f"{name_list(dinner_not_kids)} aren’t listed as kid friendly."
+                        if dinner_not_kids
+                        else "The dinners here are kid friendly."
+                    )
+                ),
+                "Seaside parking tightens up in spring break, summer, and on weekends. If you’re staying in town, Town Center and Airstream Row are the easy loops on foot. Waterfront tables get busy — check the hours on the card and go a little early if Bud & Alley’s is the plan.",
+            ],
+            dinner,
+            dinner_href,
+            dinner_map,
+            [
+                faq_item(
+                    "Does every Seaside restaurant serve dinner?",
+                    (
+                        f"No. {name_list(seaside_other)} are the ones for coffee, a snack, dessert, or the market. "
+                        "The town page has the full Seaside list."
+                        if seaside_other
+                        else "Yes. The Seaside restaurants here all serve dinner."
+                    ),
+                    "/areas/seaside/",
+                    "Open the Seaside town page",
+                ),
+                faq_item(
+                    "Where in Seaside is dinner?",
+                    (
+                        (
+                            f"Town Center: {name_list(dinner_center)}. "
+                            if dinner_center
+                            else ""
+                        )
+                        + (
+                            "Airstream Row is the casual row. "
+                            if dinner_row
+                            else ""
+                        )
+                        + (
+                            "On the water: "
+                            + name_list([restaurant for restaurant in dinner if "Waterfront" in restaurant["vibes"]])
+                            + "."
+                            if any("Waterfront" in restaurant["vibes"] for restaurant in dinner)
+                            else "The rest are scattered through town."
+                        )
+                    ).strip(),
+                    dinner_href,
+                    "See dinner in the directory",
+                ),
+                faq_item(
+                    "Can we bring kids to dinner in Seaside?",
+                    (
+                        f"Most yes. {name_list(dinner_not_kids)} aren’t listed as kid friendly."
+                        if dinner_not_kids
+                        else "Yes. The Seaside dinners here are kid friendly."
+                    ),
+                    filter_href("/restaurants/", [("area", "seaside"), ("meal", "Dinner"), ("kids", "yes")]),
+                    "Show kid-friendly dinner in Seaside",
+                ),
+            ],
+            "Seaside",
+            "Evening in Seaside: Town Center, Airstream Row, and the waterfront.",
+            teaser_image(dinner, areas, "seaside"),
+            "Dinner restaurants in Seaside on Scenic Highway 30A.",
+            extra=[("/areas/seaside/", "Seaside town page")],
+            list_name="Dinner in Seaside",
+        ),
+        guide_spec(
+            "rosemary-beach-restaurants",
+            "Rosemary Beach restaurants",
+            "Rosemary Beach restaurants | Eating on 30A",
+            (
+                "Rosemary Beach restaurants on Scenic Highway 30A in Walton County, Florida, "
+                "the cobblestone town east of Alys Beach, with breakfast, dinner, and seafood."
+            ),
+            "Rosemary Beach",
+            [
+                "Rosemary Beach is the cobblestone town just east of Alys Beach, and it’s an easy place to park once and walk to dinner. The restaurants here cover morning cafes, a real dinner selection, and seafood if that’s the meal you came for.",
+                (
+                    "For breakfast, look at "
+                    + name_list([restaurant for restaurant in rosemary if "Breakfast" in restaurant["meals"]])
+                    + ". Seafood is "
+                    + name_list(rosemary_seafood_rows)
+                    + "."
+                    + (
+                        f" {name_list(rosemary_point)} {'is' if len(rosemary_point) == 1 else 'are'} up in {rosemary_point[0]['subarea']}; the others are in town."
+                        if rosemary_point and len({restaurant['subarea'] for restaurant in rosemary_point}) == 1
+                        else ""
+                    )
+                ),
+                "Pescado, the rooftop, is one of Lauren’s Favorites if you want a shorter shortlist inside town. The town page is where to read about Rosemary Beach itself; this page is for choosing the meal.",
+                "The streets are cobblestone, so real shoes beat beach flip-flops after dark. Hours move with the season. Rosemary isn’t a stroll from Seaside or WaterColor — drive over, park once, and stay for the evening.",
+            ],
+            rosemary,
+            rosemary_href,
+            rosemary_map,
+            [
+                faq_item(
+                    "What can I eat in Rosemary Beach?",
+                    (
+                        "Breakfast at the cafes, dinner through the evening, and seafood at "
+                        + name_list(rosemary_seafood_rows)
+                        + "."
+                    ),
+                    filter_href("/restaurants/", [("area", "rosemary-beach"), ("cuisine", "Seafood")]),
+                    "Show Rosemary Beach seafood",
+                ),
+                faq_item(
+                    "Is this the same list as the town page?",
+                    "Same restaurants. The town page tells you about Rosemary Beach. Here you can open the directory or the map with the town already selected.",
+                    rosemary_href,
+                    "See them in the directory",
+                ),
+                faq_item(
+                    "Where does Rosemary Beach sit on 30A?",
+                    "Just east of Alys Beach and west of Inlet Beach. It’s a drive from Seaside, not a walk, and it’s the cobblestone town if you want to park once for the evening.",
+                    "/guides/walkable-30a/",
+                    "See the walkable towns",
+                ),
+            ],
+            "Rosemary Beach",
+            "The cobblestone town east of Alys Beach: breakfast, dinner, and seafood.",
+            teaser_image(rosemary, areas, "rosemary-beach"),
+            "Restaurants in Rosemary Beach on Scenic Highway 30A.",
+            extra=[("/areas/rosemary-beach/", "Rosemary Beach town page")],
+            list_name="Rosemary Beach restaurants",
+        ),
+        guide_spec(
+            "watercolor-restaurants",
+            "WaterColor restaurants",
+            "WaterColor restaurants on 30A | Eating on 30A",
+            (
+                "WaterColor restaurant guide for Scenic Highway 30A in Walton County, Florida, "
+                "with every listing in town, the directory, and the map."
+            ),
+            "WaterColor",
+            [
+                "WaterColor sits between Grayton Beach and Seaside, and the dining list is short enough to decide from. You can do breakfast in town and a dressed-up dinner without leaving the community.",
+                (
+                    f"Breakfast is {name_list(watercolor_breakfast_rows)}. "
+                    "For the evening, add "
+                    + name_list([restaurant for restaurant in watercolor if "Dinner" in restaurant["meals"] and restaurant not in watercolor_breakfast_rows])
+                    + ", plus The Perfect Pig if you want a place that covers both."
+                    if any(restaurant["name"] == "The Perfect Pig" for restaurant in watercolor)
+                    else "."
+                ),
+                (
+                    f"{watercolor_water[0]['name']} is the waterfront restaurant"
+                    + (
+                        f" at the {watercolor_water[0]['subarea']}"
+                        if watercolor_water[0]["subarea"]
+                        else ""
+                    )
+                    + " — the dressed-up seafood meal, and one of Lauren’s Favorites. "
+                    f"{watercolor_coffee[0]['name']} is where you get coffee."
+                    if watercolor_coffee
+                    else "Beach coffee means a short hop to a neighboring town."
+                ),
+                "If you’re staying at the inn, Fish Out of Water is the on-property choice. Scratch Biscuit Kitchen, Beach Happy Cafe, and Pizza by the Sea are the more casual stops. The Wine Bar is the later glass. Breakfast isn’t an all-day service, so check the hours on the card before you walk over.",
+            ],
+            watercolor,
+            watercolor_href,
+            watercolor_map,
+            [
+                faq_item(
+                    "Is WaterColor only a breakfast stop?",
+                    (
+                        "No. Dinner is "
+                        + name_list([restaurant for restaurant in watercolor if "Dinner" in restaurant["meals"]])
+                        + ". Breakfast is "
+                        + name_list(watercolor_breakfast_rows)
+                        + "."
+                    ),
+                    filter_href("/restaurants/", [("area", "watercolor"), ("meal", "Breakfast")]),
+                    "Show WaterColor breakfast",
+                ),
+                faq_item(
+                    "Which WaterColor restaurant is on the water?",
+                    (
+                        f"{name_list(watercolor_water)} "
+                        + (
+                            f"is on the water"
+                            + (
+                                f", at the {watercolor_water[0]['subarea']}."
+                                if len(watercolor_water) == 1 and watercolor_water[0]["subarea"]
+                                else "."
+                            )
+                            if len(watercolor_water) == 1
+                            else "are on the water."
+                        )
+                    ),
+                    watercolor_href,
+                    "See WaterColor in the directory",
+                ),
+                faq_item(
+                    "Is there coffee in WaterColor?",
+                    watercolor_coffee_answer,
+                    "/guides/coffee-brunch-30a/",
+                    "See coffee and cafes on 30A",
+                ),
+            ],
+            "WaterColor",
+            f"Between Grayton Beach and Seaside: breakfast in town and {watercolor_water[0]['name']} on the water.",
+            teaser_image(watercolor, areas, "watercolor"),
+            "Restaurants in WaterColor on Scenic Highway 30A.",
+            extra=[("/areas/watercolor/", "WaterColor town page")],
+            list_name="WaterColor restaurants",
+        ),
+        guide_spec(
+            "walkable-30a",
+            "Walkable restaurants on 30A",
+            "Walkable restaurants on 30A | Eating on 30A",
+            (
+                "Restaurants you can walk to in Seaside, Alys Beach, and Rosemary Beach "
+                "on Scenic Highway 30A in Walton County, Florida."
+            ),
+            "On foot",
+            [
+                "Want to park the car and walk to dinner? On Scenic Highway 30A, the towns where people actually do that are Seaside, Alys Beach, and Rosemary Beach. This page is every restaurant in those three.",
+                "The guide doesn’t score a restaurant as walkable, so treat this as a town shortcut, not a rating. Seaside’s own town note calls it walkable. Rosemary Beach is cobblestone, built around streets you can cross on foot. Alys Beach is here because the streets are laid out for walking between restaurants, not because a listing says so.",
+                "They are not one continuous stroll. Seaside, Alys Beach, and Rosemary Beach are separate stops along the highway. Open one town in the directory or on the map, then switch when you move.",
+                "Town Center isn’t the same idea. It’s a neighborhood name, and the Seaside restaurants that use it are on this page. Watersound Origins, north of 30A, has its own town center; those restaurants stay on the Origins page.",
+                "Pick one town for the evening. Seaside is the busiest on foot in summer. Rosemary’s cobblestones are charming and a little uneven after dark. Don’t plan to walk from Seaside to Rosemary.",
+            ],
+            walkable,
+            "/restaurants/?area=seaside",
+            "/map/?area=seaside",
+            [
+                faq_item(
+                    "Are the three towns one walk?",
+                    (
+                        "No. They’re separate stops along the highway, and the directory and the map open one town at a time. "
+                        "Don’t plan to stroll from Seaside to Rosemary Beach."
+                    ),
+                    "/restaurants/?area=seaside",
+                    "Open Seaside in the directory",
+                ),
+                faq_item(
+                    "Is Town Center the same as walkable?",
+                    (
+                        "No. Town Center is a neighborhood in Seaside, not a walk score. "
+                        "Watersound Origins, north of 30A, has its own town center, and those restaurants stay on that town page."
+                    ),
+                    "/areas/watersound-origins/",
+                    "Open Watersound Origins",
+                ),
+                faq_item(
+                    "How do I map one of these towns?",
+                    "One town at a time. Start with Seaside, then switch the town control to Alys Beach or Rosemary Beach.",
+                    "/map/?area=seaside",
+                    "Open the Seaside map",
+                ),
+            ],
+            "Walkable",
+            "Park once in Seaside, Alys Beach, or Rosemary Beach.",
+            teaser_image(walkable, areas, "seaside"),
+            "Restaurants in Seaside, Alys Beach, and Rosemary Beach for a night you can walk.",
+            extra=[
+                ("/restaurants/?area=rosemary-beach", "Rosemary Beach in the directory"),
+                ("/map/?area=rosemary-beach", "Map Rosemary Beach"),
+                ("/restaurants/?area=alys-beach", "Alys Beach in the directory"),
+                ("/map/?area=alys-beach", "Map Alys Beach"),
+            ],
+            directory_label="Seaside in the directory",
+            map_label="Map Seaside",
+            list_name="Walkable restaurants on 30A",
+        ),
+        guide_spec(
+            "laurens-favorites-30a",
+            "Lauren’s Favorites on 30A",
+            "Lauren’s Favorites on 30A | Eating on 30A",
+            (
+                "Lauren’s Favorites on Scenic Highway 30A in Walton County, Florida, "
+                "her short list from Blue Mountain Beach to Rosemary Beach, with a map."
+            ),
+            "Favorites",
+            [
+                (
+                    "When you don’t want to sort the whole highway, start with Lauren’s Favorites. "
+                    f"They’re her short list: {human_list([place_phrase(restaurant) for restaurant in favorites])}."
+                ),
+                (
+                    (
+                        f"The seafood meals are {name_list(fav_seafood_rows)}. "
+                        if fav_seafood_rows
+                        else ""
+                    )
+                    + (
+                        human_list(
+                            [
+                                (
+                                    f"{restaurant['name']} is Italian in {restaurant['area']}"
+                                    if "Italian" in restaurant["cuisines"]
+                                    else (
+                                        f"{restaurant['name']} is the cafe stop in {restaurant['area']}"
+                                        if "Cafe" in restaurant["cuisines"]
+                                        else f"{restaurant['name']} in {restaurant['area']} is a different kind of meal"
+                                    )
+                                )
+                                for restaurant in fav_other
+                            ]
+                        )
+                        + "."
+                        if fav_other
+                        else "The favorites here are seafood."
+                    )
+                    + (
+                        f" In {fav_multi[0][0]['fullName']}, {name_list(fav_multi[0][1])} are both on the list."
+                        if len(fav_multi) == 1
+                        else ""
+                    )
+                ),
+                (
+                    (
+                        f"{name_list(fav_kids_rows)} are kid friendly. "
+                        f"{name_list(fav_not_kids)} {'isn’t' if len(fav_not_kids) == 1 else 'aren’t'}."
+                        if fav_kids_rows and fav_not_kids
+                        else "Check each card if you’re bringing children."
+                    )
+                ),
+                "This is a short list, not a ranking of every good meal on 30A. Hours live on the card. If you want more in the same town, open that town’s page after you’ve looked at Lauren’s pick.",
+            ],
+            favorites,
+            favorites_href,
+            favorites_map,
+            [
+                faq_item(
+                    "Where are Lauren’s Favorites on 30A?",
+                    f"They’re spread along the highway: {human_list([place_phrase(restaurant) for restaurant in favorites])}.",
+                    favorites_href,
+                    "See them in the directory",
+                ),
+                faq_item(
+                    "Are Lauren’s Favorites all seafood?",
+                    (
+                        f"The seafood ones are {name_list(fav_seafood_rows)}. "
+                        f"{name_list(fav_other)} {'isn’t' if len(fav_other) == 1 else 'aren’t'}."
+                        if fav_other and fav_seafood_rows
+                        else (
+                            "Yes. These favorites are seafood."
+                            if not fav_other
+                            else f"None of them are seafood. The list is {name_list(favorites)}."
+                        )
+                    ),
+                    favorites_href,
+                    "Show Lauren’s Favorites",
+                ),
+                faq_item(
+                    "Which of Lauren’s Favorites are kid friendly?",
+                    (
+                        f"{name_list(fav_kids_rows)} are. "
+                        f"{name_list(fav_not_kids)} {'isn’t' if len(fav_not_kids) == 1 else 'aren’t'}."
+                        if fav_kids_rows and fav_not_kids
+                        else (
+                            "All of them are."
+                            if not fav_not_kids
+                            else "None of them are."
+                        )
+                    ),
+                    filter_href("/restaurants/", [("laurensFavorite", "yes"), ("kids", "yes")]),
+                    "Show kid-friendly favorites",
+                ),
+            ],
+            "Favorites",
+            "Lauren’s short list, from Blue Mountain Beach to Rosemary Beach.",
+            teaser_image(favorites, areas),
+            "Restaurants marked Lauren’s Favorites on Scenic Highway 30A.",
+            list_name="Lauren’s Favorites on 30A",
+        ),
+    ]
+    for spec in specs:
+        require_meta(spec["title"], spec["description"])
+        if not 2 <= len(spec["faqs"]) <= 4:
+            raise SystemExit(f"{spec['slug']} needs 2 to 4 FAQ questions, got {len(spec['faqs'])}")
+    return specs
+
+
+def write_guide_page(spec: dict) -> None:
+    cards = "".join(card(restaurant) for restaurant in spec["restaurants"])
+    extra = ""
+    if spec["extra"]:
+        extra = (
+            f'<nav class="section-links" aria-label="{e(spec["extra_label"])}">'
+            + "".join(text_link(href, label) for href, label in spec["extra"])
+            + "</nav>"
+        )
+    body = (
         '<article class="profile">'
         '<div class="profile-hero">'
         f'<img src="{e(HERO_IMAGE)}" alt="{e(HERO_ALT)}" loading="eager">'
         "</div>"
         '<div class="wrap page-intro">'
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> '
-        '<a href="/guides/">Guides</a> <span aria-hidden="true">/</span> Best seafood on 30A</p>'
-        '<p class="kicker">Seafood</p>'
-        '<h1 class="guide-title">Best seafood on 30A</h1>'
-        f'<p class="lede">{e(intro)}</p>'
-        f'<p class="lede">{e(detail)}</p>'
-        f'<p class="action-row"><a class="button" href="/restaurants/?cuisine=Seafood">Show {count} {restaurant_count_word(count, label=True)}</a> '
-        '<a class="button secondary" href="/map/?cuisine=Seafood">Map these restaurants</a></p>'
-        '<nav class="section-links" aria-label="Seafood filters">'
-        f'{text_link("/restaurants/?cuisine=Seafood&kids=yes", "Kid-friendly seafood")}'
-        "</nav>"
+        f'<a href="/guides/">Guides</a> <span aria-hidden="true">/</span> {e(spec["h1"])}</p>'
+        f'<p class="kicker">{e(spec["kicker"])}</p>'
+        f'<h1 class="guide-title">{e(spec["h1"])}</h1>'
+        + "".join(f'<p class="lede">{e(paragraph)}</p>' for paragraph in spec["paragraphs"])
+        + f'<p class="action-row"><a class="button" href="{e(spec["directory_href"])}">{e(spec["directory_label"])}</a> '
+        f'<a class="button secondary" href="{e(spec["map_href"])}">{e(spec["map_label"])}</a></p>'
+        f"{extra}"
         f'<div class="card-grid">{cards}</div>'
-        f"{faq_html(faqs)}"
+        f"{faq_html(spec['faqs'])}"
         "</div></article>"
     )
-    seafood_list = {
-        "@type": "ItemList",
-        "name": "Seafood restaurants on 30A",
-        "numberOfItems": count,
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": index,
-                "name": restaurant["name"],
-                "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
-            }
-            for index, restaurant in enumerate(picked, start=1)
-        ],
-    }
     write(
-        ROOT / "guides" / "best-seafood-30a" / "index.html",
+        ROOT / "guides" / spec["slug"] / "index.html",
         layout(
-            SEAFOOD_GUIDE_TITLE,
-            SEAFOOD_GUIDE_DESCRIPTION,
-            "/guides/best-seafood-30a/",
+            spec["title"],
+            spec["description"],
+            spec["path"],
             "guides",
-            seafood_body,
+            body,
             json_ld(
                 graph(
                     {
                         "@type": "CollectionPage",
-                        "name": "Best seafood on 30A",
-                        "headline": "Best seafood on 30A",
-                        "url": ORIGIN + "/guides/best-seafood-30a/",
-                        "description": SEAFOOD_GUIDE_DESCRIPTION,
+                        "name": spec["h1"],
+                        "headline": spec["h1"],
+                        "url": ORIGIN + spec["path"],
+                        "description": spec["description"],
                         "isPartOf": {"@id": ORIGIN + "/#website"},
                     },
-                    seafood_list,
-                    faq_nodes(faqs),
-                    breadcrumbs(
-                        [
-                            ("Home", "/"),
-                            ("Guides", "/guides/"),
-                            ("Best seafood on 30A", "/guides/best-seafood-30a/"),
-                        ]
-                    ),
+                    {
+                        "@type": "ItemList",
+                        "name": spec["list_name"],
+                        "numberOfItems": len(spec["restaurants"]),
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": index,
+                                "name": restaurant["name"],
+                                "url": f"{ORIGIN}/restaurants/{restaurant['slug']}/",
+                            }
+                            for index, restaurant in enumerate(spec["restaurants"], start=1)
+                        ],
+                    },
+                    faq_nodes(spec["faqs"]),
+                    breadcrumbs([("Home", "/"), ("Guides", "/guides/"), (spec["h1"], spec["path"])]),
                 )
             ),
             image=HERO_IMAGE,
             image_alt=HERO_ALT,
         ),
     )
-    teaser = guide_teaser(
-        "Best seafood on 30A",
-        "/guides/best-seafood-30a/",
-        "Seafood",
-        f"{count} {word}",
-        "Seafood restaurants from Dune Allen Beach east along Scenic Highway 30A, listed west to east.",
-        HERO_IMAGE,
-        HERO_ALT,
+
+
+def build_guides(restaurants: list[dict], areas: list[dict]) -> list[dict]:
+    require_meta(GUIDES_INDEX_TITLE, GUIDES_INDEX_DESCRIPTION)
+    specs = guide_picks(restaurants, areas)
+    for spec in specs:
+        write_guide_page(spec)
+    teasers = "".join(
+        guide_teaser(
+            spec["h1"],
+            spec["path"],
+            spec["teaser_area"],
+            f"{len(spec['restaurants'])} {restaurant_count_word(len(spec['restaurants']))}",
+            spec["teaser_note"],
+            spec["teaser_image"],
+            spec["teaser_alt"],
+        )
+        for spec in specs
     )
     index_body = (
         '<div class="wrap page-intro">'
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Guides</p>'
         '<p class="kicker">For the trip</p>'
         "<h1>Guides along 30A</h1>"
-        "<p class=\"lede\">Short guides for planning a meal on Scenic Highway 30A. "
-        "Each one starts from restaurants already in the directory.</p>"
-        f'<div class="card-grid">{teaser}</div></div>'
+        f'<div class="card-grid">{teasers}</div></div>'
     )
     write(
         ROOT / "guides" / "index.html",
@@ -2012,14 +2921,15 @@ def build_guides(restaurants: list[dict], areas: list[dict]) -> None:
                     {
                         "@type": "ItemList",
                         "name": "Guides",
-                        "numberOfItems": 1,
+                        "numberOfItems": len(specs),
                         "itemListElement": [
                             {
                                 "@type": "ListItem",
-                                "position": 1,
-                                "name": "Best seafood on 30A",
-                                "url": ORIGIN + "/guides/best-seafood-30a/",
+                                "position": index,
+                                "name": spec["h1"],
+                                "url": ORIGIN + spec["path"],
                             }
+                            for index, spec in enumerate(specs, start=1)
                         ],
                     },
                     breadcrumbs([("Home", "/"), ("Guides", "/guides/")]),
@@ -2029,8 +2939,7 @@ def build_guides(restaurants: list[dict], areas: list[dict]) -> None:
             image_alt=HERO_ALT,
         ),
     )
-
-
+    return specs
 def build_about() -> None:
     covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
     body = (
@@ -2158,21 +3067,23 @@ def build_404() -> None:
     )
 
 
-def build_sitemap(restaurants: list[dict], areas: list[dict]) -> None:
+def build_sitemap(restaurants: list[dict], areas: list[dict], guides: list[dict]) -> None:
     stamp = newest(restaurant["updated"] for restaurant in restaurants)
-    seafood_stamp = newest(
-        restaurant["updated"] for restaurant in restaurants if SEAFOOD_CUISINE in restaurant["cuisines"]
-    )
     urls = [
         ("/", stamp),
         ("/restaurants/", stamp),
         ("/map/", stamp),
         ("/areas/", stamp),
         ("/guides/", stamp),
-        ("/guides/best-seafood-30a/", seafood_stamp),
-        ("/about/", ""),
-        ("/contact/", ""),
     ]
+    for guide in guides:
+        urls.append((guide["path"], newest(restaurant["updated"] for restaurant in guide["restaurants"])))
+    urls.extend(
+        [
+            ("/about/", ""),
+            ("/contact/", ""),
+        ]
+    )
     for area in areas:
         group_dates = (restaurant["updated"] for restaurant in restaurants if restaurant["areaSlug"] == area["slug"])
         urls.append((f"/areas/{area['slug']}/", newest(group_dates)))
@@ -2221,7 +3132,7 @@ def build_robots() -> None:
     write(ROOT / "robots.txt", text)
 
 
-def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
+def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -> None:
     lines = [
         "# Eating on 30A",
         "",
@@ -2235,14 +3146,22 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Restaurants]({ORIGIN}/restaurants/)",
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
-        f"- [Guides]({ORIGIN}/guides/): Short guides for planning a meal on Scenic Highway 30A.",
-        f"- [Best seafood on 30A]({ORIGIN}/guides/best-seafood-30a/): Seafood restaurants along Scenic Highway 30A.",
+        f"- [Guides]({ORIGIN}/guides/): Breakfast, seafood, coffee, towns, and favorites along Scenic Highway 30A.",
         f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): Send a correction, edit, deletion, or new listing.",
         "",
-        "## Towns",
+        "## Guides",
         "",
     ]
+    for guide in guides:
+        lines.append(f"- [{guide['h1']}]({ORIGIN}{guide['path']}): {guide['llms']}")
+    lines.extend(
+        [
+            "",
+            "## Towns",
+            "",
+        ]
+    )
     for area in areas:
         lines.append(
             f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} Restaurants in {area['fullName']} on Scenic Highway 30A."
@@ -2283,15 +3202,23 @@ def build_llms(restaurants: list[dict], areas: list[dict]) -> None:
         f"- [Map]({ORIGIN}/map/)",
         f"- [Towns]({ORIGIN}/areas/)",
         f"- [Guides]({ORIGIN}/guides/)",
-        f"- [Best seafood on 30A]({ORIGIN}/guides/best-seafood-30a/)",
         f"- [About]({ORIGIN}/about/)",
         f"- [Contact]({ORIGIN}/contact/)",
         f"- [Short index]({ORIGIN}/llms.txt)",
         f"- [Sitemap]({ORIGIN}/sitemap.xml)",
         "",
-        "## Restaurants",
+        "## Guides",
         "",
     ]
+    for guide in guides:
+        full.append(f"- [{guide['h1']}]({ORIGIN}{guide['path']}): {guide['llms']}")
+    full.extend(
+        [
+            "",
+            "## Restaurants",
+            "",
+        ]
+    )
     for restaurant in restaurants:
         bits = ", ".join(restaurant["cuisines"]) or restaurant["category"] or "Restaurant"
         meals = ", ".join(restaurant["meals"])
@@ -2338,15 +3265,15 @@ def main() -> None:
         build_detail(restaurant, restaurants)
     build_map(areas, cuisines)
     build_areas(areas, restaurants)
-    build_guides(restaurants, areas)
+    guides = build_guides(restaurants, areas)
     build_about()
     build_contact()
     build_404()
-    build_sitemap(restaurants, areas)
+    build_sitemap(restaurants, areas, guides)
     build_robots()
-    build_llms(restaurants, areas)
+    build_llms(restaurants, areas, guides)
     photos = sum(1 for restaurant in restaurants if restaurant["cardImage"])
-    print(f"Built {len(restaurants)} restaurants, {len(areas)} towns, {photos} photos, 1 guide")
+    print(f"Built {len(restaurants)} restaurants, {len(areas)} towns, {photos} photos, {len(guides)} guides")
 
 
 if __name__ == "__main__":

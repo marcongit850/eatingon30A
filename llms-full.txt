@@ -11,11 +11,22 @@ Each profile gives the street address and a map pin. A photograph appears when t
 - [Map](https://www.eatingon30a.com/map/)
 - [Towns](https://www.eatingon30a.com/areas/)
 - [Guides](https://www.eatingon30a.com/guides/)
-- [Best seafood on 30A](https://www.eatingon30a.com/guides/best-seafood-30a/)
 - [About](https://www.eatingon30a.com/about/)
 - [Contact](https://www.eatingon30a.com/contact/)
 - [Short index](https://www.eatingon30a.com/llms.txt)
 - [Sitemap](https://www.eatingon30a.com/sitemap.xml)
+
+## Guides
+
+- [Best seafood on 30A](https://www.eatingon30a.com/guides/best-seafood-30a/): Seafood restaurants along Scenic Highway 30A.
+- [Breakfast on 30A](https://www.eatingon30a.com/guides/breakfast-30a/): Breakfast restaurants along Scenic Highway 30A.
+- [Coffee and brunch on 30A](https://www.eatingon30a.com/guides/coffee-brunch-30a/): Cafes and coffee along Scenic Highway 30A. There isn’t a separate brunch category.
+- [Kid-friendly on 30A](https://www.eatingon30a.com/guides/kid-friendly-30a/): Kid-friendly restaurants along Scenic Highway 30A.
+- [Dinner in Seaside](https://www.eatingon30a.com/guides/dinner-seaside/): Dinner restaurants in Seaside on Scenic Highway 30A.
+- [Rosemary Beach restaurants](https://www.eatingon30a.com/guides/rosemary-beach-restaurants/): Restaurants in Rosemary Beach on Scenic Highway 30A.
+- [WaterColor restaurants](https://www.eatingon30a.com/guides/watercolor-restaurants/): Restaurants in WaterColor on Scenic Highway 30A.
+- [Walkable restaurants on 30A](https://www.eatingon30a.com/guides/walkable-30a/): Restaurants in Seaside, Alys Beach, and Rosemary Beach for a night you can walk.
+- [Lauren’s Favorites on 30A](https://www.eatingon30a.com/guides/laurens-favorites-30a/): Restaurants marked Lauren’s Favorites on Scenic Highway 30A.
 
 ## Restaurants
 
