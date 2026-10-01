@@ -69,7 +69,7 @@ Columns that show up on the site:
 - `phone`, `website`, `price`, `notes`, `hours`
 - `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into local files or `static.wixstatic.com` links)
 - `Cuisine Type`, `Meal Type`, `Food Type`, `Vibe`, `Category` (JSON arrays)
-- `Outdoor Dining`, `Kid Friendly`, `Live Music`, `Happy Hour (drinks)`, `Happy Hour (food)`, `Reservations`
+- `Outdoor Dining`, `Kid Friendly`, `Live Music`, `Happy Hour (drinks)`, `Happy Hour (food)`, `Reservations`, `Groups of 12` (JSON `Yes`, `No`, or `In Review`). Only `Yes` is shown on the listing and matched by the directory and map checkboxes. `In Review` stays unknown.
 - `Facebook URL`, `Instagram`
 - `Status` must be `PUBLISHED`
 

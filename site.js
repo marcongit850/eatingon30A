@@ -4,7 +4,7 @@
  * directory stay in lockstep. Imported by tests; the browser boots below.
  */
 
-const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music", "laurensFavorite"];
+const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music", "reservations", "groups", "happyfood", "happydrinks", "laurensFavorite"];
 
 export function filtersFromParams(params) {
   const read = (key) => (params.get(key) || "").trim();
@@ -16,6 +16,10 @@ export function filtersFromParams(params) {
     outdoor: read("outdoor"),
     kids: read("kids"),
     music: read("music"),
+    reservations: read("reservations"),
+    groups: read("groups"),
+    happyfood: read("happyfood"),
+    happydrinks: read("happydrinks"),
     laurensFavorite: read("laurensFavorite"),
   };
 }
@@ -35,6 +39,10 @@ export function matches(record, filters) {
   if (filters.outdoor === "yes" && !record.outdoor) return false;
   if (filters.kids === "yes" && !record.kids) return false;
   if (filters.music === "yes" && !record.music) return false;
+  if (filters.reservations === "yes" && !record.reservations) return false;
+  if (filters.groups === "yes" && !record.groups) return false;
+  if (filters.happyfood === "yes" && !record.happyFood) return false;
+  if (filters.happydrinks === "yes" && !record.happyDrinks) return false;
   if (filters.laurensFavorite === "yes" && !record.laurensFavorite) return false;
   const query = (filters.q || "").trim().toLowerCase();
   if (query && !(record.search || "").toLowerCase().includes(query)) return false;
@@ -157,6 +165,10 @@ export function describeFilters(filters, areaNames, emptyLabel = "Restaurants on
   if (filters.outdoor === "yes") parts.push("Outdoor dining");
   if (filters.kids === "yes") parts.push("Kid friendly");
   if (filters.music === "yes") parts.push("Live music");
+  if (filters.reservations === "yes") parts.push("Takes reservations");
+  if (filters.groups === "yes") parts.push("Good for groups 12+");
+  if (filters.happyfood === "yes") parts.push("Happy hour food");
+  if (filters.happydrinks === "yes") parts.push("Happy hour drinks");
   if (filters.laurensFavorite === "yes") parts.push("Lauren’s Favorites");
   let label = parts.length ? parts.join(" · ") : emptyLabel;
   if (filters.area) {
@@ -175,6 +187,10 @@ function recordFromCard(card) {
     outdoor: card.dataset.outdoor === "yes",
     kids: card.dataset.kids === "yes",
     music: card.dataset.music === "yes",
+    reservations: card.dataset.reservations === "yes",
+    groups: card.dataset.groups === "yes",
+    happyFood: card.dataset.happyfood === "yes",
+    happyDrinks: card.dataset.happydrinks === "yes",
     laurensFavorite: card.dataset.laurensFavorite === "yes",
     search: card.dataset.search || "",
   };

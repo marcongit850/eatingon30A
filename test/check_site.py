@@ -66,6 +66,28 @@ check(
     'name="laurensFavorite"' in map_page and ">Lauren’s Favorites</span>" in map_page,
     "map should offer a Lauren’s Favorites checkbox",
 )
+for name, label in (
+    ("reservations", "Takes reservations"),
+    ("groups", "Good for groups 12+"),
+    ("happyfood", "Happy hour food"),
+    ("happydrinks", "Happy hour drinks"),
+):
+    check(
+        f'name="{name}"' in directory and f">{label}</span>" in directory,
+        f"directory should offer a {label} checkbox",
+    )
+    check(
+        f'name="{name}"' in map_page and f">{label}</span>" in map_page,
+        f"map should offer a {label} checkbox",
+    )
+check('class="amenities"' not in directory, "directory should keep amenities in the existing chips")
+fish_page = (ROOT / "restaurants" / "fish-out-of-water-watercolor" / "index.html").read_text(encoding="utf-8")
+check("<ul class=\"chips\">" in fish_page and "Good for groups 12+" in fish_page, "Fish Out of Water should chip verified group dining")
+check("Takes reservations" not in fish_page, "Fish Out of Water should not claim reservations")
+check("class=\"amenities\"" not in fish_page, "listing amenities should stay in the existing chips")
+daytrader_page = (ROOT / "restaurants" / "the-daytrader-tiki-bar-and-restaurant-seaside" / "index.html").read_text(encoding="utf-8")
+check("Takes reservations" not in daytrader_page, "Daytrader should not claim reservations")
+check('class="listing-claim"' in fish_page, "Fish Out of Water should keep the claim link")
 favorite_slugs = {
     "fish-out-of-water-watercolor",
     "raw-and-juicy-alys-beach",
