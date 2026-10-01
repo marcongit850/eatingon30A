@@ -108,14 +108,12 @@ for restaurant in restaurants:
     check(f"{build.ORIGIN}/restaurants/{restaurant['slug']}/" in sitemap, f"sitemap missing {restaurant['slug']}")
     page = path.read_text(encoding="utf-8")
     full = full_by_slug[restaurant["slug"]]
-    check(build.listing_h1_html(full) in page, f"detail h1 missing local cue {restaurant['slug']}")
+    check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 should be the name only {restaurant['slug']}")
+    check('class="place"' not in page and "Other locations" not in page, f"detail page picked up listing chrome {restaurant['slug']}")
+    check('aria-label="Related guides"' not in page, f"detail page should not add a guides nav {restaurant['slug']}")
     check(build.e(full["notes"]) in page, f"detail notes missing {restaurant['slug']}")
     check("Scenic Highway 30A" in page, f"detail intro missing 30A {restaurant['slug']}")
     check(f'href="/areas/{restaurant["areaSlug"]}/"' in page, f"detail missing area link {restaurant['slug']}")
-    for spec in build.guides_for_listing(full, guide_specs):
-        check(f'href="{spec["path"]}"' in page, f"{restaurant['slug']} missing guide {spec['slug']}")
-    for other in build.other_locations(full, shown):
-        check(f'/restaurants/{other["slug"]}/' in page, f"{restaurant['slug']} missing other location {other['slug']}")
     schema_match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page)
     check(schema_match is not None, f"detail missing json-ld {restaurant['slug']}")
     if schema_match:

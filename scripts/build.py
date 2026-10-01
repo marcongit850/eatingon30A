@@ -854,17 +854,6 @@ def listing_title(restaurant: dict) -> str:
     return trimmed if len(trimmed) >= 20 else options[-1][:70]
 
 
-def listing_place_label(restaurant: dict) -> str:
-    """Short local cue for the H1. Skip the town when the name already says it."""
-    if name_has_area(restaurant):
-        return "on 30A"
-    return f"in {restaurant['area']}"
-
-
-def listing_h1_html(restaurant: dict) -> str:
-    return f'<h1>{e(restaurant["name"])} <span class="place">{e(listing_place_label(restaurant))}</span></h1>'
-
-
 def intro_place(restaurant: dict) -> str:
     if name_has_area(restaurant):
         return "on Scenic Highway 30A"
@@ -922,63 +911,6 @@ def listing_intro(restaurant: dict) -> str:
     if restaurant["laurensFavorite"]:
         sentences.append("It’s one of Lauren’s Favorites.")
     return " ".join(sentences)
-
-
-GUIDE_LINK_ORDER = (
-    "laurens-favorites-30a",
-    "rosemary-beach-restaurants",
-    "watercolor-restaurants",
-    "dinner-seaside",
-    "best-seafood-30a",
-    "breakfast-30a",
-    "coffee-brunch-30a",
-    "kid-friendly-30a",
-    "walkable-30a",
-)
-
-
-def guides_for_listing(restaurant: dict, guides: list[dict], limit: int = 4) -> list[dict]:
-    """Guides that already include this restaurant, most specific first."""
-    by_slug = {spec["slug"]: spec for spec in guides}
-    chosen = []
-    for slug in GUIDE_LINK_ORDER:
-        spec = by_slug.get(slug)
-        if not spec:
-            continue
-        if any(item["slug"] == restaurant["slug"] for item in spec["restaurants"]):
-            chosen.append(spec)
-        if len(chosen) == limit:
-            break
-    return chosen
-
-
-def other_locations(restaurant: dict, restaurants: list[dict]) -> list[dict]:
-    key = fold_name(restaurant["name"])
-    others = [
-        other
-        for other in restaurants
-        if other["slug"] != restaurant["slug"] and fold_name(other["name"]) == key
-    ]
-    others.sort(key=lambda other: other["area"].lower())
-    return others
-
-
-def related_in_area(restaurant: dict, restaurants: list[dict], limit: int = 4) -> list[dict]:
-    cuisine = set(restaurant["cuisines"])
-    meals = set(restaurant["meals"])
-    others = [
-        other
-        for other in restaurants
-        if other["areaSlug"] == restaurant["areaSlug"] and other["slug"] != restaurant["slug"]
-    ]
-    others.sort(
-        key=lambda other: (
-            -len(cuisine & set(other["cuisines"])),
-            -len(meals & set(other["meals"])),
-            other["name"].lower(),
-        )
-    )
-    return others[:limit]
 
 
 def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
@@ -1565,7 +1497,7 @@ def fact(label: str, value: str) -> str:
     return f"<div><dt>{e(label)}</dt><dd>{value}</dd></div>"
 
 
-def build_detail(restaurant: dict, restaurants: list[dict], guides: list[dict]) -> None:
+def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     """Single restaurant profile template. Every listing page is rendered here."""
     chips = []
     for meal in restaurant["meals"]:
@@ -1621,27 +1553,15 @@ def build_detail(restaurant: dict, restaurants: list[dict], guides: list[dict]) 
         ]
     )
     logo = f'<img class="logo" src="{e(restaurant["logo"])}" alt="{e(restaurant["name"])} logo">' if restaurant["logo"] else ""
-    nearby = related_in_area(restaurant, restaurants)
+    nearby = [
+        other
+        for other in restaurants
+        if other["areaSlug"] == restaurant["areaSlug"] and other["slug"] != restaurant["slug"]
+    ][:4]
     nearby_html = "".join(
         f'<a class="map-hit" href="/restaurants/{e(other["slug"])}/"><strong>{e(other["name"])}</strong><span>{e(other["price"])}</span></a>'
         for other in nearby
     )
-    siblings = other_locations(restaurant, restaurants)
-    sibling_html = ""
-    if siblings:
-        sibling_links = "".join(
-            f'<a class="map-hit" href="/restaurants/{e(other["slug"])}/"><strong>{e(other["name"])}</strong><span>{e(other["area"])}</span></a>'
-            for other in siblings
-        )
-        sibling_html = f'<h2>Other locations</h2><div class="map-list">{sibling_links}</div>'
-    guide_links = guides_for_listing(restaurant, guides)
-    guide_html = ""
-    if guide_links:
-        guide_html = (
-            '<nav class="section-links" aria-label="Related guides">'
-            + "".join(text_link(spec["path"], spec["h1"]) for spec in guide_links)
-            + "</nav>"
-        )
     map_html = ""
     if restaurant["lat"] is not None and restaurant["lng"] is not None:
         map_html = (
@@ -1661,19 +1581,16 @@ def build_detail(restaurant: dict, restaurants: list[dict], guides: list[dict]) 
     claim = (
         f'<p class="listing-claim"><a href="{e(claim_listing_href(restaurant["name"]))}">Claim or correct this listing</a></p>'
     )
-    area_link = f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
     if nearby_html:
         more = (
-            f'<section class="wrap more">{sibling_html}'
-            f'<h2>Also in {e(restaurant["area"])}</h2>'
+            f'<section class="wrap more"><h2>Also in {e(restaurant["area"])}</h2>'
             f'<div class="map-list">{nearby_html}</div>'
-            f"{guide_html}{area_link}"
+            f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
             f"{claim}</section>"
         )
     else:
         more = (
-            f'<section class="wrap more">{sibling_html}{guide_html}'
-            f'<p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p>'
+            f'<section class="wrap more"><p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p>'
             f"{claim}</section>"
         )
     body = (
@@ -1683,7 +1600,7 @@ def build_detail(restaurant: dict, restaurants: list[dict], guides: list[dict]) 
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
-        f"{listing_h1_html(restaurant)}"
+        f"<h1>{e(restaurant['name'])}</h1>"
         f'<ul class="chips">{"".join(chips)}</ul>'
         "</div>"
         '<div class="wrap profile-grid">'
@@ -3134,10 +3051,9 @@ def write_guide_page(spec: dict) -> None:
     )
 
 
-def build_guides(restaurants: list[dict], areas: list[dict], specs: list[dict] | None = None) -> list[dict]:
+def build_guides(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     require_meta(GUIDES_INDEX_TITLE, GUIDES_INDEX_DESCRIPTION)
-    if specs is None:
-        specs = guide_picks(restaurants, areas)
+    specs = guide_picks(restaurants, areas)
     for spec in specs:
         write_guide_page(spec)
     teasers = "".join(
@@ -3519,12 +3435,11 @@ def main() -> None:
     )
     build_home(restaurants, areas, hero)
     build_directory(restaurants, areas, cuisines)
-    guides = guide_picks(restaurants, areas)
     for restaurant in restaurants:
-        build_detail(restaurant, restaurants, guides)
+        build_detail(restaurant, restaurants)
     build_map(areas, cuisines)
     build_areas(areas, restaurants)
-    guides = build_guides(restaurants, areas, guides)
+    guides = build_guides(restaurants, areas)
     build_about()
     build_contact()
     build_404()
