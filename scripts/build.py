@@ -130,12 +130,13 @@ def e(value) -> str:
     return html.escape("" if value is None else str(value), quote=True)
 
 
-def claim_listing_href(name: str) -> str:
-    """Contact page with the restaurant name and a claim/correct subject filled in."""
-    return "/contact/?" + urlencode(
+def claim_listing_href(name: str, slug: str) -> str:
+    """Full listing form, with this restaurant filled in as an update."""
+    return "/list-your-restaurant/?" + urlencode(
         {
+            "intent": "update",
             "restaurant": name,
-            "subject": f"Claim or correct: {name}",
+            "listing": f"{ORIGIN}/restaurants/{slug}/",
         },
         quote_via=quote,
     )
@@ -1650,7 +1651,9 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     category_bit = f' · {e(restaurant["category"])}' if restaurant["category"] else ""
     map_block = f'<div class="wrap profile-map">{map_html}</div>' if map_html else ""
     claim = (
-        f'<p class="listing-claim"><a href="{e(claim_listing_href(restaurant["name"]))}">Claim or correct this listing</a></p>'
+        f'<p class="listing-claim"><a href="{e(claim_listing_href(restaurant["name"], restaurant["slug"]))}">Update this listing</a> '
+        '<span aria-hidden="true">/</span> '
+        '<a href="/list-your-restaurant/">List your restaurant</a></p>'
     )
     if nearby_html:
         more = (
@@ -3210,6 +3213,7 @@ def build_about() -> None:
         '<h2 id="window-decal-heading">Get a Free Window Decal</h2>'
         "<p>Own or manage a restaurant along 30A? We’ll send you a free “Proudly Listed on Eating on 30A” window decal to display at your restaurant.</p>"
         f'<p>Just <a class="text-link" href="{e(window_decal_href())}">contact us</a> and we will personally drop one off!</p>'
+        '<p>To add a restaurant or send a full update, use the <a class="text-link" href="/list-your-restaurant/">listing form</a>.</p>'
         "</div></aside></div>"
         '<section class="print-guides" aria-labelledby="print-guides-heading">'
         '<div class="prose"><h2 id="print-guides-heading">Coming in 2027</h2>'
@@ -3243,6 +3247,241 @@ def build_about() -> None:
     )
 
 
+LISTING_MEALS = ("Breakfast", "Brunch", "Lunch", "Dinner", "Late night")
+LISTING_PRICES = ("$", "$$", "$$$", "$$$$")
+LISTING_ROLES = (
+    ("owner", "Owner"),
+    ("manager", "Manager"),
+    ("marketing", "Marketing"),
+    ("other", "Other"),
+)
+LISTING_INTENTS = (
+    ("new", "New listing"),
+    ("update", "Update an existing listing"),
+)
+LISTING_DAYS = (
+    ("Monday", "hoursMon", "hoursMonClosed"),
+    ("Tuesday", "hoursTue", "hoursTueClosed"),
+    ("Wednesday", "hoursWed", "hoursWedClosed"),
+    ("Thursday", "hoursThu", "hoursThuClosed"),
+    ("Friday", "hoursFri", "hoursFriClosed"),
+    ("Saturday", "hoursSat", "hoursSatClosed"),
+    ("Sunday", "hoursSun", "hoursSunClosed"),
+)
+LISTING_AMENITIES = (
+    ("outdoor", "Outdoor dining"),
+    ("happyDrinks", "Happy hour (drinks)"),
+    ("happyFood", "Happy hour (food)"),
+    ("reservations", "Reservations"),
+    ("kids", "Kid friendly"),
+    ("groups", "Groups of 12+"),
+    ("music", "Live music*"),
+)
+LISTING_LIVE_MUSIC_NOTE = "Live music is seasonal and subject to change."
+LIST_PAGE_TITLE = "List your restaurant on Eating on 30A"
+LIST_PAGE_DESCRIPTION = (
+    "Add a restaurant or send a complete update for the Eating on 30A guide "
+    "along Scenic Highway 30A in Walton County, Florida."
+)
+
+
+def listing_form_options(restaurants: list[dict], areas: list[dict]) -> dict:
+    return {
+        "areas": [area["fullName"] for area in areas],
+        "cuisines": sorted({cuisine for restaurant in restaurants for cuisine in restaurant["cuisines"]}),
+        "foods": sorted({food for restaurant in restaurants for food in restaurant["foods"]}),
+        "meals": list(LISTING_MEALS),
+        "prices": list(LISTING_PRICES),
+        "roles": [{"value": value, "label": label} for value, label in LISTING_ROLES],
+        "intents": [{"value": value, "label": label} for value, label in LISTING_INTENTS],
+        "days": [
+            {"label": label, "hours": hours, "closed": closed} for label, hours, closed in LISTING_DAYS
+        ],
+        "amenities": [{"name": name, "label": label} for name, label in LISTING_AMENITIES],
+    }
+
+
+def listing_text(name: str, label: str, *, required: bool = False, **attrs: str) -> str:
+    star = ' <abbr title="required">*</abbr>' if required else ""
+    extra = "".join(f' {key.replace("_", "-")}="{e(value)}"' for key, value in attrs.items() if value)
+    req = " required" if required else ""
+    return (
+        f"<label><span>{e(label)}{star}</span>"
+        f'<input name="{e(name)}" type="text"{req}{extra}></label>'
+    )
+
+
+def listing_radios(name: str, legend: str, choices: tuple[tuple[str, str], ...]) -> str:
+    items = []
+    for index, (value, label) in enumerate(choices):
+        required = " required" if index == 0 else ""
+        items.append(
+            f'<label class="listing-choice"><input type="radio" name="{e(name)}" value="{e(value)}"{required}> '
+            f"<span>{e(label)}</span></label>"
+        )
+    return (
+        f'<fieldset><legend>{e(legend)} <abbr title="required">*</abbr></legend>'
+        + "".join(items)
+        + "</fieldset>"
+    )
+
+
+def listing_checks(name: str, legend: str, choices: list[tuple[str, str]], *, required: bool = False, grid: bool = False) -> str:
+    """One shared name (cuisines) or one checkbox per choice (amenities)."""
+    items = []
+    for value, label in choices:
+        field = name or value
+        item_value = value if name else "yes"
+        described = ' aria-describedby="live-music-note"' if value == "music" else ""
+        label_html = e(label)
+        if value == "music":
+            label_html += f' <span class="field-note" id="live-music-note">{e(LISTING_LIVE_MUSIC_NOTE)}</span>'
+        items.append(
+            f'<label class="listing-choice"><input type="checkbox" name="{e(field)}" value="{e(item_value)}"{described}> '
+            f"<span>{label_html}</span></label>"
+        )
+    star = ' <abbr title="required">*</abbr>' if required else ""
+    class_attr = ' class="choice-grid"' if grid else ""
+    return f"<fieldset{class_attr}><legend>{e(legend)}{star}</legend>{''.join(items)}</fieldset>"
+
+
+def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
+    options = listing_form_options(restaurants, areas)
+    write(DATA / "listing-form.json", json.dumps(options, indent=2) + "\n")
+    area_options = ['<option value="">Select a town</option>']
+    for area in options["areas"]:
+        area_options.append(f'<option value="{e(area)}">{e(area)}</option>')
+    hours = []
+    for day in options["days"]:
+        hours.append(
+            '<div class="hours-day">'
+            f'<label><span>{e(day["label"])} <abbr title="required">*</abbr></span>'
+            f'<input name="{e(day["hours"])}" type="text" maxlength="80" autocomplete="off"></label>'
+            f'<label class="listing-choice"><input type="checkbox" name="{e(day["closed"])}" value="yes"> '
+            f'<span>Closed <span class="sr-only">{e(day["label"])}</span></span></label>'
+            "</div>"
+        )
+    cuisine_checks = listing_checks(
+        "cuisines",
+        "Cuisine types",
+        [(cuisine, cuisine) for cuisine in options["cuisines"]],
+        required=True,
+        grid=True,
+    )
+    meal_checks = listing_checks(
+        "meals",
+        "Meals",
+        [(meal, meal) for meal in options["meals"]],
+        required=True,
+    )
+    food_checks = listing_checks(
+        "foods",
+        "Food style",
+        [(food, food) for food in options["foods"]],
+        grid=True,
+    )
+    amenity_checks = listing_checks(
+        "",
+        "Amenities",
+        [(item["name"], item["label"]) for item in options["amenities"]],
+    )
+    body = (
+        '<div class="wrap page-intro">'
+        '<div class="prose">'
+        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> List your restaurant</p>'
+        '<p class="kicker">For restaurants</p>'
+        '<h1 class="form-title">List your restaurant</h1>'
+        "<p>Add a restaurant along Scenic Highway 30A, or send a full update for a place already in the guide. "
+        "We read every submission and follow up by email if we need a detail checked.</p>"
+        '<p>For a short correction, the <a class="text-link" href="/contact/">contact form</a> is enough.</p>'
+        "</div>"
+        '<form class="listing-form" action="/api/list-restaurant" method="post" data-list-restaurant>'
+        '<div class="hp-field" aria-hidden="true">'
+        '<label>Company<input name="eo30a_hp" type="text" tabindex="-1" autocomplete="off"></label>'
+        "</div>"
+        "<h2>About you</h2>"
+        + listing_text("name", "Your name", required=True, maxlength="120", autocomplete="name")
+        + listing_radios("role", "Your role", LISTING_ROLES)
+        + "<label><span>Email <abbr title=\"required\">*</abbr></span>"
+        '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email"></label>'
+        + "<label><span>Phone</span>"
+        '<input name="contactPhone" type="tel" maxlength="40" autocomplete="tel" inputmode="tel"></label>'
+        + listing_text("bestTime", "Best time to reach you", maxlength="120", autocomplete="off")
+        + "<h2>What is this for?</h2>"
+        + listing_radios("intent", "Request", LISTING_INTENTS)
+        + "<label><span>Current listing URL or exact restaurant name <abbr title=\"required when updating\">*</abbr></span>"
+        '<input name="existingListing" type="text" maxlength="300" autocomplete="off"></label>'
+        '<p class="field-note">Required when you are updating a listing already on the site.</p>'
+        + "<h2>Basics</h2>"
+        + listing_text("restaurant", "Restaurant name", required=True, maxlength="160", autocomplete="organization")
+        + '<label><span>Area / town <abbr title="required">*</abbr></span>'
+        + f'<select name="area" required>{"".join(area_options)}</select></label>'
+        + listing_text("address", "Street address", required=True, maxlength="240", autocomplete="street-address")
+        + "<label><span>Phone <abbr title=\"required\">*</abbr></span>"
+        '<input name="restaurantPhone" type="tel" required maxlength="40" autocomplete="tel" inputmode="tel"></label>'
+        + "<label><span>Website</span>"
+        '<input name="website" type="text" maxlength="300" autocomplete="url" inputmode="url" placeholder="https://"></label>'
+        + listing_radios("price", "Price range", tuple((price, price) for price in LISTING_PRICES))
+        + "<label><span>Short description / vibe <abbr title=\"required\">*</abbr></span>"
+        '<textarea name="description" required maxlength="2000" rows="5"></textarea></label>'
+        '<p class="field-note">Two to four sentences on the room, the food, and who it is for.</p>'
+        + "<h2>Hours</h2>"
+        '<p class="field-note">Add the hours for each day, or mark the day closed.</p>'
+        + f'<div class="hours-list">{"".join(hours)}</div>'
+        + "<label><span>Seasonal note</span>"
+        '<textarea name="seasonalNote" class="compact" maxlength="500" rows="2"></textarea></label>'
+        + "<h2>What they serve</h2>"
+        + cuisine_checks
+        + '<p class="field-note">Choose at least one.</p>'
+        + meal_checks
+        + '<p class="field-note">Choose at least one.</p>'
+        + food_checks
+        + '<p class="field-note">Optional. Choose any that fit.</p>'
+        + "<h2>Amenities</h2>"
+        + amenity_checks
+        + "<h2>Social and media</h2>"
+        + listing_text("facebook", "Facebook URL", maxlength="300", autocomplete="off")
+        + listing_text("instagram", "Instagram", maxlength="300", autocomplete="off", placeholder="https://instagram.com/name or @name")
+        + listing_text("logoUrl", "Logo URL", maxlength="300", autocomplete="off")
+        + listing_text("listPhotoUrl", "List photo URL", maxlength="300", autocomplete="off")
+        + listing_text("detailPhotoUrl", "Detail photo URL", maxlength="300", autocomplete="off")
+        + listing_text("videoUrl", "Video URL", maxlength="300", autocomplete="off")
+        + "<h2>Anything else</h2>"
+        + "<label><span>Notes</span>"
+        '<textarea name="notes" class="compact" maxlength="4000" rows="4"></textarea></label>'
+        + '<label class="listing-choice"><input type="checkbox" name="authorized" value="yes" required> '
+        '<span>I am authorized to submit this information for this restaurant <abbr title="required">*</abbr></span></label>'
+        + '<button type="submit">Submit</button>'
+        + '<p class="listing-status" role="status" aria-live="polite"></p>'
+        + "</form></div>"
+    )
+    require_meta(LIST_PAGE_TITLE, LIST_PAGE_DESCRIPTION)
+    write(
+        ROOT / "list-your-restaurant" / "index.html",
+        layout(
+            LIST_PAGE_TITLE,
+            LIST_PAGE_DESCRIPTION,
+            "/list-your-restaurant/",
+            "",
+            body,
+            json_ld(
+                graph(
+                    {
+                        "@type": "WebPage",
+                        "name": "List your restaurant",
+                        "url": ORIGIN + "/list-your-restaurant/",
+                        "description": LIST_PAGE_DESCRIPTION,
+                        "isPartOf": {"@id": ORIGIN + "/#website"},
+                    },
+                    breadcrumbs([("Home", "/"), ("List your restaurant", "/list-your-restaurant/")]),
+                )
+            ),
+            include_js=False,
+            extra_scripts='<script src="/list-restaurant.js"></script>\n',
+        ),
+    )
+
+
 def build_contact() -> None:
     body = (
         '<div class="wrap page-intro">'
@@ -3253,7 +3492,9 @@ def build_contact() -> None:
         "<p>Restaurant hours, phone numbers, websites, and other details are listed on each restaurant page. "
         "If something needs to be updated, a restaurant has closed, or we’re missing a place you think should be included, let us know.</p>"
         "<p>Just include the restaurant name and what needs to be changed or added. "
-        "We review every submission and can follow up using the email address you provide.</p></div>"
+        "We review every submission and can follow up using the email address you provide.</p>"
+        "<p>For a new restaurant or a complete update, use the "
+        '<a class="text-link" href="/list-your-restaurant/">full listing form</a>.</p></div>'
         '<form class="listing-form" action="/api/listing" method="post" data-listing>'
         "<label><span>Your name <abbr title=\"required\">*</abbr></span>"
         '<input name="name" type="text" required maxlength="120" autocomplete="name"></label>'
@@ -3343,6 +3584,7 @@ def build_sitemap(restaurants: list[dict], areas: list[dict], guides: list[dict]
         [
             ("/about/", ""),
             ("/contact/", ""),
+            ("/list-your-restaurant/", ""),
         ]
     )
     for area in areas:
@@ -3410,6 +3652,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         f"- [Guides]({ORIGIN}/guides/): Breakfast, seafood, coffee, towns, and favorites along Scenic Highway 30A.",
         f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): Send a correction, edit, deletion, or new listing.",
+        f"- [List your restaurant]({ORIGIN}/list-your-restaurant/): Full form for a new restaurant or a complete listing update.",
         "",
         "## Guides",
         "",
@@ -3465,6 +3708,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         f"- [Guides]({ORIGIN}/guides/)",
         f"- [About]({ORIGIN}/about/)",
         f"- [Contact]({ORIGIN}/contact/)",
+        f"- [List your restaurant]({ORIGIN}/list-your-restaurant/)",
         f"- [Short index]({ORIGIN}/llms.txt)",
         f"- [Sitemap]({ORIGIN}/sitemap.xml)",
         "",
@@ -3529,6 +3773,7 @@ def main() -> None:
     guides = build_guides(restaurants, areas)
     build_about()
     build_contact()
+    build_list_restaurant(restaurants, areas)
     build_404()
     build_sitemap(restaurants, areas, guides)
     build_robots()

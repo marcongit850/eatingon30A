@@ -1,0 +1,179 @@
+{
+  "areas": [
+    "Dune Allen Beach",
+    "Gulf Place",
+    "Blue Mountain Beach",
+    "Grayton Beach",
+    "WaterColor",
+    "Seaside",
+    "Seagrove Beach",
+    "Seacrest",
+    "Watersound",
+    "Alys Beach",
+    "Rosemary Beach",
+    "Inlet Beach",
+    "Watersound Origins"
+  ],
+  "cuisines": [
+    "American",
+    "Asian",
+    "BBQ",
+    "Cafe",
+    "Cuban",
+    "Dessert",
+    "French",
+    "Irish",
+    "Italian",
+    "Japanese",
+    "Mediterranean",
+    "Mexican",
+    "Seafood",
+    "Southern",
+    "Sushi",
+    "Venezuelan"
+  ],
+  "foods": [
+    "Arepas",
+    "Bakery",
+    "Bistro",
+    "Breakfast Spot",
+    "Burgers",
+    "Cafe",
+    "Coffee",
+    "Cookies & Sweets",
+    "Crepes",
+    "Dessert",
+    "Donuts",
+    "Food Hall",
+    "Grill",
+    "Gyros",
+    "Hot Dogs",
+    "Ice Cream",
+    "Juice & Bowls",
+    "Market",
+    "Noodles",
+    "Oyster Bar",
+    "Pasta",
+    "Pizza",
+    "Raw Bar",
+    "Sandwiches",
+    "Seafood Market",
+    "Shrimp",
+    "Smoothies",
+    "Snowcones",
+    "Steak",
+    "Sushi",
+    "Tacos",
+    "Tapas",
+    "Tasting Menu",
+    "Wine"
+  ],
+  "meals": [
+    "Breakfast",
+    "Brunch",
+    "Lunch",
+    "Dinner",
+    "Late night"
+  ],
+  "prices": [
+    "$",
+    "$$",
+    "$$$",
+    "$$$$"
+  ],
+  "roles": [
+    {
+      "value": "owner",
+      "label": "Owner"
+    },
+    {
+      "value": "manager",
+      "label": "Manager"
+    },
+    {
+      "value": "marketing",
+      "label": "Marketing"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "intents": [
+    {
+      "value": "new",
+      "label": "New listing"
+    },
+    {
+      "value": "update",
+      "label": "Update an existing listing"
+    }
+  ],
+  "days": [
+    {
+      "label": "Monday",
+      "hours": "hoursMon",
+      "closed": "hoursMonClosed"
+    },
+    {
+      "label": "Tuesday",
+      "hours": "hoursTue",
+      "closed": "hoursTueClosed"
+    },
+    {
+      "label": "Wednesday",
+      "hours": "hoursWed",
+      "closed": "hoursWedClosed"
+    },
+    {
+      "label": "Thursday",
+      "hours": "hoursThu",
+      "closed": "hoursThuClosed"
+    },
+    {
+      "label": "Friday",
+      "hours": "hoursFri",
+      "closed": "hoursFriClosed"
+    },
+    {
+      "label": "Saturday",
+      "hours": "hoursSat",
+      "closed": "hoursSatClosed"
+    },
+    {
+      "label": "Sunday",
+      "hours": "hoursSun",
+      "closed": "hoursSunClosed"
+    }
+  ],
+  "amenities": [
+    {
+      "name": "outdoor",
+      "label": "Outdoor dining"
+    },
+    {
+      "name": "happyDrinks",
+      "label": "Happy hour (drinks)"
+    },
+    {
+      "name": "happyFood",
+      "label": "Happy hour (food)"
+    },
+    {
+      "name": "reservations",
+      "label": "Reservations"
+    },
+    {
+      "name": "kids",
+      "label": "Kid friendly"
+    },
+    {
+      "name": "groups",
+      "label": "Groups of 12+"
+    },
+    {
+      "name": "music",
+      "label": "Live music*"
+    }
+  ]
+}
