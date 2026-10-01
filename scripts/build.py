@@ -98,6 +98,10 @@ PRINT_GUIDES = (
     "Looking ahead, we’ll also be launching a printed version of the \"Eating In\" guides in 2027, "
     "bringing the same curated experience into a high-quality physical format you can bring along."
 )
+WINDOW_DECAL_IMAGE = "/images/eating-on-30a-window-decal.png"
+WINDOW_DECAL_ALT = (
+    "Circular Eating on 30A window decal, with a sun, fork, and knife over the Gulf and a QR code."
+)
 PRINT_COVERS = (
     (
         "/images/guides/eating-in-destin-spring-summer-2027",
@@ -128,6 +132,11 @@ def claim_listing_href(name: str) -> str:
         },
         quote_via=quote,
     )
+
+
+def window_decal_href() -> str:
+    """Contact page with a free window-decal note, using the same subject query as a claim."""
+    return "/contact/?" + urlencode({"subject": "Free window decal"}, quote_via=quote)
 
 
 def slugify(value: str) -> str:
@@ -2932,13 +2941,23 @@ def build_guides(restaurants: list[dict], areas: list[dict]) -> list[dict]:
 def build_about() -> None:
     covers = "".join(print_cover(path, alt) for path, alt in PRINT_COVERS)
     body = (
-        '<div class="wrap page-intro"><div class="prose">'
+        '<div class="wrap page-intro">'
+        '<div class="about-lead"><div class="prose">'
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> About</p>'
         '<p class="kicker">About</p>'
         "<h1>The 30A restaurant guide</h1>"
         f"<p>{e(ABOUT_LEAD)}</p>"
         f"<p>{e(ABOUT_TOWNS)}</p>"
         '<p><a class="button" href="/restaurants/">See the restaurants</a></p></div>'
+        '<aside class="window-decal" aria-labelledby="window-decal-heading">'
+        f'<img src="{e(WINDOW_DECAL_IMAGE)}" width="900" height="900" alt="{e(WINDOW_DECAL_ALT)}">'
+        '<div class="window-decal-copy">'
+        '<p class="kicker">For restaurants</p>'
+        '<h2 id="window-decal-heading">A free window decal</h2>'
+        "<p>If you run a restaurant on 30A, we’ll send a free decal for the front window. "
+        f'Please <a class="text-link" href="{e(window_decal_href())}">contact us</a> '
+        "and include the restaurant name.</p>"
+        "</div></aside></div>"
         '<section class="print-guides" aria-labelledby="print-guides-heading">'
         '<div class="prose"><h2 id="print-guides-heading">Coming in 2027</h2>'
         f"<p>{e(PRINT_GUIDES)}</p>"

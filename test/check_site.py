@@ -256,6 +256,26 @@ check(
 )
 check("—" not in about and "–" not in about, "about page should not use em or en dashes")
 check('class="print-covers"' in about, "about page should show the print covers together")
+lead_at = about.find(build.ABOUT_LEAD)
+decal_at = about.find('class="window-decal"')
+print_at = about.find('class="print-guides"')
+check(0 <= lead_at < decal_at < print_at, "window decal should sit between the intro and the print guides")
+decal_section = about.split('class="window-decal"', 1)[1].split("</aside>", 1)[0]
+check('id="window-decal-heading">A free window decal</h2>' in decal_section, "about page should offer a free window decal")
+check("we’ll send a free decal for the front window" in decal_section, "window decal note should invite restaurants in plain language")
+check(
+    f'href="{build.e(build.window_decal_href())}"' in decal_section and ">contact us</a>" in decal_section,
+    "window decal note should link to the contact form with a decal subject",
+)
+check(build.window_decal_href().startswith("/contact/?subject="), "window decal should use the contact subject query")
+check(f'src="{build.WINDOW_DECAL_IMAGE}"' in decal_section and f'alt="{build.e(build.WINDOW_DECAL_ALT)}"' in decal_section, "about page should show the window decal image")
+decal_file = ROOT / build.WINDOW_DECAL_IMAGE.lstrip("/")
+check(decal_file.is_file() and decal_file.stat().st_size > 10_000, "missing window decal image")
+check(".about-lead" in styles and ".window-decal" in styles, "about layout should style the decal column")
+check(
+    "grid-template-columns: minmax(0, 40rem) minmax(17rem, 21rem)" in styles,
+    "about intro should keep the decal in the open column beside the copy",
+)
 for path, alt in build.PRINT_COVERS:
     check(f'src="{path}.jpg"' in about and f'srcset="{path}.webp"' in about, f"about page should include {path}")
     check(f'alt="{build.e(alt)}"' in about, f"about page should describe {path}")
