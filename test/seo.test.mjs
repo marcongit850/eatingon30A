@@ -126,7 +126,45 @@ const crumbs = typed(profile["@graph"], "BreadcrumbList");
 assert.deepEqual(crumbs.itemListElement.map((item) => item.name), ["Home", "Restaurants", "Alys Beach", "O-Ku"]);
 assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$/);
 assert.match(profileHtml, /<title>O-Ku \| Japanese in Alys Beach, 30A<\/title>/);
+assert.match(profileHtml, /<h1>O-Ku <span class="place">in Alys Beach<\/span><\/h1>/);
+assert.match(profileHtml, /Scenic Highway 30A/);
 assert.match(profileHtml, /href="\/areas\/alys-beach\/"/);
+assert.match(profileHtml, /href="\/guides\/walkable-30a\/"/);
+assert.equal(restaurant.aggregateRating, undefined);
+assert.equal(restaurant.review, undefined);
+assert.equal(restaurant.openingHours, undefined);
+assert.equal(restaurant.openingHoursSpecification, undefined);
+const profilePage = typed(profile["@graph"], "WebPage");
+assert.equal(profilePage.mainEntity["@id"], restaurant["@id"]);
+assert.equal(profilePage.url, restaurant.url);
+
+const redHtml = read("restaurants/the-red-bar-grayton-beach/index.html");
+assert.match(redHtml, /<title>The Red Bar \| American in Grayton Beach, 30A<\/title>/);
+assert.match(redHtml, /<h1>The Red Bar <span class="place">in Grayton Beach<\/span><\/h1>/);
+assert.match(redHtml, /iconic 30A spot/);
+assert.equal(redHtml.includes("Hours, address, and map are on the profile."), false);
+assert.match(redHtml, /href="\/guides\/kid-friendly-30a\/"/);
+assert.match(redHtml, /href="\/areas\/grayton-beach\/"/);
+const redSchema = typed(jsonLd(redHtml)["@graph"], "Restaurant");
+assert.equal(redSchema.telephone, "(850) 231-1008");
+assert.deepEqual(redSchema.servesCuisine, ["American"]);
+assert.match(redSchema.image, /\/images\/restaurants\/the-red-bar-grayton-beach\/01\.jpg$/);
+assert.equal(redSchema.aggregateRating, undefined);
+
+const amavidaHtml = read("restaurants/amavida-coffee-roasters-seaside/index.html");
+assert.match(amavidaHtml, /<title>Amavida Coffee Roasters \| Cafe in Seaside, 30A<\/title>/);
+assert.match(amavidaHtml, /href="\/guides\/coffee-brunch-30a\/"/);
+
+const pigHtml = read("restaurants/the-perfect-pig-watercolor/index.html");
+assert.match(pigHtml, /<h2>Other locations<\/h2>/);
+assert.match(pigHtml, /href="\/restaurants\/the-perfect-pig-seagrove-beach\/"/);
+assert.match(pigHtml, /href="\/restaurants\/the-perfect-pig-gulf-place\/"/);
+assert.match(pigHtml, /href="\/guides\/breakfast-30a\/"/);
+
+const waterHtml = read("restaurants/fish-out-of-water-watercolor/index.html");
+assert.match(waterHtml, /href="\/guides\/laurens-favorites-30a\/"/);
+assert.match(waterHtml, /href="\/guides\/watercolor-restaurants\/"/);
+assert.match(waterHtml, /href="\/guides\/best-seafood-30a\/"/);
 
 const steam = jsonLd(read("restaurants/steamboat-grill-30a-seagrove-beach/index.html"));
 const steamRestaurant = typed(steam["@graph"], "Restaurant");

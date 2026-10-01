@@ -99,13 +99,50 @@ for area in areas:
     check(browse.count(town_href) == 1, f"browse by area should link to {area['slug']}")
     check(directory.count(town_href) == 1, f"town page link for {area['slug']} should only be in browse by area")
 
+full_by_slug = {item["slug"]: item for item in shown}
+guide_specs = build.guide_picks(shown, build.load_areas(shown))
 for restaurant in restaurants:
     path = ROOT / "restaurants" / restaurant["slug"] / "index.html"
     check(path.exists(), f"missing detail page {restaurant['slug']}")
     check(f"/restaurants/{restaurant['slug']}/" in directory, f"directory missing {restaurant['slug']}")
     check(f"{build.ORIGIN}/restaurants/{restaurant['slug']}/" in sitemap, f"sitemap missing {restaurant['slug']}")
     page = path.read_text(encoding="utf-8")
-    check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 missing {restaurant['name']}")
+    full = full_by_slug[restaurant["slug"]]
+    check(build.listing_h1_html(full) in page, f"detail h1 missing local cue {restaurant['slug']}")
+    check(build.e(full["notes"]) in page, f"detail notes missing {restaurant['slug']}")
+    check("Scenic Highway 30A" in page, f"detail intro missing 30A {restaurant['slug']}")
+    check(f'href="/areas/{restaurant["areaSlug"]}/"' in page, f"detail missing area link {restaurant['slug']}")
+    for spec in build.guides_for_listing(full, guide_specs):
+        check(f'href="{spec["path"]}"' in page, f"{restaurant['slug']} missing guide {spec['slug']}")
+    for other in build.other_locations(full, shown):
+        check(f'/restaurants/{other["slug"]}/' in page, f"{restaurant['slug']} missing other location {other['slug']}")
+    schema_match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page)
+    check(schema_match is not None, f"detail missing json-ld {restaurant['slug']}")
+    if schema_match:
+        schema = json.loads(schema_match.group(1))
+        nodes = schema.get("@graph") or []
+        place = next(
+            (
+                node
+                for node in nodes
+                if node.get("@type") == "Restaurant"
+                or (isinstance(node.get("@type"), list) and "Restaurant" in node["@type"])
+            ),
+            None,
+        )
+        check(place is not None, f"detail schema missing Restaurant {restaurant['slug']}")
+        if place:
+            check(place.get("name") == restaurant["name"], f"schema name {restaurant['slug']}")
+            check(str(place.get("url", "")).startswith(f"{build.ORIGIN}/restaurants/"), f"schema url {restaurant['slug']}")
+            check(place.get("address", {}).get("addressCountry") == "US", f"schema address {restaurant['slug']}")
+            check("aggregateRating" not in place and "review" not in place, f"schema invented a rating {restaurant['slug']}")
+            check("openingHours" not in place and "openingHoursSpecification" not in place, f"schema invented hours {restaurant['slug']}")
+            if restaurant.get("phone"):
+                check(place.get("telephone") == restaurant["phone"], f"schema phone {restaurant['slug']}")
+            if restaurant.get("cuisines"):
+                check(place.get("servesCuisine") == restaurant["cuisines"], f"schema cuisine {restaurant['slug']}")
+            if restaurant.get("image"):
+                check(str(place.get("image", "")).startswith("https://"), f"schema image {restaurant['slug']}")
     check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
     claim_href = build.e(build.claim_listing_href(restaurant["name"]))
     check(
@@ -115,6 +152,14 @@ for restaurant in restaurants:
     claim_bit = page.split('class="listing-claim"', 1)[1].split("</p>", 1)[0]
     check("—" not in claim_bit and "–" not in claim_bit, f"claim link copy uses a dash {restaurant['slug']}")
     check("maps.googleapis" not in page and "airtable" not in page.lower(), f"detail page calls a paid API {restaurant['slug']}")
+
+for spec in guide_specs:
+    guide_html = (ROOT / "guides" / spec["slug"] / "index.html").read_text(encoding="utf-8")
+    for item in spec["restaurants"]:
+        check(
+            f'/restaurants/{item["slug"]}/' in guide_html,
+            f"guide {spec['slug']} should link to {item['slug']}",
+        )
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")
 check("User-agent: *" in robots and "Allow: /" in robots, "robots should allow crawlers")

@@ -707,31 +707,138 @@ def cuisine_phrase(cuisines: list[str], limit: int = 2) -> str:
     return f"{names[0]} and {names[1]}"
 
 
+def lead_cuisine(cuisines: list[str]) -> str:
+    """Prefer a specific cuisine over American when the listing has both."""
+    for cuisine in cuisines:
+        if cuisine and cuisine != "American":
+            return cuisine
+    return cuisines[0] if cuisines else ""
+
+
+def name_has_area(restaurant: dict) -> bool:
+    return restaurant["area"].lower() in restaurant["name"].lower()
+
+
+def name_has_30a(restaurant: dict) -> bool:
+    return "30a" in restaurant["name"].lower()
+
+
+def title_place(restaurant: dict) -> str:
+    if name_has_area(restaurant):
+        return "on 30A"
+    if name_has_30a(restaurant):
+        return f"in {restaurant['area']}"
+    return f"in {restaurant['area']}, 30A"
+
+
+def listing_where(restaurant: dict) -> str:
+    """Local cue for meta descriptions. Always keeps 30A and Walton County available."""
+    if name_has_area(restaurant):
+        return "on 30A, Walton County, Florida"
+    if name_has_30a(restaurant):
+        return f"in {restaurant['area']}, Walton County, Florida"
+    return f"in {restaurant['area']} on 30A, Walton County, Florida"
+
+
 def listing_identity(restaurant: dict) -> str:
-    where = (
-        f"in {restaurant['area']} on Scenic Highway 30A, Walton County, Florida."
-    )
-    cuisine = cuisine_phrase(restaurant["cuisines"])
+    where = listing_where(restaurant)
+    cuisine = lead_cuisine(restaurant["cuisines"])
     if cuisine:
-        identity = f"{restaurant['name']} serves {cuisine} {where}"
-    else:
-        identity = f"{restaurant['name']} {where}"
-    if len(identity) <= 155 or not restaurant["cuisines"]:
-        return identity
-    return f"{restaurant['name']} serves {restaurant['cuisines'][0]} {where}"
+        return f"{restaurant['name']}, {cuisine} {where}."
+    return f"{restaurant['name']} {where}."
+
+
+ABBREVIATIONS = re.compile(r"\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|Co|Inc|LLC|Ltd|Ave|Blvd|Hwy|vs|etc)\.")
+
+
+def first_sentence(text: str) -> str:
+    """First full sentence, ignoring titles like Mr. Short fragments are not used."""
+    text = clean_text(text)
+    if not text:
+        return ""
+    protected = ABBREVIATIONS.sub(lambda match: match.group(0).replace(".", "\u0000"), text)
+    sentence = re.split(r"(?<=[.!?])\s+", protected)[0].strip().replace("\u0000", ".")
+    sentence = sentence.rstrip(".")
+    if len(sentence) < 40:
+        return ""
+    return sentence
+
+
+def meal_words(meals: list[str]) -> list[str]:
+    words = []
+    for meal in MEAL_ORDER:
+        if meal in meals:
+            words.append("dessert" if meal == "Desserts" else meal.lower())
+    for meal in meals:
+        word = "dessert" if meal == "Desserts" else meal.lower()
+        if word not in words:
+            words.append(word)
+    return words
+
+
+def food_phrase(restaurant: dict, cuisine: str) -> str:
+    picked = []
+    for food in restaurant["foods"]:
+        if cuisine and food.lower() == cuisine.lower():
+            continue
+        picked.append(food.lower())
+        if len(picked) == 2:
+            break
+    return human_list(picked)
+
+
+def meta_ok(text: str) -> bool:
+    return 110 <= len(text) <= 165 and "30A" in text and "Walton County" in text
 
 
 def listing_description(restaurant: dict) -> str:
-    return fit_meta(restaurant["notes"], listing_identity(restaurant))
+    """Unique meta description from the listing. No invented hours, ratings, or counts."""
+    identity = listing_identity(restaurant)
+    cuisine = lead_cuisine(restaurant["cuisines"])
+    note = first_sentence(restaurant["notes"])
+    meals = meal_words(restaurant["meals"])
+    meal = f"Open for {human_list(meals)}" if meals else ""
+    food = food_phrase(restaurant, cuisine)
+    options = []
+    if note:
+        options.append(f"{identity} {note}.")
+    if meal:
+        options.append(f"{identity} {meal}.")
+        if food:
+            options.append(f"{identity} {meal}, with {food}.")
+        if restaurant["laurensFavorite"]:
+            options.append(f"{identity} {meal}. One of Lauren’s Favorites.")
+    elif food:
+        options.append(f"{identity} Food on the listing: {food}.")
+    if restaurant["laurensFavorite"]:
+        options.append(f"{identity} One of Lauren’s Favorites.")
+    base = f"{identity} {meal}." if meal else identity
+    for pad in (
+        "Hours, address, and map are on the profile.",
+        "Address, hours, and map are on this page.",
+        "See the address and hours on this page.",
+    ):
+        options.append(f"{base} {pad}".replace("..", "."))
+    for option in options:
+        text = clean_text(option)
+        if meta_ok(text):
+            return text
+    text = clean_text(options[-1]) if options else identity
+    if len(text) > 165:
+        text = text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
+    return text
 
 
 def listing_title(restaurant: dict) -> str:
     name = restaurant["name"]
     area = restaurant["area"]
-    cuisine = restaurant["cuisines"][0] if restaurant["cuisines"] else ""
+    cuisine = lead_cuisine(restaurant["cuisines"])
+    place = title_place(restaurant)
     options = []
-    if cuisine:
-        options.append(f"{name} | {cuisine} in {area}, 30A")
+    if cuisine and place:
+        options.append(f"{name} | {cuisine} {place}")
+    elif cuisine:
+        options.append(f"{name} | {cuisine} on 30A")
     options.extend(
         [
             f"{name} in {area} | 30A restaurants",
@@ -743,7 +850,135 @@ def listing_title(restaurant: dict) -> str:
     for option in options:
         if 20 <= len(option) <= 70:
             return option
-    return options[-1]
+    trimmed = options[-1][:70].rsplit(" ", 1)[0].rstrip(".,;:|")
+    return trimmed if len(trimmed) >= 20 else options[-1][:70]
+
+
+def listing_place_label(restaurant: dict) -> str:
+    """Short local cue for the H1. Skip the town when the name already says it."""
+    if name_has_area(restaurant):
+        return "on 30A"
+    return f"in {restaurant['area']}"
+
+
+def listing_h1_html(restaurant: dict) -> str:
+    return f'<h1>{e(restaurant["name"])} <span class="place">{e(listing_place_label(restaurant))}</span></h1>'
+
+
+def intro_place(restaurant: dict) -> str:
+    if name_has_area(restaurant):
+        return "on Scenic Highway 30A"
+    return f"in {restaurant['area']} on Scenic Highway 30A"
+
+
+CUISINE_INTRO = {
+    "American": "serves American food",
+    "Seafood": "serves seafood",
+    "Cafe": "is a cafe",
+    "Italian": "serves Italian food",
+    "Dessert": "is a dessert stop",
+    "Southern": "serves Southern food",
+    "Mexican": "serves Mexican food",
+    "Asian": "serves Asian food",
+    "Japanese": "serves Japanese food",
+    "Mediterranean": "serves Mediterranean food",
+    "BBQ": "serves barbecue",
+    "French": "serves French food",
+    "Venezuelan": "serves Venezuelan food",
+    "Cuban": "serves Cuban food",
+    "Irish": "serves Irish food",
+    "Sushi": "serves sushi",
+}
+
+
+def listing_intro(restaurant: dict) -> str:
+    """One short on-page intro from fields already on the listing. No counts, no guessed facts."""
+    cuisine = lead_cuisine(restaurant["cuisines"])
+    place = intro_place(restaurant)
+    if cuisine:
+        verb = CUISINE_INTRO.get(cuisine, f"serves {cuisine}")
+        sentences = [f"{restaurant['name']} {verb} {place}."]
+    else:
+        sentences = [f"{restaurant['name']} is {place}."]
+    subarea = restaurant["subarea"]
+    if subarea and subarea.lower() not in restaurant["name"].lower() and subarea.lower() != restaurant["area"].lower():
+        sentences.append(f"It’s in {subarea}.")
+    meals = meal_words(restaurant["meals"])
+    if meals:
+        sentences.append(f"Come by for {human_list(meals)}.")
+    amenities = []
+    if restaurant["outdoor"]:
+        amenities.append("outdoor dining")
+    if restaurant["music"]:
+        amenities.append("live music")
+    if restaurant["reservations"]:
+        amenities.append("reservations")
+    if restaurant["happyDrinks"] or restaurant["happyFood"]:
+        amenities.append("happy hour")
+    if amenities:
+        sentences.append(f"The listing includes {human_list(amenities[:3])}.")
+    if restaurant["kids"]:
+        sentences.append("It’s marked kid friendly.")
+    if restaurant["laurensFavorite"]:
+        sentences.append("It’s one of Lauren’s Favorites.")
+    return " ".join(sentences)
+
+
+GUIDE_LINK_ORDER = (
+    "laurens-favorites-30a",
+    "rosemary-beach-restaurants",
+    "watercolor-restaurants",
+    "dinner-seaside",
+    "best-seafood-30a",
+    "breakfast-30a",
+    "coffee-brunch-30a",
+    "kid-friendly-30a",
+    "walkable-30a",
+)
+
+
+def guides_for_listing(restaurant: dict, guides: list[dict], limit: int = 4) -> list[dict]:
+    """Guides that already include this restaurant, most specific first."""
+    by_slug = {spec["slug"]: spec for spec in guides}
+    chosen = []
+    for slug in GUIDE_LINK_ORDER:
+        spec = by_slug.get(slug)
+        if not spec:
+            continue
+        if any(item["slug"] == restaurant["slug"] for item in spec["restaurants"]):
+            chosen.append(spec)
+        if len(chosen) == limit:
+            break
+    return chosen
+
+
+def other_locations(restaurant: dict, restaurants: list[dict]) -> list[dict]:
+    key = fold_name(restaurant["name"])
+    others = [
+        other
+        for other in restaurants
+        if other["slug"] != restaurant["slug"] and fold_name(other["name"]) == key
+    ]
+    others.sort(key=lambda other: other["area"].lower())
+    return others
+
+
+def related_in_area(restaurant: dict, restaurants: list[dict], limit: int = 4) -> list[dict]:
+    cuisine = set(restaurant["cuisines"])
+    meals = set(restaurant["meals"])
+    others = [
+        other
+        for other in restaurants
+        if other["areaSlug"] == restaurant["areaSlug"] and other["slug"] != restaurant["slug"]
+    ]
+    others.sort(
+        key=lambda other: (
+            -len(cuisine & set(other["cuisines"])),
+            -len(meals & set(other["meals"])),
+            other["name"].lower(),
+        )
+    )
+    return others[:limit]
 
 
 def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
@@ -1330,7 +1565,7 @@ def fact(label: str, value: str) -> str:
     return f"<div><dt>{e(label)}</dt><dd>{value}</dd></div>"
 
 
-def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
+def build_detail(restaurant: dict, restaurants: list[dict], guides: list[dict]) -> None:
     """Single restaurant profile template. Every listing page is rendered here."""
     chips = []
     for meal in restaurant["meals"]:
@@ -1386,15 +1621,27 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         ]
     )
     logo = f'<img class="logo" src="{e(restaurant["logo"])}" alt="{e(restaurant["name"])} logo">' if restaurant["logo"] else ""
-    nearby = [
-        other
-        for other in restaurants
-        if other["areaSlug"] == restaurant["areaSlug"] and other["slug"] != restaurant["slug"]
-    ][:4]
+    nearby = related_in_area(restaurant, restaurants)
     nearby_html = "".join(
         f'<a class="map-hit" href="/restaurants/{e(other["slug"])}/"><strong>{e(other["name"])}</strong><span>{e(other["price"])}</span></a>'
         for other in nearby
     )
+    siblings = other_locations(restaurant, restaurants)
+    sibling_html = ""
+    if siblings:
+        sibling_links = "".join(
+            f'<a class="map-hit" href="/restaurants/{e(other["slug"])}/"><strong>{e(other["name"])}</strong><span>{e(other["area"])}</span></a>'
+            for other in siblings
+        )
+        sibling_html = f'<h2>Other locations</h2><div class="map-list">{sibling_links}</div>'
+    guide_links = guides_for_listing(restaurant, guides)
+    guide_html = ""
+    if guide_links:
+        guide_html = (
+            '<nav class="section-links" aria-label="Related guides">'
+            + "".join(text_link(spec["path"], spec["h1"]) for spec in guide_links)
+            + "</nav>"
+        )
     map_html = ""
     if restaurant["lat"] is not None and restaurant["lng"] is not None:
         map_html = (
@@ -1414,16 +1661,19 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     claim = (
         f'<p class="listing-claim"><a href="{e(claim_listing_href(restaurant["name"]))}">Claim or correct this listing</a></p>'
     )
+    area_link = f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
     if nearby_html:
         more = (
-            f'<section class="wrap more"><h2>Also in {e(restaurant["area"])}</h2>'
+            f'<section class="wrap more">{sibling_html}'
+            f'<h2>Also in {e(restaurant["area"])}</h2>'
             f'<div class="map-list">{nearby_html}</div>'
-            f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
+            f"{guide_html}{area_link}"
             f"{claim}</section>"
         )
     else:
         more = (
-            f'<section class="wrap more"><p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p>'
+            f'<section class="wrap more">{sibling_html}{guide_html}'
+            f'<p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p>'
             f"{claim}</section>"
         )
     body = (
@@ -1433,11 +1683,13 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
-        f"<h1>{e(restaurant['name'])}</h1>"
+        f"{listing_h1_html(restaurant)}"
         f'<ul class="chips">{"".join(chips)}</ul>'
         "</div>"
         '<div class="wrap profile-grid">'
-        f'<div class="prose profile-story"><p>{e(restaurant["notes"])}</p></div>'
+        f'<div class="prose profile-story"><p>{e(listing_intro(restaurant))}</p>'
+        + (f'<p>{e(restaurant["notes"])}</p>' if restaurant["notes"] else "")
+        + "</div>"
         f"<aside>{logo}<dl class=\"facts\">{facts}</dl></aside>"
         "</div>"
         f"{map_block}{more}"
@@ -1477,10 +1729,26 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     if restaurant["heroImage"]:
         image = restaurant["heroImage"]
         schema["image"] = image if image.startswith(("http://", "https://")) else ORIGIN + image
+    if restaurant["logo"]:
+        logo_url = restaurant["logo"]
+        schema["logo"] = logo_url if logo_url.startswith(("http://", "https://")) else ORIGIN + logo_url
     if same_as:
         schema["sameAs"] = same_as
+    # Hours stay in the visible facts list. CSV hours are free text, so they are not
+    # copied into openingHours. Ratings and reviews are never invented.
+    title = listing_title(restaurant)
+    webpage = {
+        "@type": "WebPage",
+        "@id": page_url + "#webpage",
+        "url": page_url,
+        "name": title,
+        "description": description,
+        "isPartOf": {"@id": ORIGIN + "/#website"},
+        "mainEntity": {"@id": page_url + "#restaurant"},
+    }
     extra = json_ld(
         graph(
+            webpage,
             schema,
             breadcrumbs(
                 [
@@ -1492,7 +1760,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             ),
         )
     )
-    title = listing_title(restaurant)
+    require_meta(title, description)
     write(
         ROOT / "restaurants" / restaurant["slug"] / "index.html",
         layout(
@@ -2866,9 +3134,10 @@ def write_guide_page(spec: dict) -> None:
     )
 
 
-def build_guides(restaurants: list[dict], areas: list[dict]) -> list[dict]:
+def build_guides(restaurants: list[dict], areas: list[dict], specs: list[dict] | None = None) -> list[dict]:
     require_meta(GUIDES_INDEX_TITLE, GUIDES_INDEX_DESCRIPTION)
-    specs = guide_picks(restaurants, areas)
+    if specs is None:
+        specs = guide_picks(restaurants, areas)
     for spec in specs:
         write_guide_page(spec)
     teasers = "".join(
@@ -3250,11 +3519,12 @@ def main() -> None:
     )
     build_home(restaurants, areas, hero)
     build_directory(restaurants, areas, cuisines)
+    guides = guide_picks(restaurants, areas)
     for restaurant in restaurants:
-        build_detail(restaurant, restaurants)
+        build_detail(restaurant, restaurants, guides)
     build_map(areas, cuisines)
     build_areas(areas, restaurants)
-    guides = build_guides(restaurants, areas)
+    guides = build_guides(restaurants, areas, guides)
     build_about()
     build_contact()
     build_404()
