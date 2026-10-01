@@ -3176,10 +3176,9 @@ def build_about() -> None:
         f'<img src="{e(WINDOW_DECAL_IMAGE)}" width="900" height="900" alt="{e(WINDOW_DECAL_ALT)}">'
         '<div class="window-decal-copy">'
         '<p class="kicker">For restaurants</p>'
-        '<h2 id="window-decal-heading">A free window decal</h2>'
-        "<p>If you run a restaurant on 30A, we’ll send a free decal for the front window. "
-        f'Please <a class="text-link" href="{e(window_decal_href())}">contact us</a> '
-        "and include the restaurant name.</p>"
+        '<h2 id="window-decal-heading">Get a Free Window Decal</h2>'
+        "<p>Own or manage a restaurant along 30A? We’ll send you a free “Proudly Listed on Eating on 30A” window decal to display at your restaurant.</p>"
+        f'<p>Just <a class="text-link" href="{e(window_decal_href())}">contact us</a> and we will personally drop one off!</p>'
         "</div></aside></div>"
         '<section class="print-guides" aria-labelledby="print-guides-heading">'
         '<div class="prose"><h2 id="print-guides-heading">Coming in 2027</h2>'

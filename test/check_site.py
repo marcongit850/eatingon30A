@@ -311,12 +311,17 @@ decal_at = about.find('class="window-decal"')
 print_at = about.find('class="print-guides"')
 check(0 <= lead_at < decal_at < print_at, "window decal should sit between the intro and the print guides")
 decal_section = about.split('class="window-decal"', 1)[1].split("</aside>", 1)[0]
-check('id="window-decal-heading">A free window decal</h2>' in decal_section, "about page should offer a free window decal")
-check("we’ll send a free decal for the front window" in decal_section, "window decal note should invite restaurants in plain language")
+check('id="window-decal-heading">Get a Free Window Decal</h2>' in decal_section, "about page should use Marc's window decal heading")
 check(
-    f'href="{build.e(build.window_decal_href())}"' in decal_section and ">contact us</a>" in decal_section,
-    "window decal note should link to the contact form with a decal subject",
+    "Own or manage a restaurant along 30A? We’ll send you a free “Proudly Listed on Eating on 30A” window decal to display at your restaurant." in decal_section,
+    "about page should use Marc's window decal paragraph",
 )
+check(
+    f'Just <a class="text-link" href="{build.e(build.window_decal_href())}">contact us</a> and we will personally drop one off!' in decal_section,
+    "window decal note should link contact us and keep Marc's closing line",
+)
+check("A free window decal" not in decal_section and "include the restaurant name" not in decal_section, "about page should drop the previous decal wording")
+check("https://www.eatingon30a.com" not in decal_section, "decal note should use a relative contact link")
 check(build.window_decal_href().startswith("/contact/?subject="), "window decal should use the contact subject query")
 check(f'src="{build.WINDOW_DECAL_IMAGE}"' in decal_section and f'alt="{build.e(build.WINDOW_DECAL_ALT)}"' in decal_section, "about page should show the window decal image")
 decal_file = ROOT / build.WINDOW_DECAL_IMAGE.lstrip("/")
