@@ -617,7 +617,18 @@ nearby_rows = [item for item in source if item["areaSlug"] == "nearby"]
 check(len(nearby_rows) == 10, f"Nearby should list 10 restaurants, got {len(nearby_rows)}")
 check(any(item["slug"] == "cafe-aroma-inlet-beach" and item["areaSlug"] == "inlet-beach" for item in source), "Café Aroma should stay in Inlet Beach")
 check("marco" not in {item["slug"] for item in source}, "Marco’s Pizza should stay off the guide")
+nearby_src = "/images/areas/nearby.jpg"
+nearby_file = ROOT / nearby_src.lstrip("/")
+check(nearby_file.is_file(), "missing Nearby town photo")
+check(nearby_file.stat().st_size < 400_000, "Nearby town photo too large for the web")
+storefront = ROOT / "images" / "restaurants" / "stock-and-brew-cafe" / "01.jpg"
+check(nearby_file.read_bytes() == storefront.read_bytes(), "Nearby town photo should be the Stock & Brew storefront")
 nearby_page = (ROOT / "areas" / "nearby" / "index.html").read_text(encoding="utf-8")
+nearby_hero = nearby_page.split('class="profile-hero"', 1)[1].split('class="wrap page-intro"', 1)[0]
+check(f'src="{nearby_src}"' in nearby_hero and 'class="ph"' not in nearby_hero, "Nearby hero should be the storefront photo")
+check('alt="Nearby on US 98, near Scenic Highway 30A"' in nearby_hero, "Nearby hero alt should name US 98 near 30A")
+check(f'content="https://www.eatingon30a.com{nearby_src}"' in nearby_page, "Nearby Open Graph image should be the town photo")
+check("og-scenic-30a.jpg" not in nearby_page, "Nearby page should not use the generic scenic image")
 check("<h1 class=\"town-title\">Restaurants in Nearby</h1>" in nearby_page, "Nearby town page heading")
 check("on US 98, near Scenic Highway 30A" in nearby_page, "Nearby intro should name US 98 near 30A")
 check("The guide lists" not in nearby_page, "Nearby intro should not hard-code a restaurant count")

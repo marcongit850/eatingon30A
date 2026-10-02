@@ -765,6 +765,13 @@ def photo_alt(restaurant: dict) -> str:
     return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
 
 
+def area_image_alt(area: dict) -> str:
+    """Town photo alt. Nearby is the US 98 plazas, not a beach town on 30A."""
+    if area["slug"] == "nearby":
+        return "Nearby on US 98, near Scenic Highway 30A"
+    return f"{area['fullName']} on Scenic Highway 30A"
+
+
 def fit_meta(lead: str, identity: str, pad: str = "Hours, address, and map are on the profile.") -> str:
     """Build a unique description in the same length range as the other 30A sites."""
     lead = clean_text(lead).rstrip(".")
@@ -1431,7 +1438,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     towns = []
     for area in areas:
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
+            photo = f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
         else:
             photo = placeholder("gulf", area["name"], area["name"])
         word = restaurant_count_word(area["count"], label=True)
@@ -1872,7 +1879,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     cards = []
     for area in areas:
         photo = (
-            f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
+            f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
             if area["image"]
             else placeholder("gulf", area["name"], area["name"])
         )
@@ -1932,7 +1939,8 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         group = [restaurant for restaurant in restaurants if restaurant["areaSlug"] == area["slug"]]
         photo = ""
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
+            hero_alt = area_image_alt(area) if area["slug"] == "nearby" else area["fullName"]
+            photo = f'<img src="{e(area["image"])}" alt="{e(hero_alt)}" loading="eager">'
         neighbors = []
         index = areas.index(area)
         if index > 0:
@@ -2014,13 +2022,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                     )
                 ),
                 image=area["image"],
-                image_alt=(
-                    f'{area["fullName"]} on US 98, near Scenic Highway 30A'
-                    if area["slug"] == "nearby"
-                    else f'{area["fullName"]} on Scenic Highway 30A'
-                )
-                if area["image"]
-                else SHARE_ALT,
+                image_alt=area_image_alt(area) if area["image"] else SHARE_ALT,
             ),
         )
 
@@ -2288,7 +2290,7 @@ def teaser_image(picked: list[dict], areas: list[dict], area_slug: str = "") -> 
     if area_slug:
         area = area_record(areas, area_slug)
         if area.get("image"):
-            return area["image"], f"{area['fullName']} on Scenic Highway 30A"
+            return area["image"], area_image_alt(area)
     for restaurant in picked:
         if restaurant["cardImage"]:
             return restaurant["cardImage"], photo_alt(restaurant)
