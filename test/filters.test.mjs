@@ -9,7 +9,7 @@ const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", m
 
 test("empty filters keep the full directory", () => {
   assert.equal(restaurants.filter((item) => matches(item, blank)).length, restaurants.length);
-  assert.equal(restaurants.length, 135);
+  assert.equal(restaurants.length, 146);
 });
 
 test("list and map links keep the active filters", () => {

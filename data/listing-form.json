@@ -12,7 +12,8 @@
     "Alys Beach",
     "Rosemary Beach",
     "Inlet Beach",
-    "Watersound Origins"
+    "Watersound Origins",
+    "Nearby"
   ],
   "cuisines": [
     "American",
@@ -30,6 +31,7 @@
     "Seafood",
     "Southern",
     "Sushi",
+    "Thai",
     "Venezuelan"
   ],
   "foods": [
