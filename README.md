@@ -67,7 +67,7 @@ Columns that show up on the site:
 - `map_area`, `map_area_slug`, `location_label`, `subarea`
 - `address` (JSON with `formatted` and `location.latitude` / `location.longitude`). Every published row already has both, so the map does not geocode and does not invent coordinates. Pins that share one storefront are nudged apart on screen only.
 - `phone`, `website`, `price`, `notes`, `hours`
-- `List Image`, `Detail Image`, `Logo` (`https://` URLs, or `wix:image://` URLs, which the build turns into local files or `static.wixstatic.com` links)
+- `List Image`, `Detail Image`, `Logo` (`/images/` paths for a file in the repo, `https://` URLs, or `wix:image://` URLs, which the build turns into local files or `static.wixstatic.com` links)
 - `Cuisine Type`, `Meal Type`, `Food Type`, `Vibe`, `Category` (JSON arrays)
 - `Outdoor Dining`, `Kid Friendly`, `Live Music`, `Happy Hour (drinks)`, `Happy Hour (food)`, `Reservations`, `Groups of 12` (JSON `Yes`, `No`, or `In Review`). Only `Yes` is shown on the listing and matched by the directory and map checkboxes. `In Review` stays unknown.
 - `Facebook URL`, `Instagram`
