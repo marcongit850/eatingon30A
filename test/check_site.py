@@ -667,7 +667,7 @@ check("/restaurants/great-southern-cafe-seaside/" not in seafood_page, "a note t
 check(f"{build.ORIGIN}/guides/" in sitemap and f"{build.ORIGIN}/guides/best-seafood-30a/" in sitemap, "sitemap missing guides")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 picks = build.guide_picks(source, build.load_areas(source))
-check(len(picks) == 9, f"expected 9 guides, got {len(picks)}")
+check(len(picks) == 10, f"expected 10 guides, got {len(picks)}")
 check([item["slug"] for item in picks][0] == "best-seafood-30a", "seafood guide should stay first")
 for guide in picks:
     page = (ROOT / "guides" / guide["slug"] / "index.html").read_text(encoding="utf-8")
@@ -687,6 +687,30 @@ for guide in picks:
     check(f"{build.ORIGIN}{guide['path']}" in sitemap, f"sitemap missing {guide['slug']}")
 check("doesn’t score a restaurant as walkable" in (ROOT / "guides" / "walkable-30a" / "index.html").read_text(encoding="utf-8"), "walkable guide should say it isn’t a walk score")
 check("doesn’t have brunch as its own meal" in (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(encoding="utf-8"), "coffee guide should say 30A has no brunch meal")
+nearby_guide = (ROOT / "guides" / "nearby-us-98" / "index.html").read_text(encoding="utf-8")
+check("<h1 class=\"guide-title\">Restaurants near 30A on US 98</h1>" in nearby_guide, "nearby guide heading")
+check("They are not on 30A." in nearby_guide, "nearby guide should say these restaurants are not on 30A")
+check('href="/areas/nearby/"' in nearby_guide, "nearby guide should link the Nearby town page")
+check('href="https://www.eatingindestin.com/"' in nearby_guide, "nearby guide should link Eating in Destin")
+check("Live music is seasonal and subject to change. Confirm with the restaurant." in nearby_guide, "nearby guide should keep the live music note")
+check("—" not in nearby_guide and "–" not in nearby_guide, "nearby guide should not use em or en dashes")
+check(
+    'src="/images/areas/nearby.jpg"' in nearby_guide or 'src="/images/restaurants/stock-and-brew-cafe/01.jpg"' in nearby_guide,
+    "nearby guide hero should use the Nearby photo or the Stock & Brew storefront",
+)
+for slug in (
+    "redds-pub",
+    "down-island-gulf-seafood",
+    "98-bar-b-que",
+    "don-pedros-mexican-restaurant",
+    "outcast-bar-and-grill",
+    "thai-chiang-rai",
+    "fat-daddys-pizza",
+    "vki-japanese-steak-house-and-sushi",
+    "thai-elephant",
+    "stock-and-brew-cafe",
+):
+    check(f'href="/restaurants/{slug}/"' in nearby_guide, f"nearby guide should link {slug}")
 check("Short guides for planning a meal" not in guide_index, "guides index should drop the hub blurb")
 check("organized from west to east so it’s easy to plan your stops" in seafood_page, "seafood guide should use Marc’s intro")
 check("fried shrimp baskets" in seafood_page, "seafood guide should keep the practical seafood range")
