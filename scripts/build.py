@@ -277,12 +277,22 @@ def area_photo(slug: str, raw: str) -> str | None:
 
 def restaurant_logo(raw: str, slug: str) -> str | None:
     """CSV Logo cell. A /images/ path is a file in the repo, same as a town photo."""
+    return repo_image(raw, slug) or wix_to_url(raw, 400, 300)
+
+
+def listed_image(raw: str, slug: str, width: int, height: int) -> str | None:
+    """List Image or Detail Image. A /images/ path is a file in the repo."""
+    return repo_image(raw, slug) or wix_to_url(raw, width, height)
+
+
+def repo_image(raw: str, slug: str) -> str | None:
+    """Return a /images/ path when the file is in the repo. None for other values."""
     raw = (raw or "").strip()
-    if raw.startswith("/images/"):
-        if not (ROOT / raw.lstrip("/")).is_file():
-            raise SystemExit(f"Logo file missing for {slug}: {raw}")
-        return raw
-    return wix_to_url(raw, 400, 300)
+    if not raw.startswith("/images/"):
+        return None
+    if not (ROOT / raw.lstrip("/")).is_file():
+        raise SystemExit(f"Image file missing for {slug}: {raw}")
+    return raw
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -454,8 +464,8 @@ def load_restaurants() -> list[dict]:
         subarea = clean_text(row.get("subarea"))
         notes = clean_text(row.get("notes"))
         phone = clean_text(row.get("phone"))
-        list_image = wix_to_url(row.get("List Image") or "", 960, 600)
-        detail_image = wix_to_url(row.get("Detail Image") or "", 1400, 780)
+        list_image = listed_image(row.get("List Image") or "", slug, 960, 600)
+        detail_image = listed_image(row.get("Detail Image") or "", slug, 1400, 780)
         logo = restaurant_logo(row.get("Logo") or "", slug)
         photos = listing_photos(slug)
         dropped = photos[0] if photos else None
@@ -753,6 +763,13 @@ def photo_alt(restaurant: dict) -> str:
     if is_nearby(restaurant):
         return f"{restaurant['name']} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A"
     return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
+
+
+def area_image_alt(area: dict) -> str:
+    """Town photo alt. Nearby is the US 98 plazas, not a beach town on 30A."""
+    if area["slug"] == "nearby":
+        return "Nearby on US 98, near Scenic Highway 30A"
+    return f"{area['fullName']} on Scenic Highway 30A"
 
 
 def fit_meta(lead: str, identity: str, pad: str = "Hours, address, and map are on the profile.") -> str:
@@ -1432,7 +1449,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     towns = []
     for area in areas:
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
+            photo = f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
         else:
             photo = placeholder("gulf", area["name"], area["name"])
         word = restaurant_count_word(area["count"], label=True)
@@ -1873,7 +1890,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     cards = []
     for area in areas:
         photo = (
-            f'<img src="{e(area["image"])}" alt="{e(area["fullName"] + " on Scenic Highway 30A")}" loading="lazy">'
+            f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
             if area["image"]
             else placeholder("gulf", area["name"], area["name"])
         )
@@ -1933,7 +1950,8 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         group = [restaurant for restaurant in restaurants if restaurant["areaSlug"] == area["slug"]]
         photo = ""
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="{e(area["fullName"])}" loading="eager">'
+            hero_alt = area_image_alt(area) if area["slug"] == "nearby" else area["fullName"]
+            photo = f'<img src="{e(area["image"])}" alt="{e(hero_alt)}" loading="eager">'
         neighbors = []
         index = areas.index(area)
         if index > 0:
@@ -2015,13 +2033,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                     )
                 ),
                 image=area["image"],
-                image_alt=(
-                    f'{area["fullName"]} on US 98, near Scenic Highway 30A'
-                    if area["slug"] == "nearby"
-                    else f'{area["fullName"]} on Scenic Highway 30A'
-                )
-                if area["image"]
-                else SHARE_ALT,
+                image_alt=area_image_alt(area) if area["image"] else SHARE_ALT,
             ),
         )
 
@@ -2151,6 +2163,17 @@ def place_phrase(restaurant: dict) -> str:
 
 def text_link(href: str, label: str) -> str:
     return f'<a class="text-link" href="{e(href)}">{e(label)}</a>'
+
+
+def html_copy(html: str) -> dict:
+    """A guide paragraph that already contains escaped HTML, including links."""
+    return {"html": html}
+
+
+def render_guide_paragraph(paragraph) -> str:
+    if isinstance(paragraph, dict):
+        return paragraph["html"]
+    return e(paragraph)
 
 
 def linked_places(restaurants: list[dict]) -> str:
@@ -2289,7 +2312,7 @@ def teaser_image(picked: list[dict], areas: list[dict], area_slug: str = "") -> 
     if area_slug:
         area = area_record(areas, area_slug)
         if area.get("image"):
-            return area["image"], f"{area['fullName']} on Scenic Highway 30A"
+            return area["image"], area_image_alt(area)
     for restaurant in picked:
         if restaurant["cardImage"]:
             return restaurant["cardImage"], photo_alt(restaurant)
@@ -2333,6 +2356,8 @@ def guide_spec(
     directory_label: str = "",
     map_label: str = "Map these restaurants",
     list_name: str = "",
+    hero_image: str = "",
+    hero_alt: str = "",
 ) -> dict:
     return {
         "slug": slug,
@@ -2356,6 +2381,8 @@ def guide_spec(
         "extra": extra or [],
         "extra_label": extra_label,
         "list_name": list_name or h1,
+        "hero_image": hero_image,
+        "hero_alt": hero_alt,
     }
 
 
@@ -2376,6 +2403,13 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     walkable = choose(lambda restaurant: restaurant["areaSlug"] in WALKABLE_AREAS)
     favorites = choose(lambda restaurant: restaurant["laurensFavorite"])
     cafes = choose(lambda restaurant: "Cafe" in restaurant["cuisines"])
+    nearby = sorted(
+        choose(lambda restaurant: restaurant["areaSlug"] == "nearby"),
+        key=lambda restaurant: (
+            restaurant["lng"] if isinstance(restaurant["lng"], (int, float)) else 0,
+            restaurant["name"].lower(),
+        ),
+    )
     groups = {
         "seafood": seafood,
         "breakfast": breakfast,
@@ -2386,6 +2420,7 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
         "walkable": walkable,
         "favorites": favorites,
         "cafes": cafes,
+        "nearby": nearby,
     }
     empty = [name for name, group in groups.items() if not group]
     if empty:
@@ -2483,6 +2518,42 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
         watercolor_coffee_answer = "None of the WaterColor restaurants are tagged Cafe or Coffee."
     seafood_count = len(seafood)
     seafood_word = restaurant_count_word(seafood_count)
+
+    def nearby_link(slug: str) -> str:
+        restaurant = next(item for item in nearby if item["slug"] == slug)
+        return text_link(f"/restaurants/{restaurant['slug']}/", restaurant["name"])
+
+    nearby_area = area_record(areas, "nearby")
+    stock_and_brew = next(item for item in nearby if item["slug"] == "stock-and-brew-cafe")
+    if nearby_area.get("image"):
+        nearby_hero = (
+            nearby_area["image"],
+            "Nearby on US 98, a short drive from Scenic Highway 30A",
+        )
+    elif stock_and_brew.get("cardImage"):
+        nearby_hero = (stock_and_brew["cardImage"], photo_alt(stock_and_brew))
+    else:
+        raise SystemExit("Nearby guide needs /images/areas/nearby.jpg or a Stock & Brew photo")
+    bbq = nearby_link("98-bar-b-que")
+    don_pedros = nearby_link("don-pedros-mexican-restaurant")
+    down_island = nearby_link("down-island-gulf-seafood")
+    fat_daddys = nearby_link("fat-daddys-pizza")
+    outcast = nearby_link("outcast-bar-and-grill")
+    redds = nearby_link("redds-pub")
+    stock_link = nearby_link("stock-and-brew-cafe")
+    thai_chiang = nearby_link("thai-chiang-rai")
+    thai_elephant = nearby_link("thai-elephant")
+    vki = nearby_link("vki-japanese-steak-house-and-sushi")
+    nearby_breakfast = (
+        "Don Pedro’s Mexican Restaurant serves Mexican breakfast from 7am, and "
+        "Stock & Brew Cafe pours coffee and light bites until 3pm. "
+        "Down Island Gulf Seafood also serves Sunday brunch, from 10am to 3pm."
+    )
+    nearby_closed = (
+        "98 Bar-B-Que is closed Sunday. VKI Japanese Steak House & Sushi and Down Island Gulf Seafood are closed Monday. "
+        "Redd’s Pub is closed Sunday and Monday. Thai Chiang Rai and Thai Elephant pause between lunch and dinner on weekdays, "
+        "and Fat Daddy’s Pizza opens at 4pm on Sunday and Monday."
+    )
     specs = [
         guide_spec(
             "best-seafood-30a",
@@ -3116,6 +3187,102 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
             "Restaurants marked Lauren’s Favorites on Scenic Highway 30A.",
             list_name="Lauren’s Favorites on 30A",
         ),
+        guide_spec(
+            "nearby-us-98",
+            "Restaurants near 30A on US 98",
+            "Restaurants near 30A on US 98 | Eating on 30A",
+            (
+                "Restaurants on US 98 near Scenic Highway 30A in Walton County, Florida. "
+                "Barbecue, seafood, Thai, pizza, and coffee, a short drive from the beach towns."
+            ),
+            "Nearby",
+            [
+                html_copy(
+                    "Looking for a meal near Scenic Highway 30A without circling a beach town for parking? "
+                    f"The {text_link('/areas/nearby/', 'Nearby')} restaurants are on US 98 in Santa Rosa Beach, "
+                    "a short drive from the beach road. They are not on 30A. They are the plaza stops along US 98, "
+                    "which is the practical choice when you want barbecue, seafood, Thai, pizza, or coffee and you don’t mind a few minutes in the car."
+                ),
+                html_copy(
+                    "The notes below run west to east, the way the addresses fall along US 98. "
+                    "Open a card for the address and the hours."
+                ),
+                html_copy(
+                    f"At the west end, {bbq} serves smoked barbecue and gumbo for lunch and dinner, "
+                    "and the dining room can take a larger party. It is closed Sunday."
+                ),
+                html_copy(
+                    "The center at 4942 US 98 is the easiest cluster if you are still deciding in the car. "
+                    f"{outcast} serves wings, seafood, burgers, and salads, and it stays open late. "
+                    f"{don_pedros} is the breakfast table there, with Mexican food through dinner and a kids menu, and it opens at 7am. "
+                    f"{fat_daddys} is the pizza stop in the same center. On Sunday and Monday it opens at 4pm, so plan on dinner those days. "
+                    f"{thai_chiang} serves Northern Thai cooking. On weekdays it closes between lunch and dinner, "
+                    "so the middle of the afternoon means waiting until 5pm."
+                ),
+                html_copy(
+                    f"Farther east, {vki} is hibachi and sushi. It is closed Monday."
+                ),
+                html_copy(
+                    f"The 3906 plaza holds {redds} and {thai_elephant}. "
+                    "Redd’s serves ribs, pizza, burgers, and salads. Lunch is Wednesday through Friday, "
+                    "dinner runs Tuesday through Saturday, and live music* is on Fridays. It is closed Sunday and Monday. "
+                    "Thai Elephant serves Thai food and sushi, and reservations are by phone. "
+                    "On weekdays it also takes a break between lunch and dinner."
+                ),
+                html_copy(
+                    "Closer to County Road 393, the turn a lot of beach traffic uses to reach Scenic Highway 30A, "
+                    f"{down_island} is the Gulf seafood meal: fish, oysters, shrimp, and crab, with a raw bar and wood-fired dishes. "
+                    "It sits about a quarter mile east of 393. It is closed Monday, Sunday brunch runs from 10am to 3pm, and live music* is on the schedule there too. "
+                    f"{stock_link} is next to {e('Stock & Trade')}, "
+                    "open daily from 7am to 3pm for coffee, espresso, and light bites. "
+                    "That is the early stop if you are coming off US 98 and heading toward the beach."
+                ),
+                "Live music is seasonal and subject to change. Confirm with the restaurant.",
+                html_copy(
+                    "A few of these rooms close one day a week or pause in the afternoon, and hours shift outside peak season. "
+                    "Check the card before you drive over. If you are willing to travel a bit farther for more options, "
+                    '<a class="text-link" href="https://www.eatingindestin.com/">Eating in Destin</a> covers dining in Destin.'
+                ),
+            ],
+            nearby,
+            "/restaurants/?area=nearby",
+            "/map/?area=nearby",
+            [
+                faq_item(
+                    "Are the Nearby restaurants on Scenic Highway 30A?",
+                    "No. They are on US 98 in Santa Rosa Beach, a short drive from the beach towns. The Nearby page has the map.",
+                    "/areas/nearby/",
+                    "Open Nearby",
+                ),
+                {
+                    "question": "Where can I get breakfast on US 98 near 30A?",
+                    "answer": nearby_breakfast,
+                    "html": (
+                        f"{don_pedros} serves Mexican breakfast from 7am, and {stock_link} pours coffee and light bites until 3pm. "
+                        f"{down_island} also serves Sunday brunch, from 10am to 3pm. "
+                        + text_link(
+                            filter_href("/restaurants/", [("area", "nearby"), ("meal", "Breakfast")]),
+                            "Show Nearby breakfast",
+                        )
+                        + "."
+                    ),
+                },
+                faq_item(
+                    "Which hours are easy to miss on US 98?",
+                    nearby_closed,
+                    "/restaurants/?area=nearby",
+                    "See Nearby in the directory",
+                ),
+            ],
+            "US 98",
+            "Barbecue, seafood, Thai, pizza, and coffee on US 98, a short drive from 30A.",
+            nearby_hero,
+            "Restaurants on US 98 near Scenic Highway 30A, in the Nearby listings.",
+            extra=[("/areas/nearby/", "Nearby town page")],
+            list_name="Restaurants on US 98 near 30A",
+            hero_image=nearby_hero[0],
+            hero_alt=nearby_hero[1],
+        ),
     ]
     for spec in specs:
         require_meta(spec["title"], spec["description"])
@@ -3133,17 +3300,19 @@ def write_guide_page(spec: dict) -> None:
             + "".join(text_link(href, label) for href, label in spec["extra"])
             + "</nav>"
         )
+    hero_image = spec.get("hero_image") or HERO_IMAGE
+    hero_alt = spec.get("hero_alt") or HERO_ALT
     body = (
         '<article class="profile">'
         '<div class="profile-hero">'
-        f'<img src="{e(HERO_IMAGE)}" alt="{e(HERO_ALT)}" loading="eager">'
+        f'<img src="{e(hero_image)}" alt="{e(hero_alt)}" loading="eager">'
         "</div>"
         '<div class="wrap page-intro">'
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> '
         f'<a href="/guides/">Guides</a> <span aria-hidden="true">/</span> {e(spec["h1"])}</p>'
         f'<p class="kicker">{e(spec["kicker"])}</p>'
         f'<h1 class="guide-title">{e(spec["h1"])}</h1>'
-        + "".join(f'<p class="lede">{e(paragraph)}</p>' for paragraph in spec["paragraphs"])
+        + "".join(f'<p class="lede">{render_guide_paragraph(paragraph)}</p>' for paragraph in spec["paragraphs"])
         + f'<p class="action-row"><a class="button" href="{e(spec["directory_href"])}">{e(spec["directory_label"])}</a> '
         f'<a class="button secondary" href="{e(spec["map_href"])}">{e(spec["map_label"])}</a></p>'
         f"{extra}"
@@ -3187,8 +3356,8 @@ def write_guide_page(spec: dict) -> None:
                     breadcrumbs([("Home", "/"), ("Guides", "/guides/"), (spec["h1"], spec["path"])]),
                 )
             ),
-            image=HERO_IMAGE,
-            image_alt=HERO_ALT,
+            image=hero_image,
+            image_alt=hero_alt,
         ),
     )
 

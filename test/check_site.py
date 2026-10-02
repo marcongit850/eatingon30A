@@ -214,31 +214,20 @@ photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
-    "98-bar-b-que",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
-    "cafe-aroma-inlet-beach",
     "dawsons-yogurt-and-fudge-seaside",
-    "don-pedros-mexican-restaurant",
     "dough-sea-dough-seagrove-beach",
-    "down-island-gulf-seafood",
     "drome-seaside",
-    "fat-daddys-pizza",
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
-    "outcast-bar-and-grill",
     "pecan-jacks-seagrove-beach",
     "pickles-sandbar-seaside",
     "pizza-by-the-sea-seacrest",
-    "redds-pub",
-    "stock-and-brew-cafe",
-    "thai-chiang-rai",
-    "thai-elephant",
-    "vki-japanese-steak-house-and-sushi",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 123, f"expected 123 restaurant photos, got {len(photos)}")
+check(len(photos) == 134, f"expected 134 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
@@ -557,6 +546,30 @@ logo_pages = [
     if "3-sons-bar-b-q-logo.png" in path.read_text(encoding="utf-8")
 ]
 check(logo_pages == ["3-sons-bar-b-q-dune-allen-beach"], f"3 Sons logo should stay on its listing, got {logo_pages}")
+nearby_media = [
+    "redds-pub",
+    "down-island-gulf-seafood",
+    "98-bar-b-que",
+    "don-pedros-mexican-restaurant",
+    "outcast-bar-and-grill",
+    "thai-chiang-rai",
+    "fat-daddys-pizza",
+    "vki-japanese-steak-house-and-sushi",
+    "thai-elephant",
+    "stock-and-brew-cafe",
+    "cafe-aroma-inlet-beach",
+]
+for slug in nearby_media:
+    logo_file = ROOT / "images" / "restaurants" / f"{slug}-logo.png"
+    cover = ROOT / "images" / "restaurants" / slug / "01.jpg"
+    check(logo_file.is_file() and logo_file.stat().st_size < 180_000, f"{slug} logo should be a local file")
+    check(cover.is_file() and cover.stat().st_size < 500_000, f"{slug} should have a cover photo")
+    page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
+    check(f"/images/restaurants/{slug}-logo.png" in page and 'class="logo"' in page, f"{slug} listing should show the logo")
+    hero = page.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+    check(f"/images/restaurants/{slug}/01.jpg" in hero, f"{slug} hero should use the cover photo")
+    card = directory[directory.find(f'id="r-{slug}"') :][:2200]
+    check(f"/images/restaurants/{slug}/01.jpg" in card, f"{slug} card should use the cover photo")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
 oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
@@ -604,7 +617,18 @@ nearby_rows = [item for item in source if item["areaSlug"] == "nearby"]
 check(len(nearby_rows) == 10, f"Nearby should list 10 restaurants, got {len(nearby_rows)}")
 check(any(item["slug"] == "cafe-aroma-inlet-beach" and item["areaSlug"] == "inlet-beach" for item in source), "Café Aroma should stay in Inlet Beach")
 check("marco" not in {item["slug"] for item in source}, "Marco’s Pizza should stay off the guide")
+nearby_src = "/images/areas/nearby.jpg"
+nearby_file = ROOT / nearby_src.lstrip("/")
+check(nearby_file.is_file(), "missing Nearby town photo")
+check(nearby_file.stat().st_size < 400_000, "Nearby town photo too large for the web")
+storefront = ROOT / "images" / "restaurants" / "stock-and-brew-cafe" / "01.jpg"
+check(nearby_file.read_bytes() == storefront.read_bytes(), "Nearby town photo should be the Stock & Brew storefront")
 nearby_page = (ROOT / "areas" / "nearby" / "index.html").read_text(encoding="utf-8")
+nearby_hero = nearby_page.split('class="profile-hero"', 1)[1].split('class="wrap page-intro"', 1)[0]
+check(f'src="{nearby_src}"' in nearby_hero and 'class="ph"' not in nearby_hero, "Nearby hero should be the storefront photo")
+check('alt="Nearby on US 98, near Scenic Highway 30A"' in nearby_hero, "Nearby hero alt should name US 98 near 30A")
+check(f'content="https://www.eatingon30a.com{nearby_src}"' in nearby_page, "Nearby Open Graph image should be the town photo")
+check("og-scenic-30a.jpg" not in nearby_page, "Nearby page should not use the generic scenic image")
 check("<h1 class=\"town-title\">Restaurants Nearby</h1>" in nearby_page, "Nearby town page heading")
 check("Restaurants in Nearby" not in nearby_page and "restaurants in Nearby" not in nearby_page, "Nearby page should not say restaurants in Nearby")
 check("Find restaurants Nearby on US 98, near Scenic Highway 30A." in nearby_page, "Nearby intro should say restaurants Nearby")
@@ -660,7 +684,7 @@ check("/restaurants/great-southern-cafe-seaside/" not in seafood_page, "a note t
 check(f"{build.ORIGIN}/guides/" in sitemap and f"{build.ORIGIN}/guides/best-seafood-30a/" in sitemap, "sitemap missing guides")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 picks = build.guide_picks(source, build.load_areas(source))
-check(len(picks) == 9, f"expected 9 guides, got {len(picks)}")
+check(len(picks) == 10, f"expected 10 guides, got {len(picks)}")
 check([item["slug"] for item in picks][0] == "best-seafood-30a", "seafood guide should stay first")
 for guide in picks:
     page = (ROOT / "guides" / guide["slug"] / "index.html").read_text(encoding="utf-8")
@@ -680,6 +704,30 @@ for guide in picks:
     check(f"{build.ORIGIN}{guide['path']}" in sitemap, f"sitemap missing {guide['slug']}")
 check("doesn’t score a restaurant as walkable" in (ROOT / "guides" / "walkable-30a" / "index.html").read_text(encoding="utf-8"), "walkable guide should say it isn’t a walk score")
 check("doesn’t have brunch as its own meal" in (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(encoding="utf-8"), "coffee guide should say 30A has no brunch meal")
+nearby_guide = (ROOT / "guides" / "nearby-us-98" / "index.html").read_text(encoding="utf-8")
+check("<h1 class=\"guide-title\">Restaurants near 30A on US 98</h1>" in nearby_guide, "nearby guide heading")
+check("They are not on 30A." in nearby_guide, "nearby guide should say these restaurants are not on 30A")
+check('href="/areas/nearby/"' in nearby_guide, "nearby guide should link the Nearby town page")
+check('href="https://www.eatingindestin.com/"' in nearby_guide, "nearby guide should link Eating in Destin")
+check("Live music is seasonal and subject to change. Confirm with the restaurant." in nearby_guide, "nearby guide should keep the live music note")
+check("—" not in nearby_guide and "–" not in nearby_guide, "nearby guide should not use em or en dashes")
+check(
+    'src="/images/areas/nearby.jpg"' in nearby_guide or 'src="/images/restaurants/stock-and-brew-cafe/01.jpg"' in nearby_guide,
+    "nearby guide hero should use the Nearby photo or the Stock & Brew storefront",
+)
+for slug in (
+    "redds-pub",
+    "down-island-gulf-seafood",
+    "98-bar-b-que",
+    "don-pedros-mexican-restaurant",
+    "outcast-bar-and-grill",
+    "thai-chiang-rai",
+    "fat-daddys-pizza",
+    "vki-japanese-steak-house-and-sushi",
+    "thai-elephant",
+    "stock-and-brew-cafe",
+):
+    check(f'href="/restaurants/{slug}/"' in nearby_guide, f"nearby guide should link {slug}")
 check("Short guides for planning a meal" not in guide_index, "guides index should drop the hub blurb")
 check("organized from west to east so it’s easy to plan your stops" in seafood_page, "seafood guide should use Marc’s intro")
 check("fried shrimp baskets" in seafood_page, "seafood guide should keep the practical seafood range")

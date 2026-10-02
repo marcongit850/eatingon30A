@@ -28,6 +28,7 @@ Each profile gives the street address and a map pin. A photograph appears when t
 - [WaterColor restaurants](https://www.eatingon30a.com/guides/watercolor-restaurants/): Restaurants in WaterColor on Scenic Highway 30A.
 - [Walkable restaurants on 30A](https://www.eatingon30a.com/guides/walkable-30a/): Restaurants in Seaside, Alys Beach, and Rosemary Beach for a night you can walk.
 - [Lauren’s Favorites on 30A](https://www.eatingon30a.com/guides/laurens-favorites-30a/): Restaurants marked Lauren’s Favorites on Scenic Highway 30A.
+- [Restaurants near 30A on US 98](https://www.eatingon30a.com/guides/nearby-us-98/): Restaurants on US 98 near Scenic Highway 30A, in the Nearby listings.
 
 ## Restaurants
 
