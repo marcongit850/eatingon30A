@@ -1034,11 +1034,20 @@ def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
     return found
 
 
+def restaurants_heading(area: dict, *, lower: bool = False) -> str:
+    """Town-page label. Nearby is not a place name, so the heading drops "in"."""
+    if area.get("slug") == "nearby":
+        return "restaurants Nearby" if lower else "Restaurants Nearby"
+    name = area["fullName"]
+    return f"restaurants in {name}" if lower else f"Restaurants in {name}"
+
+
 def area_description(area: dict, group: list[dict]) -> str:
+    label = restaurants_heading(area)
     if area["slug"] == "nearby":
-        identity = "Restaurants in Nearby on US 98, near Scenic Highway 30A, Walton County, Florida."
+        identity = f"{label} on US 98, near Scenic Highway 30A, Walton County, Florida."
         return fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
-    identity = f"Restaurants in {area['fullName']} on Scenic Highway 30A, Walton County, Florida."
+    identity = f"{label} on Scenic Highway 30A, Walton County, Florida."
     text = fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
     top = area_cuisines(group, 2)
     count = f" {area['count']} {restaurant_count_word(area['count'])}"
@@ -1049,9 +1058,10 @@ def area_description(area: dict, group: list[dict]) -> str:
 
 
 def area_intro(area: dict, group: list[dict]) -> str:
+    phrase = restaurants_heading(area, lower=True)
     if area["slug"] == "nearby":
         return (
-            "Find restaurants in Nearby on US 98, near Scenic Highway 30A. "
+            f"Find {phrase} on US 98, near Scenic Highway 30A. "
             "Open a card for the address and the hours."
         )
     top = area_cuisines(group)
@@ -1059,19 +1069,20 @@ def area_intro(area: dict, group: list[dict]) -> str:
     if top:
         detail += f", including {', '.join(top)}"
     return (
-        f"Find restaurants in {area['fullName']} on Scenic Highway 30A. "
+        f"Find {phrase} on Scenic Highway 30A. "
         f"The guide lists {detail}."
     )
 
 
 def area_title(area: dict) -> str:
+    label = restaurants_heading(area)
     if area["slug"] == "nearby":
-        title = "Restaurants in Nearby, near 30A | Eating on 30A"
+        title = f"{label}, near 30A | Eating on 30A"
         if len(title) <= 70:
             return title
         shorter = "Nearby restaurants near 30A | Eating on 30A"
         return shorter if len(shorter) <= 70 else "Nearby restaurants | Eating on 30A"
-    title = f"Restaurants in {area['fullName']} on 30A | Eating on 30A"
+    title = f"{label} on 30A | Eating on 30A"
     if len(title) <= 70:
         return title
     shorter = f"{area['fullName']} restaurants on 30A | Eating on 30A"
@@ -1957,7 +1968,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             f'<div class="profile-hero">{photo or placeholder("gulf", area["name"], area["name"])}</div>'
             '<div class="wrap page-intro">'
             f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
-            f'<h1 class="town-title">Restaurants in {e(area["fullName"])}</h1>'
+            f'<h1 class="town-title">{e(restaurants_heading(area))}</h1>'
             f'<p class="lede">{e(area["description"])}</p>'
             f'<p class="lede">{e(area_intro(area, group))}</p>'
             f'<p class="action-row"><a class="button" href="/restaurants/?area={e(area["slug"])}">Show {area["count"]} {restaurant_count_word(area["count"], label=True)}</a> '
@@ -1979,14 +1990,14 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                     graph(
                         {
                             "@type": "CollectionPage",
-                            "name": f'Restaurants in {area["fullName"]}',
+                            "name": restaurants_heading(area),
                             "url": f'{ORIGIN}/areas/{area["slug"]}/',
                             "description": description,
                             "isPartOf": {"@id": ORIGIN + "/#website"},
                         },
                         {
                             "@type": "ItemList",
-                            "name": f'Restaurants in {area["fullName"]}',
+                            "name": restaurants_heading(area),
                             "numberOfItems": len(group),
                             "itemListElement": [
                                 {
@@ -3888,10 +3899,11 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         ]
     )
     for area in areas:
+        label = restaurants_heading(area)
         if area["slug"] == "nearby":
-            place = f"Restaurants in {area['fullName']} on US 98, near Scenic Highway 30A."
+            place = f"{label} on US 98, near Scenic Highway 30A."
         else:
-            place = f"Restaurants in {area['fullName']} on Scenic Highway 30A."
+            place = f"{label} on Scenic Highway 30A."
         lines.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} {place}")
     lines.extend(
         [
