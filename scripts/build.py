@@ -277,12 +277,22 @@ def area_photo(slug: str, raw: str) -> str | None:
 
 def restaurant_logo(raw: str, slug: str) -> str | None:
     """CSV Logo cell. A /images/ path is a file in the repo, same as a town photo."""
+    return repo_image(raw, slug) or wix_to_url(raw, 400, 300)
+
+
+def listed_image(raw: str, slug: str, width: int, height: int) -> str | None:
+    """List Image or Detail Image. A /images/ path is a file in the repo."""
+    return repo_image(raw, slug) or wix_to_url(raw, width, height)
+
+
+def repo_image(raw: str, slug: str) -> str | None:
+    """Return a /images/ path when the file is in the repo. None for other values."""
     raw = (raw or "").strip()
-    if raw.startswith("/images/"):
-        if not (ROOT / raw.lstrip("/")).is_file():
-            raise SystemExit(f"Logo file missing for {slug}: {raw}")
-        return raw
-    return wix_to_url(raw, 400, 300)
+    if not raw.startswith("/images/"):
+        return None
+    if not (ROOT / raw.lstrip("/")).is_file():
+        raise SystemExit(f"Image file missing for {slug}: {raw}")
+    return raw
 
 
 def wix_to_url(raw: str, width: int, height: int) -> str | None:
@@ -454,8 +464,8 @@ def load_restaurants() -> list[dict]:
         subarea = clean_text(row.get("subarea"))
         notes = clean_text(row.get("notes"))
         phone = clean_text(row.get("phone"))
-        list_image = wix_to_url(row.get("List Image") or "", 960, 600)
-        detail_image = wix_to_url(row.get("Detail Image") or "", 1400, 780)
+        list_image = listed_image(row.get("List Image") or "", slug, 960, 600)
+        detail_image = listed_image(row.get("Detail Image") or "", slug, 1400, 780)
         logo = restaurant_logo(row.get("Logo") or "", slug)
         photos = listing_photos(slug)
         dropped = photos[0] if photos else None

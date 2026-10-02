@@ -214,31 +214,20 @@ photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
-    "98-bar-b-que",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
-    "cafe-aroma-inlet-beach",
     "dawsons-yogurt-and-fudge-seaside",
-    "don-pedros-mexican-restaurant",
     "dough-sea-dough-seagrove-beach",
-    "down-island-gulf-seafood",
     "drome-seaside",
-    "fat-daddys-pizza",
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
-    "outcast-bar-and-grill",
     "pecan-jacks-seagrove-beach",
     "pickles-sandbar-seaside",
     "pizza-by-the-sea-seacrest",
-    "redds-pub",
-    "stock-and-brew-cafe",
-    "thai-chiang-rai",
-    "thai-elephant",
-    "vki-japanese-steak-house-and-sushi",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 123, f"expected 123 restaurant photos, got {len(photos)}")
+check(len(photos) == 134, f"expected 134 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
@@ -557,6 +546,30 @@ logo_pages = [
     if "3-sons-bar-b-q-logo.png" in path.read_text(encoding="utf-8")
 ]
 check(logo_pages == ["3-sons-bar-b-q-dune-allen-beach"], f"3 Sons logo should stay on its listing, got {logo_pages}")
+nearby_media = [
+    "redds-pub",
+    "down-island-gulf-seafood",
+    "98-bar-b-que",
+    "don-pedros-mexican-restaurant",
+    "outcast-bar-and-grill",
+    "thai-chiang-rai",
+    "fat-daddys-pizza",
+    "vki-japanese-steak-house-and-sushi",
+    "thai-elephant",
+    "stock-and-brew-cafe",
+    "cafe-aroma-inlet-beach",
+]
+for slug in nearby_media:
+    logo_file = ROOT / "images" / "restaurants" / f"{slug}-logo.png"
+    cover = ROOT / "images" / "restaurants" / slug / "01.jpg"
+    check(logo_file.is_file() and logo_file.stat().st_size < 180_000, f"{slug} logo should be a local file")
+    check(cover.is_file() and cover.stat().st_size < 500_000, f"{slug} should have a cover photo")
+    page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
+    check(f"/images/restaurants/{slug}-logo.png" in page and 'class="logo"' in page, f"{slug} listing should show the logo")
+    hero = page.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
+    check(f"/images/restaurants/{slug}/01.jpg" in hero, f"{slug} hero should use the cover photo")
+    card = directory[directory.find(f'id="r-{slug}"') :][:2200]
+    check(f"/images/restaurants/{slug}/01.jpg" in card, f"{slug} card should use the cover photo")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
 oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
