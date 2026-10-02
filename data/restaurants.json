@@ -95,6 +95,37 @@
     "image": "/images/restaurants/87-central-square-seaside/01.jpg"
   },
   {
+    "slug": "98-bar-b-que",
+    "name": "98 Bar-B-Que",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "BBQ"
+    ],
+    "foods": [
+      "Grill"
+    ],
+    "price": "$$",
+    "lat": 30.3754131,
+    "lng": -86.2619793,
+    "address": "5008 US Hwy 98 W, Unit 1, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 622-0679",
+    "search": "98 bar-b-que nearby us 98 nearby | us 98 bbq lunch dinner grill restaurant 98 bar-b-que serves smoked barbecue and gumbo for lunch and dinner on us 98. the dining room can take large parties. 98 bar-b-que bbq barbecue gumbo us 98 santa rosa beach nearby $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": true,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "aja-30a-inlet-beach",
     "name": "Aja 30A",
     "area": "Inlet Beach",
@@ -956,6 +987,38 @@
     "image": "/images/restaurants/cafe-tango-blue-mountain-beach/01.jpg"
   },
   {
+    "slug": "cafe-aroma-inlet-beach",
+    "name": "Caf\u00e9 Aroma",
+    "area": "Inlet Beach",
+    "areaSlug": "inlet-beach",
+    "meals": [
+      "Breakfast",
+      "Lunch"
+    ],
+    "cuisines": [
+      "Cafe"
+    ],
+    "foods": [
+      "Coffee",
+      "Donuts"
+    ],
+    "price": "",
+    "lat": 30.2745414,
+    "lng": -85.9993204,
+    "address": "13625 US-98, Unit 7, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 909-0303",
+    "search": "caf\u00e9 aroma inlet beach us 98 inlet beach | us 98 cafe breakfast lunch coffee donuts cafe / coffee caf\u00e9 aroma serves coffee, donuts, bagels, and breakfast sandwiches at the shoppes at inlet on us 98. caf\u00e9 aroma cafe aroma coffee donuts bagels shoppes at inlet us 98 inlet beach ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "cafe-thirty-a-seagrove-beach",
     "name": "Caf\u00e9 Thirty-A",
     "area": "Seagrove Beach",
@@ -1460,6 +1523,38 @@
     "image": null
   },
   {
+    "slug": "don-pedros-mexican-restaurant",
+    "name": "Don Pedro\u2019s Mexican Restaurant",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Breakfast",
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Mexican"
+    ],
+    "foods": [
+      "Tacos"
+    ],
+    "price": "",
+    "lat": 30.3754483,
+    "lng": -86.2600648,
+    "address": "4942 US Hwy 98 W, Suite 8, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-0009",
+    "search": "don pedro\u2019s mexican restaurant nearby us 98 nearby | us 98 mexican breakfast lunch dinner tacos restaurant don pedro\u2019s mexican restaurant serves mexican breakfast, lunch, and dinner on us 98, including a kids menu. don pedro\u2019s mexican restaurant tacos breakfast us 98 santa rosa beach nearby ",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "dough-sea-dough-seagrove-beach",
     "name": "Dough Sea Dough",
     "area": "Seagrove Beach",
@@ -1493,6 +1588,37 @@
     "image": null
   },
   {
+    "slug": "down-island-gulf-seafood",
+    "name": "Down Island Gulf Seafood",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Seafood"
+    ],
+    "foods": [
+      "Raw Bar"
+    ],
+    "price": "",
+    "lat": 30.3744388,
+    "lng": -86.2247541,
+    "address": "2780 US Hwy 98 W, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 777-3385",
+    "search": "down island gulf seafood nearby us 98 nearby | us 98 seafood lunch dinner raw bar restaurant down island gulf seafood serves gulf fish, oysters, shrimp, and crab, with a raw bar and wood-fired dishes. it is on us 98, about a quarter mile east of county road 393. down island gulf seafood oysters shrimp crab raw bar us 98 cr 393 county road 393 santa rosa beach nearby ",
+    "outdoor": false,
+    "kids": true,
+    "music": true,
+    "reservations": true,
+    "groups": false,
+    "happyFood": true,
+    "happyDrinks": true,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "edwards-fine-food-and-wine-rosemary-beach",
     "name": "Edward\u2019s Fine Food & Wine",
     "area": "Rosemary Beach",
@@ -1521,6 +1647,37 @@
     "happyDrinks": true,
     "laurensFavorite": false,
     "image": "/images/restaurants/edwards-fine-food-and-wine-rosemary-beach/01.jpg"
+  },
+  {
+    "slug": "fat-daddys-pizza",
+    "name": "Fat Daddy\u2019s Pizza",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Pizza"
+    ],
+    "price": "$",
+    "lat": 30.3754483,
+    "lng": -86.2600648,
+    "address": "4942 US Hwy 98 W, Suite 18, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-4992",
+    "search": "fat daddy\u2019s pizza nearby us 98 nearby | us 98 american lunch dinner pizza restaurant fat daddy\u2019s pizza serves pizza on us 98. fat daddy\u2019s pizza fat daddys pizza us 98 santa rosa beach nearby $",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
   },
   {
     "slug": "fish-out-of-water-watercolor",
@@ -2726,6 +2883,40 @@
     "image": "/images/restaurants/old-florida-fish-house-seagrove-beach/01.jpg"
   },
   {
+    "slug": "outcast-bar-and-grill",
+    "name": "Outcast Bar & Grill",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner",
+      "Late night"
+    ],
+    "cuisines": [
+      "American",
+      "Seafood"
+    ],
+    "foods": [
+      "Burgers",
+      "Grill"
+    ],
+    "price": "$$",
+    "lat": 30.3754483,
+    "lng": -86.2600648,
+    "address": "4942 US Hwy 98 W, Suites 1-2, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-6851",
+    "search": "outcast bar & grill nearby us 98 nearby | us 98 american seafood lunch dinner late night burgers grill bar & restaurant outcast bar & grill serves wings, seafood, burgers, and salads on us 98, and stays open late. outcast bar and grill wings seafood burgers us 98 santa rosa beach nearby $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "papa-surf-burger-bar-gulf-place",
     "name": "Papa Surf Burger Bar",
     "area": "Gulf Place",
@@ -3137,6 +3328,38 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/red-fish-taco-blue-mountain-beach/01.jpg"
+  },
+  {
+    "slug": "redds-pub",
+    "name": "Redd\u2019s Pub",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Burgers",
+      "Pizza"
+    ],
+    "price": "",
+    "lat": 30.3749365,
+    "lng": -86.2439743,
+    "address": "3906 US Hwy 98 W, Unit 1, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 325-0252",
+    "search": "redd\u2019s pub nearby us 98 nearby | us 98 american lunch dinner burgers pizza bar & restaurant redd\u2019s pub serves ribs, pizza, burgers, and salads on us 98. lunch is wednesday through friday, dinner runs tuesday through saturday, and live music is on fridays. redd\u2019s pub redds pub ribs pizza burgers us 98 santa rosa beach nearby ",
+    "outdoor": false,
+    "kids": true,
+    "music": true,
+    "reservations": true,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": true,
+    "laurensFavorite": false,
+    "image": null
   },
   {
     "slug": "renaissance-french-restaurant-gulf-place",
@@ -3640,6 +3863,38 @@
     "image": "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg"
   },
   {
+    "slug": "stock-and-brew-cafe",
+    "name": "Stock & Brew Cafe",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Breakfast",
+      "Lunch"
+    ],
+    "cuisines": [
+      "Cafe"
+    ],
+    "foods": [
+      "Coffee",
+      "Cafe"
+    ],
+    "price": "",
+    "lat": 30.3740088,
+    "lng": -86.2226016,
+    "address": "2668 Hwy 98 W, Suite 1101, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 460-2476",
+    "search": "stock & brew cafe nearby us 98 nearby | us 98 cafe breakfast lunch coffee cafe cafe / coffee stock & brew cafe serves coffee, espresso, and light bites on us 98, next to stock & trade. it is open daily from 7am to 3pm. stock & brew cafe stock and brew coffee espresso us 98 santa rosa beach nearby ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": true,
+    "happyDrinks": true,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "sugar-shak-rosemary-beach",
     "name": "Sugar Shak",
     "area": "Rosemary Beach",
@@ -3733,6 +3988,66 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/tahona-tacos-and-tequileria-rosemary-beach/01.jpg"
+  },
+  {
+    "slug": "thai-chiang-rai",
+    "name": "Thai Chiang Rai",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Thai"
+    ],
+    "foods": [],
+    "price": "$$",
+    "lat": 30.3754483,
+    "lng": -86.2600648,
+    "address": "4942 US Hwy 98 W, Suite 20, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-3972",
+    "search": "thai chiang rai nearby us 98 nearby | us 98 thai lunch dinner  restaurant thai chiang rai serves northern thai cooking on us 98. weekdays break between lunch and dinner. thai chiang rai northern thai us 98 santa rosa beach nearby $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": true,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
+    "slug": "thai-elephant",
+    "name": "Thai Elephant",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Thai"
+    ],
+    "foods": [
+      "Sushi"
+    ],
+    "price": "",
+    "lat": 30.3749365,
+    "lng": -86.2439743,
+    "address": "3906 US Hwy 98 W, Suites 5-6, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-6711",
+    "search": "thai elephant nearby us 98 nearby | us 98 thai lunch dinner sushi restaurant thai elephant serves thai food and sushi on us 98. reservations are by phone. thai elephant thai sushi us 98 santa rosa beach nearby ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": true,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
   },
   {
     "slug": "the-big-chill-watersound",
@@ -4187,6 +4502,38 @@
     "happyDrinks": true,
     "laurensFavorite": false,
     "image": "/images/restaurants/village-market-cafe-bar-watersound-origins/01.jpg"
+  },
+  {
+    "slug": "vki-japanese-steak-house-and-sushi",
+    "name": "VKI Japanese Steak House & Sushi",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Japanese"
+    ],
+    "foods": [
+      "Sushi",
+      "Steak"
+    ],
+    "price": "$$",
+    "lat": 30.375439,
+    "lng": -86.2532973,
+    "address": "4552 US Hwy 98, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-2555",
+    "search": "vki japanese steak house & sushi nearby us 98 nearby | us 98 japanese lunch dinner sushi steak restaurant vki japanese steak house & sushi serves hibachi and sushi on us 98 and is closed monday. vki japanese steak house sushi hibachi us 98 santa rosa beach nearby $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
   },
   {
     "slug": "wild-bills-beach-dogs-seaside",

@@ -41,6 +41,7 @@ WEST_TO_EAST = [
     "rosemary-beach",
     "inlet-beach",
     "watersound-origins",
+    "nearby",
 ]
 
 SHORT_NAMES = {
@@ -57,11 +58,13 @@ SHORT_NAMES = {
     "rosemary-beach": "Rosemary",
     "inlet-beach": "Inlet Beach",
     "watersound-origins": "Watersound Origins",
+    "nearby": "Nearby",
 }
 
 FALLBACK_COPY = {
     "watersound": "A beach stretch east of Seagrove, with casual dining along County Highway 30A.",
     "watersound-origins": "An inland town center north of 30A, with everyday restaurants around the square.",
+    "nearby": "Everyday dining on the US 98 plazas, a short drive from Scenic Highway 30A.",
 }
 
 MEAL_ORDER = ["Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"]
@@ -92,7 +95,8 @@ ABOUT_LEAD = (
 )
 ABOUT_TOWNS = (
     "Explore the communities along 30A, including Dune Allen, Gulf Place, Blue Mountain Beach, Grayton Beach, "
-    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins."
+    "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, Inlet Beach, and Watersound Origins. "
+    "Nearby covers restaurants on US 98, a short drive from Scenic Highway 30A."
 )
 ABOUT_STORY = (
     "Eating on 30A is backed by more than 20 years of experience in publishing, local marketing, and promotional products. "
@@ -122,7 +126,8 @@ PRINT_COVERS = (
 TOWNS = (
     "The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton Beach, "
     "WaterColor, Seaside, Seagrove, Seacrest, Watersound, Alys Beach, Rosemary Beach, "
-    "Inlet Beach, and Watersound Origins."
+    "Inlet Beach, and Watersound Origins. "
+    "Nearby is US 98 dining a short drive from Scenic Highway 30A."
 )
 
 
@@ -736,7 +741,17 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     )
 
 
+def is_nearby(restaurant: dict) -> bool:
+    return restaurant.get("areaSlug") == "nearby"
+
+
+def road_label(restaurant: dict) -> str:
+    return restaurant.get("subarea") or "US 98"
+
+
 def photo_alt(restaurant: dict) -> str:
+    if is_nearby(restaurant):
+        return f"{restaurant['name']} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A"
     return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
 
 
@@ -787,6 +802,8 @@ def name_has_30a(restaurant: dict) -> bool:
 
 
 def title_place(restaurant: dict) -> str:
+    if is_nearby(restaurant):
+        return f"in {restaurant['area']}, near 30A"
     if name_has_area(restaurant):
         return "on 30A"
     if name_has_30a(restaurant):
@@ -796,6 +813,8 @@ def title_place(restaurant: dict) -> str:
 
 def listing_where(restaurant: dict) -> str:
     """Local cue for meta descriptions. Always keeps 30A and Walton County available."""
+    if is_nearby(restaurant):
+        return f"in {restaurant['area']} near 30A ({road_label(restaurant)}), Walton County, Florida"
     if name_has_area(restaurant):
         return "on 30A, Walton County, Florida"
     if name_has_30a(restaurant):
@@ -918,6 +937,8 @@ def listing_title(restaurant: dict) -> str:
 
 
 def intro_place(restaurant: dict) -> str:
+    if is_nearby(restaurant):
+        return f"in {restaurant['area']} near Scenic Highway 30A, on {road_label(restaurant)}"
     if name_has_area(restaurant):
         return "on Scenic Highway 30A"
     return f"in {restaurant['area']} on Scenic Highway 30A"
@@ -940,6 +961,7 @@ CUISINE_INTRO = {
     "Cuban": "serves Cuban food",
     "Irish": "serves Irish food",
     "Sushi": "serves sushi",
+    "Thai": "serves Thai food",
 }
 
 
@@ -953,8 +975,14 @@ def listing_intro(restaurant: dict) -> str:
     else:
         sentences = [f"{restaurant['name']} is {place}."]
     subarea = restaurant["subarea"]
-    if subarea and subarea.lower() not in restaurant["name"].lower() and subarea.lower() != restaurant["area"].lower():
-        sentences.append(f"It’s in {subarea}.")
+    if (
+        subarea
+        and subarea.lower() not in restaurant["name"].lower()
+        and subarea.lower() != restaurant["area"].lower()
+        and subarea.lower() not in place.lower()
+    ):
+        on_road = bool(re.match(r"^(?:US|U\.S\.|CR|Hwy|Highway)\b", subarea, re.I))
+        sentences.append(f"It’s on {subarea}." if on_road else f"It’s in {subarea}.")
     meals = meal_words(restaurant["meals"])
     if meals:
         sentences.append(f"Come by for {human_list(meals)}.")
@@ -990,6 +1018,9 @@ def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
 
 
 def area_description(area: dict, group: list[dict]) -> str:
+    if area["slug"] == "nearby":
+        identity = "Restaurants in Nearby on US 98, near Scenic Highway 30A, Walton County, Florida."
+        return fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
     identity = f"Restaurants in {area['fullName']} on Scenic Highway 30A, Walton County, Florida."
     text = fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
     top = area_cuisines(group, 2)
@@ -1001,6 +1032,11 @@ def area_description(area: dict, group: list[dict]) -> str:
 
 
 def area_intro(area: dict, group: list[dict]) -> str:
+    if area["slug"] == "nearby":
+        return (
+            "Find restaurants in Nearby on US 98, near Scenic Highway 30A. "
+            "Open a card for the address and the hours."
+        )
     top = area_cuisines(group)
     detail = f"{area['count']} {restaurant_count_word(area['count'])}"
     if top:
@@ -1012,6 +1048,12 @@ def area_intro(area: dict, group: list[dict]) -> str:
 
 
 def area_title(area: dict) -> str:
+    if area["slug"] == "nearby":
+        title = "Restaurants in Nearby, near 30A | Eating on 30A"
+        if len(title) <= 70:
+            return title
+        shorter = "Nearby restaurants near 30A | Eating on 30A"
+        return shorter if len(shorter) <= 70 else "Nearby restaurants | Eating on 30A"
     title = f"Restaurants in {area['fullName']} on 30A | Eating on 30A"
     if len(title) <= 70:
         return title
@@ -1834,7 +1876,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Towns</p>'
         '<p class="kicker">West to east</p><h1>Beach Towns of 30A</h1>'
         '<p class="lede">From Dune Allen to Inlet Beach, explore the communities of 30A and find restaurants in each one.</p>'
-        '<p class="lede">Each town page lists the restaurants on that stretch of Scenic Highway 30A.</p>'
+        '<p class="lede">Each town page lists the restaurants on that stretch of Scenic Highway 30A. Nearby lists restaurants on the US 98 plazas, a short drive from the beach road.</p>'
         f'<div class="town-grid">{"".join(cards)}</div></div>'
     )
     write(
@@ -1945,7 +1987,11 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                             "description": description,
                             "containedInPlace": {
                                 "@type": "Place",
-                                "name": "Scenic Highway 30A, Walton County, Florida",
+                                "name": (
+                                    "US 98 near Scenic Highway 30A, Walton County, Florida"
+                                    if area["slug"] == "nearby"
+                                    else "Scenic Highway 30A, Walton County, Florida"
+                                ),
                             },
                         },
                         breadcrumbs(
@@ -1958,7 +2004,13 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                     )
                 ),
                 image=area["image"],
-                image_alt=f'{area["fullName"]} on Scenic Highway 30A' if area["image"] else SHARE_ALT,
+                image_alt=(
+                    f'{area["fullName"]} on US 98, near Scenic Highway 30A'
+                    if area["slug"] == "nearby"
+                    else f'{area["fullName"]} on Scenic Highway 30A'
+                )
+                if area["image"]
+                else SHARE_ALT,
             ),
         )
 
@@ -3667,9 +3719,11 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         ]
     )
     for area in areas:
-        lines.append(
-            f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} Restaurants in {area['fullName']} on Scenic Highway 30A."
-        )
+        if area["slug"] == "nearby":
+            place = f"Restaurants in {area['fullName']} on US 98, near Scenic Highway 30A."
+        else:
+            place = f"Restaurants in {area['fullName']} on Scenic Highway 30A."
+        lines.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} {place}")
     lines.extend(
         [
             "",
@@ -3679,9 +3733,11 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
     )
     for restaurant in restaurants:
         cuisine = cuisine_phrase(restaurant["cuisines"]) or restaurant["category"] or "Restaurant"
-        lines.append(
-            f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {cuisine} in {restaurant['area']} on Scenic Highway 30A."
-        )
+        if is_nearby(restaurant):
+            where = f"{cuisine} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A."
+        else:
+            where = f"{cuisine} in {restaurant['area']} on Scenic Highway 30A."
+        lines.append(f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {where}")
     lines.extend(
         [
             "",

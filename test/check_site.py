@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 135, f"full CSV should stay at 135 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 135, "public json should include every published restaurant")
+check(len(source) == 146, f"full CSV should stay at 146 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 146, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -214,17 +214,28 @@ photos = [item for item in restaurants if item.get("image")]
 missing_photos = [item["slug"] for item in restaurants if not item.get("image")]
 expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
+    "98-bar-b-que",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
+    "cafe-aroma-inlet-beach",
     "dawsons-yogurt-and-fudge-seaside",
+    "don-pedros-mexican-restaurant",
     "dough-sea-dough-seagrove-beach",
+    "down-island-gulf-seafood",
     "drome-seaside",
+    "fat-daddys-pizza",
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
+    "outcast-bar-and-grill",
     "pecan-jacks-seagrove-beach",
     "pickles-sandbar-seaside",
     "pizza-by-the-sea-seacrest",
+    "redds-pub",
+    "stock-and-brew-cafe",
+    "thai-chiang-rai",
+    "thai-elephant",
+    "vki-japanese-steak-house-and-sushi",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
 check(len(photos) == 123, f"expected 123 restaurant photos, got {len(photos)}")
@@ -589,6 +600,29 @@ for town_slug, town_alt in (
     card = home.split(f'href="/areas/{town_slug}/"', 1)[1].split("</a>", 1)[0]
     check('class="ph"' not in card, f"{town_slug} homepage card should not keep the placeholder")
 
+nearby_rows = [item for item in source if item["areaSlug"] == "nearby"]
+check(len(nearby_rows) == 10, f"Nearby should list 10 restaurants, got {len(nearby_rows)}")
+check(any(item["slug"] == "cafe-aroma-inlet-beach" and item["areaSlug"] == "inlet-beach" for item in source), "Café Aroma should stay in Inlet Beach")
+check("marco" not in {item["slug"] for item in source}, "Marco’s Pizza should stay off the guide")
+nearby_page = (ROOT / "areas" / "nearby" / "index.html").read_text(encoding="utf-8")
+check("<h1 class=\"town-title\">Restaurants in Nearby</h1>" in nearby_page, "Nearby town page heading")
+check("on US 98, near Scenic Highway 30A" in nearby_page, "Nearby intro should name US 98 near 30A")
+check("The guide lists" not in nearby_page, "Nearby intro should not hard-code a restaurant count")
+nearby_title = nearby_page.split("<title>", 1)[1].split("</title>", 1)[0]
+check("on 30A" not in nearby_title.replace("Eating on 30A", ""), f"Nearby title should not call the town on 30A: {nearby_title}")
+nearby_meta = nearby_page.split('name="description" content="', 1)[1].split('"', 1)[0]
+check("on 30A" not in nearby_meta and "on Scenic Highway 30A" not in nearby_meta, f"Nearby meta should not say on 30A: {nearby_meta}")
+check('href="/restaurants/?area=nearby"' in home or 'href="/areas/nearby/"' in home, "homepage should browse Nearby")
+check('value="nearby"' in directory, "directory town filter should include Nearby")
+for item in nearby_rows:
+    page = (ROOT / "restaurants" / item["slug"] / "index.html").read_text(encoding="utf-8")
+    title = page.split("<title>", 1)[1].split("</title>", 1)[0]
+    description = page.split('name="description" content="', 1)[1].split('"', 1)[0]
+    check("on 30A" not in title.replace("Eating on 30A", ""), f"{item['slug']} title should not say on 30A: {title}")
+    check("on 30A" not in description and "on Scenic Highway 30A" not in description, f"{item['slug']} meta should not say on 30A: {description}")
+    check("Nearby | US 98" in page, f"{item['slug']} should show town and US 98")
+    check("Nearby · US 98" in directory, "directory cards should show Nearby and US 98")
+
 shared_header = (ROOT / "includes" / "header.html").read_text(encoding="utf-8")
 shared_footer = (ROOT / "includes" / "footer.html").read_text(encoding="utf-8")
 check('target="_blank"' not in shared_header, "header navigation should stay in the same tab")
@@ -601,7 +635,7 @@ check('href="/guides/"' in shared_footer, "shared footer is missing the guides l
 check('href="/guides/best-seafood-30a/"' in home and 'href="/guides/"' in home, "homepage should mention the guides")
 check("Popular guides for a trip along Scenic Highway 30A." in home, "homepage guides mention should stay modest")
 seafood = build.seafood_restaurants(source, build.load_areas(source))
-check(len(seafood) == 30, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
+check(len(seafood) == 32, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")

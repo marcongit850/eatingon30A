@@ -2,39 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.eatingon30a.com/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/map/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/areas/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/best-seafood-30a/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/breakfast-30a/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/coffee-brunch-30a/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/kid-friendly-30a/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/guides/dinner-seaside/</loc>
@@ -111,11 +111,15 @@
   </url>
   <url>
     <loc>https://www.eatingon30a.com/areas/inlet-beach/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/areas/watersound-origins/</loc>
     <lastmod>2026-05-09</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/areas/nearby/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/3-sons-bar-b-q-dune-allen-beach/</loc>
@@ -128,6 +132,10 @@
   <url>
     <loc>https://www.eatingon30a.com/restaurants/87-central-square-seaside/</loc>
     <lastmod>2026-09-30</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/98-bar-b-que/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/aja-30a-inlet-beach/</loc>
@@ -238,6 +246,10 @@
     <lastmod>2026-09-30</lastmod>
   </url>
   <url>
+    <loc>https://www.eatingon30a.com/restaurants/cafe-aroma-inlet-beach/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
     <loc>https://www.eatingon30a.com/restaurants/cafe-thirty-a-seagrove-beach/</loc>
     <lastmod>2026-05-09</lastmod>
   </url>
@@ -302,12 +314,24 @@
     <lastmod>2026-09-30</lastmod>
   </url>
   <url>
+    <loc>https://www.eatingon30a.com/restaurants/don-pedros-mexican-restaurant/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
     <loc>https://www.eatingon30a.com/restaurants/dough-sea-dough-seagrove-beach/</loc>
     <lastmod>2026-09-30</lastmod>
   </url>
   <url>
+    <loc>https://www.eatingon30a.com/restaurants/down-island-gulf-seafood/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
     <loc>https://www.eatingon30a.com/restaurants/edwards-fine-food-and-wine-rosemary-beach/</loc>
     <lastmod>2026-09-30</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/fat-daddys-pizza/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/fish-out-of-water-watercolor/</loc>
@@ -462,6 +486,10 @@
     <lastmod>2026-05-09</lastmod>
   </url>
   <url>
+    <loc>https://www.eatingon30a.com/restaurants/outcast-bar-and-grill/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
     <loc>https://www.eatingon30a.com/restaurants/papa-surf-burger-bar-gulf-place/</loc>
     <lastmod>2026-05-09</lastmod>
   </url>
@@ -512,6 +540,10 @@
   <url>
     <loc>https://www.eatingon30a.com/restaurants/red-fish-taco-blue-mountain-beach/</loc>
     <lastmod>2026-05-09</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/redds-pub/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/renaissance-french-restaurant-gulf-place/</loc>
@@ -578,6 +610,10 @@
     <lastmod>2026-05-09</lastmod>
   </url>
   <url>
+    <loc>https://www.eatingon30a.com/restaurants/stock-and-brew-cafe/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
     <loc>https://www.eatingon30a.com/restaurants/sugar-shak-rosemary-beach/</loc>
     <lastmod>2026-09-30</lastmod>
   </url>
@@ -588,6 +624,14 @@
   <url>
     <loc>https://www.eatingon30a.com/restaurants/tahona-tacos-and-tequileria-rosemary-beach/</loc>
     <lastmod>2026-09-30</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/thai-chiang-rai/</loc>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/thai-elephant/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/the-big-chill-watersound/</loc>
@@ -644,6 +688,10 @@
   <url>
     <loc>https://www.eatingon30a.com/restaurants/village-market-cafe-bar-watersound-origins/</loc>
     <lastmod>2026-05-09</lastmod>
+  </url>
+  <url>
+    <loc>https://www.eatingon30a.com/restaurants/vki-japanese-steak-house-and-sushi/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>https://www.eatingon30a.com/restaurants/wild-bills-beach-dogs-seaside/</loc>
