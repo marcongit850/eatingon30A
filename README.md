@@ -121,6 +121,6 @@ Homepage meal and town links go to `/restaurants/?meal=Dinner` and `/restaurants
 - `/restaurants/<slug>/` one restaurant
 - `/map/` Leaflet on OpenStreetMap
 - `/areas/` and `/areas/<slug>/` town notes
-- `/guides/` and one page per guide, built from directory tags: seafood, breakfast, coffee and cafes, kid-friendly, dinner in Seaside, Rosemary Beach, WaterColor, walkable towns (Seaside, Alys Beach, and Rosemary Beach; there is no walkable tag), and Lauren’s Favorites
+- `/guides/` and one page per guide, built from directory tags: seafood, breakfast, coffee and cafes, kid-friendly, dinner in Seaside, Rosemary Beach, WaterColor, walkable towns (Seaside, Alys Beach, and Rosemary Beach; there is no walkable tag), Lauren’s Favorites, and Nearby restaurants on US 98 (near 30A, not on the beach road)
 - `/about/` and `/contact/`
 - `sitemap.xml`, `robots.txt`, `llms.txt`
