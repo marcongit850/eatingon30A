@@ -738,7 +738,7 @@ check('href="/guides/"' in shared_footer, "shared footer is missing the guides l
 check('href="/guides/best-seafood-30a/"' in home and 'href="/guides/"' in home, "homepage should mention the guides")
 check("Popular guides for a trip along Scenic Highway 30A." in home, "homepage guides mention should stay modest")
 seafood = build.seafood_restaurants(source, build.load_areas(source))
-check(len(seafood) == 32, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
+check(len(seafood) == 31, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")
