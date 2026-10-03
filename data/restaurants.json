@@ -2669,6 +2669,7 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch"
     ],
     "cuisines": [
@@ -2683,7 +2684,7 @@
     "lng": -86.13681600000001,
     "address": "109 Central Square, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-1214",
-    "search": "modica market seaside town center seaside | town center american lunch market sandwiches food market / prepared food modica market is a local institution offering deli sandwiches and specialty goods. perfect for quick bites or picnic supplies. modica market food market prepared food market sandwiches american grab go seaside $$",
+    "search": "modica market seaside town center seaside | town center american breakfast lunch market sandwiches food market / prepared food modica market is a local institution offering deli sandwiches and specialty goods. perfect for quick bites or picnic supplies. modica market food market prepared food market sandwiches american grab go seaside $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -3048,6 +3049,7 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch",
       "Dinner"
     ],
@@ -3062,7 +3064,7 @@
     "lng": -86.1375491,
     "address": "2236 E County Hwy 30A #34, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-9060",
-    "search": "pickle\u2019s burger and shake seaside town center seaside | town center american lunch dinner burgers restaurant pickle\u2019s burger and shake serves classic burgers and shakes in a fun, casual environment. a family-friendly favorite. pickle\u2019s burger and shake restaurant burgers american casual dining seaside $$",
+    "search": "pickle\u2019s burger and shake seaside town center seaside | town center american breakfast lunch dinner burgers restaurant pickle\u2019s burger and shake serves classic burgers and shakes in a fun, casual environment. a family-friendly favorite. pickle\u2019s burger and shake restaurant burgers american casual dining seaside $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -3072,37 +3074,6 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/pickles-burger-and-shake-seaside/01.jpg"
-  },
-  {
-    "slug": "pickles-sandbar-seaside",
-    "name": "Pickle\u2019s Sandbar",
-    "area": "Seaside",
-    "areaSlug": "seaside",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "American"
-    ],
-    "foods": [
-      "Burgers"
-    ],
-    "price": "$$",
-    "lat": 30.3194598,
-    "lng": -86.1376636,
-    "address": "2236 E County Hwy 30A #34, Santa Rosa Beach, FL 32459, USA",
-    "phone": "",
-    "search": "pickle\u2019s sandbar seaside town center seaside american lunch dinner burgers bar & restaurant pickle\u2019s sandbar is the bar just south of pickle\u2019s, with the pickle\u2019s menu and bar bites such as wings and sliders. closing time is seasonal. pickle's sandbar bar burgers cocktails seaside $$",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "reservations": false,
-    "groups": false,
-    "happyFood": true,
-    "happyDrinks": true,
-    "laurensFavorite": false,
-    "image": null
   },
   {
     "slug": "pizza-by-the-sea-watercolor",
