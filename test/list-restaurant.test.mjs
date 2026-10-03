@@ -54,27 +54,34 @@ function base(overrides = {}) {
   return { ...body, ...overrides };
 }
 
-test("parseListRestaurant requires the fields a listing needs", () => {
+test("parseListRestaurant requires a name and email and lets every other field be blank", () => {
   assert.equal(parseListRestaurant(null).error, "Send the request as JSON.");
   assert.equal(parseListRestaurant({}).error, "Enter your name.");
+  assert.equal(parseListRestaurant({ name: "Jamie Cook" }).error, "Enter a valid email.");
+  assert.equal(parseListRestaurant(base({ name: "" })).error, "Enter your name.");
+  assert.equal(parseListRestaurant(base({ email: "" })).error, "Enter a valid email.");
   assert.equal(parseListRestaurant(base({ role: "chef" })).error, "Choose your role.");
+  assert.equal(parseListRestaurant(base({ role: "" })).error, undefined);
   assert.equal(parseListRestaurant(base({ email: "nope" })).error, "Enter a valid email.");
   assert.equal(parseListRestaurant(base({ intent: "edit" })).error, "Choose new listing or an update.");
-  assert.equal(
-    parseListRestaurant(base({ intent: "update", existingListing: "" })).error,
-    "Add the current listing URL or the exact restaurant name.",
-  );
+  assert.equal(parseListRestaurant(base({ intent: "" })).error, undefined);
+  assert.equal(parseListRestaurant(base({ intent: "update", existingListing: "" })).error, undefined);
   assert.equal(parseListRestaurant(base({ area: "Destin" })).error, "Choose an area.");
+  assert.equal(parseListRestaurant(base({ area: "" })).error, undefined);
   assert.equal(parseListRestaurant(base({ price: "free" })).error, "Choose a price range.");
-  assert.equal(parseListRestaurant(base({ description: "  " })).error, "Add a short description.");
-  assert.equal(parseListRestaurant(base({ hoursMon: "", hoursMonClosed: false })).error, "Add hours for Monday, or mark it closed.");
-  assert.equal(parseListRestaurant(base({ cuisines: [] })).error, "Choose at least one cuisine type.");
+  assert.equal(parseListRestaurant(base({ price: "" })).error, undefined);
+  assert.equal(parseListRestaurant(base({ description: "  " })).error, undefined);
+  assert.equal(parseListRestaurant(base({ restaurant: "" })).error, undefined);
+  assert.equal(parseListRestaurant(base({ address: "" })).error, undefined);
+  assert.equal(parseListRestaurant(base({ hoursMon: "", hoursMonClosed: false })).error, undefined);
+  assert.equal(parseListRestaurant(base({ cuisines: [] })).error, undefined);
   assert.equal(parseListRestaurant(base({ cuisines: ["Not a cuisine"] })).error, "Choose cuisine types from the list.");
-  assert.equal(parseListRestaurant(base({ meals: [] })).error, "Choose at least one meal.");
+  assert.equal(parseListRestaurant(base({ meals: [] })).error, undefined);
   assert.equal(parseListRestaurant(base({ foods: ["Not a food"] })).error, "Choose food styles from the list.");
   assert.equal(parseListRestaurant(base({ restaurantPhone: "call me" })).error, "Enter the restaurant phone number.");
+  assert.equal(parseListRestaurant(base({ restaurantPhone: "" })).error, undefined);
   assert.equal(parseListRestaurant(base({ website: "not a link with spaces" })).error, "Check the website link.");
-  assert.equal(parseListRestaurant(base({ authorized: false })).error, "Confirm you are authorized to submit for this restaurant.");
+  assert.equal(parseListRestaurant(base({ authorized: false })).value.authorized, false);
   assert.equal(parseListRestaurant(base({ name: "x".repeat(121) })).error, "Keep your name under 120 characters.");
   const parsed = parseListRestaurant(base());
   assert.equal(parsed.error, undefined);
@@ -84,6 +91,49 @@ test("parseListRestaurant requires the fields a listing needs", () => {
   assert.equal(parsed.value.hours[1].value, "Closed");
   assert.equal(parsed.value.amenities.find((item) => item.label === "Live music").value, "Yes");
   assert.equal(parsed.value.amenities.find((item) => item.label === "Reservations").value, "No");
+});
+
+test("a name and email are enough to send the listing email", async () => {
+  const parsed = parseListRestaurant({ name: "Jamie Cook", email: "jamie@example.com" });
+  assert.equal(parsed.error, undefined);
+  assert.equal(parsed.value.authorized, false);
+  assert.equal(parsed.value.hours.every((day) => day.value === ""), true);
+  const text = formatListRestaurant(parsed.value);
+  for (const label of [
+    "Your name: Jamie Cook",
+    "Role: Not provided",
+    "Email: jamie@example.com",
+    "Request: Not provided",
+    "Restaurant name: Not provided",
+    "Area: Not provided",
+    "Street address: Not provided",
+    "Price range: Not provided",
+    "Monday: Not provided",
+    "Cuisine types: Not provided",
+    "Meals: Not provided",
+    "Authorized to submit: No",
+  ]) {
+    assert.ok(text.includes(label), label);
+  }
+  let init = null;
+  const result = await deliverListRestaurant(
+    parsed.value,
+    {
+      RESEND_API_KEY: "re_test",
+      CONTACT_EMAIL: "marc@example.com",
+      SUBSCRIBE_FROM: "Eating on 30A <listings@example.com>",
+    },
+    (_url, nextInit) => {
+      init = nextInit;
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    },
+  );
+  assert.equal(result.delivered, true);
+  const mail = JSON.parse(init.body);
+  assert.equal(mail.reply_to, "jamie@example.com");
+  assert.equal(mail.subject, "Eating on 30A restaurant form");
+  assert.equal(mail.subject.includes("—"), false);
+  assert.equal(mail.subject.includes("–"), false);
 });
 
 test("an update with a listing reference is accepted", () => {

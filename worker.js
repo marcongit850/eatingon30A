@@ -373,7 +373,7 @@ export function parseListRestaurant(body) {
   if (name.tooLong) return { error: "Keep your name under 120 characters." };
   if (!name.text) return { error: "Enter your name." };
   const role = String(scalar(body.role) || "").trim();
-  if (!ROLE_LABELS.has(role)) return { error: "Choose your role." };
+  if (role && !ROLE_LABELS.has(role)) return { error: "Choose your role." };
   const email = String(scalar(body.email) || "").trim();
   if (!EMAIL.test(email) || email.length > 200) return { error: "Enter a valid email." };
   const contactPhone = cleanLine(body.contactPhone, 40);
@@ -383,44 +383,37 @@ export function parseListRestaurant(body) {
   const bestTime = cleanLine(body.bestTime, 120);
   if (bestTime.tooLong) return { error: "Keep the best time under 120 characters." };
   const intent = String(scalar(body.intent) || "").trim();
-  if (!INTENT_LABELS.has(intent)) return { error: "Choose new listing or an update." };
+  if (intent && !INTENT_LABELS.has(intent)) return { error: "Choose new listing or an update." };
   const existingListing = cleanLine(body.existingListing, 300);
   if (existingListing.tooLong) return { error: "Keep the current listing under 300 characters." };
-  if (intent === "update" && !existingListing.text) {
-    return { error: "Add the current listing URL or the exact restaurant name." };
-  }
   const restaurant = cleanLine(body.restaurant, 160);
   if (restaurant.tooLong) return { error: "Keep the restaurant name under 160 characters." };
-  if (!restaurant.text) return { error: "Enter a restaurant name." };
   const area = cleanLine(body.area, 120);
-  if (!area.text || !AREA_SET.has(area.text)) return { error: "Choose an area." };
+  if (area.tooLong || (area.text && !AREA_SET.has(area.text))) return { error: "Choose an area." };
   const address = cleanLine(body.address, 240);
   if (address.tooLong) return { error: "Keep the street address under 240 characters." };
-  if (!address.text) return { error: "Enter the street address." };
   const restaurantPhone = cleanLine(body.restaurantPhone, 40);
-  if (restaurantPhone.tooLong || !restaurantPhone.text || phoneDigits(restaurantPhone.text).length < 7) {
+  if (restaurantPhone.tooLong || (restaurantPhone.text && phoneDigits(restaurantPhone.text).length < 7)) {
     return { error: "Enter the restaurant phone number." };
   }
   const website = optionalLink(body.website, 300, "Check the website link.");
   if (website.error) return { error: website.error };
   const price = String(scalar(body.price) || "").trim();
-  if (!PRICE_SET.has(price)) return { error: "Choose a price range." };
+  if (price && !PRICE_SET.has(price)) return { error: "Choose a price range." };
   const description = cleanBlock(body.description, 2000);
   if (description.tooLong) return { error: "Keep the description under 2,000 characters." };
-  if (!description.text) return { error: "Add a short description." };
   const hours = [];
   for (const day of listingOptions.days) {
     const closed = isYes(scalar(body[day.closed]));
     const text = cleanLine(body[day.hours], 80);
     if (text.tooLong) return { error: `Keep ${day.label} hours under 80 characters.` };
-    if (!closed && !text.text) return { error: `Add hours for ${day.label}, or mark it closed.` };
     hours.push({ label: day.label, value: closed ? "Closed" : text.text });
   }
   const seasonalNote = cleanBlock(body.seasonalNote, 500);
   if (seasonalNote.tooLong) return { error: "Keep the seasonal note under 500 characters." };
-  const cuisines = pickList(body.cuisines, CUISINE_SET, "Choose at least one cuisine type.", "Choose cuisine types from the list.");
+  const cuisines = pickList(body.cuisines, CUISINE_SET, "", "Choose cuisine types from the list.");
   if (cuisines.error) return { error: cuisines.error };
-  const meals = pickList(body.meals, MEAL_SET, "Choose at least one meal.", "Choose meals from the list.");
+  const meals = pickList(body.meals, MEAL_SET, "", "Choose meals from the list.");
   if (meals.error) return { error: meals.error };
   const foods = pickList(body.foods, FOOD_SET, "", "Choose food styles from the list.");
   if (foods.error) return { error: foods.error };
@@ -436,17 +429,16 @@ export function parseListRestaurant(body) {
   if (videoUrl.error) return { error: videoUrl.error };
   const notes = cleanBlock(body.notes, 4000);
   if (notes.tooLong) return { error: "Keep the notes under 4,000 characters." };
-  if (!isYes(scalar(body.authorized))) return { error: "Confirm you are authorized to submit for this restaurant." };
   return {
     value: {
       name: name.text,
       role,
-      roleLabel: ROLE_LABELS.get(role),
+      roleLabel: ROLE_LABELS.get(role) || "",
       email,
       contactPhone: contactPhone.text,
       bestTime: bestTime.text,
       intent,
-      intentLabel: INTENT_LABELS.get(intent),
+      intentLabel: INTENT_LABELS.get(intent) || "",
       existingListing: existingListing.text,
       restaurant: restaurant.text,
       area: area.text,
@@ -465,9 +457,15 @@ export function parseListRestaurant(body) {
       instagram: instagram.text,
       videoUrl: videoUrl.text,
       notes: notes.text,
-      authorized: true,
+      authorized: isYes(scalar(body.authorized)),
     },
   };
+}
+
+function listingSubject(payload) {
+  const parts = [payload.intentLabel, payload.restaurant].map((part) => String(part || "").trim()).filter(Boolean);
+  if (!parts.length) return "Eating on 30A restaurant form";
+  return `Eating on 30A restaurant form: ${parts.join(", ")}`;
 }
 
 function labeled(label, value) {
@@ -531,7 +529,7 @@ export function formatListRestaurant(payload) {
 export async function deliverListRestaurant(payload, env, fetchImpl = fetch) {
   const message = {
     reply_to: payload.email,
-    subject: `Eating on 30A restaurant form: ${payload.intentLabel}, ${payload.restaurant}`,
+    subject: listingSubject(payload),
     text: formatListRestaurant(payload),
   };
   const images = Array.isArray(payload.images) ? payload.images : [];

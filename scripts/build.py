@@ -3669,17 +3669,12 @@ def listing_text(name: str, label: str, *, required: bool = False, **attrs: str)
 
 def listing_radios(name: str, legend: str, choices: tuple[tuple[str, str], ...]) -> str:
     items = []
-    for index, (value, label) in enumerate(choices):
-        required = " required" if index == 0 else ""
+    for value, label in choices:
         items.append(
-            f'<label class="listing-choice"><input type="radio" name="{e(name)}" value="{e(value)}"{required}> '
+            f'<label class="listing-choice"><input type="radio" name="{e(name)}" value="{e(value)}"> '
             f"<span>{e(label)}</span></label>"
         )
-    return (
-        f'<fieldset><legend>{e(legend)} <abbr title="required">*</abbr></legend>'
-        + "".join(items)
-        + "</fieldset>"
-    )
+    return f"<fieldset><legend>{e(legend)}</legend>{''.join(items)}</fieldset>"
 
 
 def listing_checks(name: str, legend: str, choices: list[tuple[str, str]], *, required: bool = False, grid: bool = False) -> str:
@@ -3711,7 +3706,7 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
     for day in options["days"]:
         hours.append(
             '<div class="hours-day">'
-            f'<label><span>{e(day["label"])} <abbr title="required">*</abbr></span>'
+            f'<label><span>{e(day["label"])}</span>'
             f'<input name="{e(day["hours"])}" type="text" maxlength="80" autocomplete="off"></label>'
             f'<label class="listing-choice"><input type="checkbox" name="{e(day["closed"])}" value="yes"> '
             f'<span>Closed <span class="sr-only">{e(day["label"])}</span></span></label>'
@@ -3721,14 +3716,12 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         "cuisines",
         "Cuisine types",
         [(cuisine, cuisine) for cuisine in options["cuisines"]],
-        required=True,
         grid=True,
     )
     meal_checks = listing_checks(
         "meals",
         "Meals",
         [(meal, meal) for meal in options["meals"]],
-        required=True,
     )
     food_checks = listing_checks(
         "foods",
@@ -3765,32 +3758,28 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         + listing_text("bestTime", "Best time to reach you", maxlength="120", autocomplete="off")
         + "<h2>What is this for?</h2>"
         + listing_radios("intent", "Request", LISTING_INTENTS)
-        + "<label><span>Current listing URL or exact restaurant name <abbr title=\"required when updating\">*</abbr></span>"
+        + "<label><span>Current listing URL or exact restaurant name</span>"
         '<input name="existingListing" type="text" maxlength="300" autocomplete="off"></label>'
-        '<p class="field-note">Required when you are updating a listing already on the site.</p>'
         + "<h2>Basics</h2>"
-        + listing_text("restaurant", "Restaurant name", required=True, maxlength="160", autocomplete="organization")
-        + '<label><span>Area / town <abbr title="required">*</abbr></span>'
-        + f'<select name="area" required>{"".join(area_options)}</select></label>'
-        + listing_text("address", "Street address", required=True, maxlength="240", autocomplete="street-address")
-        + "<label><span>Phone <abbr title=\"required\">*</abbr></span>"
-        '<input name="restaurantPhone" type="tel" required maxlength="40" autocomplete="tel" inputmode="tel"></label>'
+        + listing_text("restaurant", "Restaurant name", maxlength="160", autocomplete="organization")
+        + '<label><span>Area / town</span>'
+        + f'<select name="area">{"".join(area_options)}</select></label>'
+        + listing_text("address", "Street address", maxlength="240", autocomplete="street-address")
+        + "<label><span>Phone</span>"
+        '<input name="restaurantPhone" type="tel" maxlength="40" autocomplete="tel" inputmode="tel"></label>'
         + "<label><span>Website</span>"
         '<input name="website" type="text" maxlength="300" autocomplete="url" inputmode="url" placeholder="https://"></label>'
         + listing_radios("price", "Price range", tuple((price, price) for price in LISTING_PRICES))
-        + "<label><span>Short description / vibe <abbr title=\"required\">*</abbr></span>"
-        '<textarea name="description" required maxlength="2000" rows="5"></textarea></label>'
+        + "<label><span>Short description / vibe</span>"
+        '<textarea name="description" maxlength="2000" rows="5"></textarea></label>'
         '<p class="field-note">Two to four sentences on the room, the food, and who it is for.</p>'
         + "<h2>Hours</h2>"
-        '<p class="field-note">Add the hours for each day, or mark the day closed.</p>'
         + f'<div class="hours-list">{"".join(hours)}</div>'
         + "<label><span>Seasonal note</span>"
         '<textarea name="seasonalNote" class="compact" maxlength="500" rows="2"></textarea></label>'
         + "<h2>What they serve</h2>"
         + cuisine_checks
-        + '<p class="field-note">Choose at least one.</p>'
         + meal_checks
-        + '<p class="field-note">Choose at least one.</p>'
         + food_checks
         + '<p class="field-note">Optional. Choose any that fit.</p>'
         + "<h2>Amenities</h2>"
@@ -3808,8 +3797,8 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         + "<h2>Anything else</h2>"
         + "<label><span>Notes</span>"
         '<textarea name="notes" class="compact" maxlength="4000" rows="4"></textarea></label>'
-        + '<label class="listing-choice"><input type="checkbox" name="authorized" value="yes" required> '
-        '<span>I am authorized to submit this information for this restaurant <abbr title="required">*</abbr></span></label>'
+        + '<label class="listing-choice"><input type="checkbox" name="authorized" value="yes"> '
+        '<span>I am authorized to submit this information for this restaurant</span></label>'
         + '<button type="submit">Submit</button>'
         + '<p class="listing-status" role="status" aria-live="polite"></p>'
         + "</form></div>"

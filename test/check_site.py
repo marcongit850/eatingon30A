@@ -410,6 +410,12 @@ check(
     "listing form should not add an upload or contact-form note on the media links",
 )
 check("Live music*" in listing_page and "Live music is seasonal and subject to change." in listing_page, "listing form should mark live music as seasonal")
+check(listing_page.count('<abbr title="required">*</abbr>') == 2, "only name and email should show a required mark")
+check(listing_page.count(" required") == 2, "only name and email inputs should be required")
+check('name="name" type="text" required' in listing_page, "name should stay required")
+check('type="email" required' in listing_page, "email should stay required")
+check("Choose at least one." not in listing_page, "listing form should not require a cuisine or meal")
+check("Required when you are updating" not in listing_page, "listing form should not require the current listing")
 check("—" not in listing_page and "–" not in listing_page, "listing form page should not use em or en dashes")
 check('src="/list-restaurant.js"' in listing_page, "listing form page should load its script")
 for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "videoUrl", "photos", "notes", "authorized"):
@@ -433,6 +439,9 @@ check("Use a JPEG, PNG, or WebP image." in list_js, "listing form script should 
 check("Keep each image under 2 MB." in list_js, "listing form script should cap each image")
 check("Keep them under 8 MB altogether." in list_js, "listing form script should cap the images together")
 check("—" not in list_js and "–" not in list_js, "listing form script should not use em or en dashes")
+check(".required" not in list_js, "listing form script should not mark fields required in the browser")
+check("Enter your name." in list_js and "Enter a valid email." in list_js, "listing form script should still require a name and email")
+check("Confirm you are authorized" not in list_js, "listing form script should not require the authorization checkbox")
 check("Thanks. We have your listing." in list_js, "listing form script should thank the restaurant")
 check(f"{build.ORIGIN}/list-your-restaurant/" in sitemap, "sitemap missing the listing form")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
