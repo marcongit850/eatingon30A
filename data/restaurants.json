@@ -1511,7 +1511,7 @@
     "lng": -86.1370153,
     "address": "121 Central Square, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-4770",
-    "search": "dawson\u2019s yogurt & fudge seaside town center seaside american dessert desserts ice cream dessert dessert dawson\u2019s yogurt & fudge has served frozen yogurt, soft serve, and house-made fudge in seaside\u2019s central square since 1988. opening and closing times are seasonal. dawson's yogurt and fudge ice cream dessert seaside central square $",
+    "search": "dawson\u2019s yogurt & fudge seaside town center seaside american dessert desserts ice cream dessert dessert dawson\u2019s yogurt & fudge has served frozen yogurt, soft serve, and house-made fudge in seaside\u2019s central square since 1988. hours and seasonal closings change. dawson's yogurt and fudge ice cream dessert seaside central square $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -2193,6 +2193,7 @@
     "area": "Seaside",
     "areaSlug": "seaside",
     "meals": [
+      "Breakfast",
       "Lunch",
       "Dinner",
       "Desserts"
@@ -2210,7 +2211,7 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-2029",
-    "search": "heavenly\u2019s shortcakes & ice cream seaside  seaside american dessert lunch dinner desserts ice cream dessert dessert heavenly\u2019s ice cream offers a variety of sweet treats in a relaxed setting. perfect for dessert. heavenly\u2019s shortcakes & ice cream dessert ice cream dessert american casual dining seaside $",
+    "search": "heavenly\u2019s shortcakes & ice cream seaside  seaside american dessert breakfast lunch dinner desserts ice cream dessert dessert heavenly\u2019s shortcakes & ice cream opens at 8am with coffee and some breakfast pastries, not a full breakfast menu. sweet treats are served in a relaxed setting. hours and seasonal closings change. heavenly\u2019s shortcakes & ice cream dessert ice cream dessert american casual dining seaside $",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -3064,7 +3065,7 @@
     "lng": -86.1375491,
     "address": "2236 E County Hwy 30A #34, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-9060",
-    "search": "pickle\u2019s burger and shake seaside town center seaside | town center american breakfast lunch dinner burgers restaurant pickle\u2019s burger and shake serves classic burgers and shakes in a fun, casual environment. a family-friendly favorite. pickle\u2019s burger and shake restaurant burgers american casual dining seaside $$",
+    "search": "pickle\u2019s burger and shake seaside town center seaside | town center american breakfast lunch dinner burgers restaurant pickle\u2019s burger and shake serves classic burgers and shakes in a fun, casual environment. a family-friendly favorite. hours and seasonal closings change. pickle\u2019s burger and shake restaurant burgers american casual dining seaside $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -3289,7 +3290,7 @@
     "lng": -86.2004817,
     "address": "2052 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 994-7443",
-    "search": "red fish taco blue mountain beach  blue mountain beach mexican lunch dinner tacos bar & restaurant red fish taco is known for fresh tacos, margaritas, and live music in a lively, upbeat atmosphere. a fun and flavorful stop. red fish taco bar restaurant tacos mexican casual dining live music blue mountain beach $$",
+    "search": "red fish taco blue mountain beach  blue mountain beach mexican lunch dinner tacos bar & restaurant red fish taco is known for fresh tacos, margaritas, and live music in a lively, upbeat atmosphere. it is a good place for watching sports. a fun and flavorful stop. red fish taco bar restaurant tacos mexican casual dining live music blue mountain beach $$",
     "outdoor": true,
     "kids": true,
     "music": true,
@@ -3775,11 +3776,9 @@
     "area": "Dune Allen Beach",
     "areaSlug": "dune-allen-beach",
     "meals": [
-      "Lunch",
-      "Dinner"
+      "Breakfast"
     ],
     "cuisines": [
-      "Seafood",
       "American"
     ],
     "foods": [
@@ -3790,7 +3789,7 @@
     "lng": -86.2542217,
     "address": "5960 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 213-9066",
-    "search": "stinky\u2019s bait shack dune allen beach  dune allen beach seafood american lunch dinner sandwiches bar & restaurant just across the street, stinky\u2019s bait shack offers a laid-back, open-air bar experience with live music, cold drinks, and a casual menu. it\u2019s the perfect spot to kick back after the beach or wait for a table. stinky\u2019s bait shack bar restaurant sandwiches seafood american casual dining bar dune allen beach $$",
+    "search": "stinky\u2019s bait shack dune allen beach  dune allen beach american breakfast sandwiches bar & restaurant stinky\u2019s bait shack opens at 7am daily with coffee and breakfast items: tacos, sandwiches, biscuits, and grits. it does not serve meals, only snacks, plus those breakfast items. free bingo every sunday from 4 to 6pm, year-round. hours and seasonal closings change. stinky\u2019s bait shack bar restaurant sandwiches american casual dining bar dune allen beach $$",
     "outdoor": false,
     "kids": true,
     "music": true,
@@ -3822,7 +3821,7 @@
     "lng": -86.2542217,
     "address": "5960 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 267-3053",
-    "search": "stinky\u2019s fish camp dune allen beach  dune allen beach seafood southern lunch dinner oyster bar restaurant a 30a staple, stinky\u2019s fish camp serves up fresh gulf seafood with a southern twist in a fun, casual setting. known for its oysters, daily specials, and local vibe, it\u2019s a must-stop for lunch or dinner near dune allen beach. stinky\u2019s fish camp restaurant oyster bar seafood southern casual dining dune allen beach $$",
+    "search": "stinky\u2019s fish camp dune allen beach  dune allen beach seafood southern lunch dinner oyster bar restaurant a 30a staple, stinky\u2019s fish camp serves up fresh gulf seafood with a southern twist in a fun, casual setting. known for its oysters, daily specials, and local vibe, it\u2019s a must-stop for lunch or dinner near dune allen beach. saturday and sunday brunch is 10am to 3pm, then dinner until close. hours and seasonal closings change. stinky\u2019s fish camp restaurant oyster bar seafood southern casual dining dune allen beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
@@ -4303,7 +4302,7 @@
     "lng": -86.1376636,
     "address": "2236 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-3799",
-    "search": "the shrimp shack seaside  seaside seafood lunch dinner sandwiches shrimp quick service the shrimp shack is known for shrimp baskets and seafood in a casual setting. a quick and tasty stop. the shrimp shack quick service sandwiches shrimp seafood casual dining seaside $",
+    "search": "the shrimp shack seaside  seaside seafood lunch dinner sandwiches shrimp quick service the shrimp shack is known for shrimp baskets and seafood in a casual setting. a quick and tasty stop. hours and seasonal closings change. the shrimp shack quick service sandwiches shrimp seafood casual dining seaside $",
     "outdoor": true,
     "kids": true,
     "music": false,
@@ -4527,7 +4526,7 @@
     "lng": -86.1376636,
     "address": "2235 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 231-0802",
-    "search": "wild bill\u2019s beach dogs seaside airstream row seaside | airstream row american breakfast lunch dinner hot dogs food truck wild bill\u2019s beach dogs is an airstream on seaside\u2019s row, serving wagyu hot dogs and opening at 8am with kolaches. wild bill\u2019s beach dogs food truck hot dogs american casual dining seaside $",
+    "search": "wild bill\u2019s beach dogs seaside airstream row seaside | airstream row american breakfast lunch dinner hot dogs food truck wild bill\u2019s beach dogs is an airstream on seaside\u2019s row, serving wagyu hot dogs and opening at 8am with kolaches. hours and seasonal closings change. wild bill\u2019s beach dogs food truck hot dogs american casual dining seaside $",
     "outdoor": false,
     "kids": true,
     "music": false,
