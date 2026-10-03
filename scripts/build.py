@@ -3736,7 +3736,7 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         "We read every submission and follow up by email if we need a detail checked.</p>"
         '<p>For a short correction, the <a class="text-link" href="/contact/">contact form</a> is enough.</p>'
         "</div>"
-        '<form class="listing-form" action="/api/list-restaurant" method="post" data-list-restaurant>'
+        '<form class="listing-form" action="/api/list-restaurant" method="post" enctype="multipart/form-data" data-list-restaurant>'
         '<div class="hp-field" aria-hidden="true">'
         '<label>Company<input name="eo30a_hp" type="text" tabindex="-1" autocomplete="off"></label>'
         "</div>"
@@ -3783,10 +3783,13 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         + "<h2>Social and media</h2>"
         + listing_text("facebook", "Facebook URL", maxlength="300", autocomplete="off")
         + listing_text("instagram", "Instagram", maxlength="300", autocomplete="off")
-        + listing_text("logoUrl", "Logo URL", maxlength="300", autocomplete="off")
-        + listing_text("listPhotoUrl", "List photo URL", maxlength="300", autocomplete="off")
-        + listing_text("detailPhotoUrl", "Detail photo URL", maxlength="300", autocomplete="off")
         + listing_text("videoUrl", "Video URL", maxlength="300", autocomplete="off")
+        + '<label class="media-drop">'
+        + '<input name="photos" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple>'
+        + "<span>Drop logos or pictures here</span>"
+        + "</label>"
+        + '<ul class="media-files" hidden></ul>'
+        + '<p class="media-error" hidden></p>'
         + "<h2>Anything else</h2>"
         + "<label><span>Notes</span>"
         '<textarea name="notes" class="compact" maxlength="4000" rows="4"></textarea></label>'

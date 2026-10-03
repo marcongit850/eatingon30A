@@ -1,5 +1,8 @@
 (function () {
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+  var MAX_IMAGE_TOTAL_BYTES = 8 * 1024 * 1024;
+  var MAX_IMAGE_COUNT = 12;
   var DAYS = [
     ["Monday", "hoursMon", "hoursMonClosed"],
     ["Tuesday", "hoursTue", "hoursTueClosed"],
@@ -78,9 +81,6 @@
       foods: checkedValues(form, "foods"),
       facebook: value(form, "facebook"),
       instagram: value(form, "instagram"),
-      logoUrl: value(form, "logoUrl"),
-      listPhotoUrl: value(form, "listPhotoUrl"),
-      detailPhotoUrl: value(form, "detailPhotoUrl"),
       videoUrl: value(form, "videoUrl"),
       notes: value(form, "notes"),
       authorized: Boolean(field(form, "authorized") && field(form, "authorized").checked),
@@ -144,13 +144,149 @@
     if (!body.meals.length) return { message: "Choose at least one meal.", field: "meals" };
     if (badLink(body.facebook)) return { message: "Check the Facebook link.", field: "facebook" };
     if (badLink(body.instagram)) return { message: "Check the Instagram link.", field: "instagram" };
-    if (badLink(body.logoUrl)) return { message: "Check the logo link.", field: "logoUrl" };
-    if (badLink(body.listPhotoUrl)) return { message: "Check the list photo link.", field: "listPhotoUrl" };
-    if (badLink(body.detailPhotoUrl)) return { message: "Check the detail photo link.", field: "detailPhotoUrl" };
     if (badLink(body.videoUrl)) return { message: "Check the video link.", field: "videoUrl" };
     if (body.notes.length > 4000) return { message: "Keep the notes under 4,000 characters.", field: "notes" };
     if (!body.authorized) return { message: "Confirm you are authorized to submit for this restaurant.", field: "authorized" };
     return null;
+  }
+
+  function imageIssue(file) {
+    if (!file || !file.name) return "Use a JPEG, PNG, or WebP image.";
+    var type = String(file.type || "").toLowerCase().split(";")[0].trim();
+    if (type === "image/jpg" || type === "image/pjpeg") type = "image/jpeg";
+    var typed = type === "image/jpeg" || type === "image/png" || type === "image/webp";
+    var ext = /\.(jpe?g|png|webp)$/i.test(file.name);
+    if (type && type !== "application/octet-stream" && !typed) return "Use a JPEG, PNG, or WebP image.";
+    if (!typed && !ext) return "Use a JPEG, PNG, or WebP image.";
+    if (file.size > MAX_IMAGE_BYTES) return "That file is too large. Keep each image under 2 MB.";
+    if (!file.size) return "Use a JPEG, PNG, or WebP image.";
+    return "";
+  }
+
+  function imageProblem(files) {
+    if (files.length > MAX_IMAGE_COUNT) return "Keep it to 12 images.";
+    var total = 0;
+    for (var i = 0; i < files.length; i++) {
+      var issue = imageIssue(files[i]);
+      if (issue) return issue;
+      total += files[i].size || 0;
+    }
+    if (total > MAX_IMAGE_TOTAL_BYTES) return "Those images are too large to send. Keep them under 8 MB altogether.";
+    return "";
+  }
+
+  function imageFiles(form) {
+    return form._listingImages || [];
+  }
+
+  function sniffFile(file) {
+    return file.slice(0, 12).arrayBuffer().then(function (buffer) {
+      var bytes = new Uint8Array(buffer);
+      if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+      if (
+        bytes.length >= 8 &&
+        bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+        bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+      ) return "image/png";
+      if (
+        bytes.length >= 12 &&
+        bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+        bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+      ) return "image/webp";
+      return "";
+    }).catch(function () {
+      return "";
+    });
+  }
+
+  function renderImages(form) {
+    var list = form.querySelector(".media-files");
+    if (!list) return;
+    var files = imageFiles(form);
+    list.textContent = "";
+    files.forEach(function (file, index) {
+      var item = document.createElement("li");
+      var name = document.createElement("span");
+      name.textContent = file.name;
+      var remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", function () {
+        var next = imageFiles(form).slice();
+        next.splice(index, 1);
+        setImageFiles(form, next);
+      });
+      item.appendChild(name);
+      item.appendChild(remove);
+      list.appendChild(item);
+    });
+    list.hidden = files.length === 0;
+  }
+
+  function setImageFiles(form, files) {
+    form._listingImages = files;
+    renderImages(form);
+  }
+
+  function showImageError(form, message) {
+    var note = form.querySelector(".media-error");
+    if (!note) return;
+    note.textContent = message || "";
+    note.hidden = !message;
+  }
+
+  function addImages(form, fileList) {
+    var incoming = Array.prototype.filter.call(fileList || [], function (file) {
+      return file && (file.name || file.size);
+    });
+    if (!incoming.length) return form._listingPending || Promise.resolve();
+    var accepted = [];
+    var problem = "";
+    var chain = Promise.resolve();
+    incoming.forEach(function (file) {
+      chain = chain.then(function () {
+        var issue = imageIssue(file);
+        if (issue) {
+          if (!problem) problem = issue;
+          return;
+        }
+        return sniffFile(file).then(function (kind) {
+          if (!kind) {
+            if (!problem) problem = "Use a JPEG, PNG, or WebP image.";
+            return;
+          }
+          accepted.push(file);
+        });
+      });
+    });
+    var previous = form._listingPending || Promise.resolve();
+    form._listingPending = previous.then(function () {
+      return chain;
+    }).then(function () {
+      var next = imageFiles(form).concat(accepted);
+      if (next.length > MAX_IMAGE_COUNT) {
+        showImageError(form, "Keep it to 12 images.");
+        focusField(form, "photos");
+        return;
+      }
+      var total = 0;
+      next.forEach(function (file) {
+        total += file.size || 0;
+      });
+      if (total > MAX_IMAGE_TOTAL_BYTES) {
+        showImageError(form, "Those images are too large to send. Keep them under 8 MB altogether.");
+        focusField(form, "photos");
+        return;
+      }
+      if (accepted.length) setImageFiles(form, next);
+      if (problem) {
+        showImageError(form, problem);
+        focusField(form, "photos");
+        return;
+      }
+      showImageError(form, "");
+    });
+    return form._listingPending;
   }
 
   function focusField(form, name) {
@@ -180,9 +316,42 @@
     syncIntent(form);
   }
 
+  function bindImages(form) {
+    var zone = form.querySelector(".media-drop");
+    var photoInput = field(form, "photos");
+    if (zone) {
+      zone.addEventListener("dragenter", function (event) {
+        event.preventDefault();
+        zone.classList.add("is-dragover");
+      });
+      zone.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        zone.classList.add("is-dragover");
+      }, true);
+      zone.addEventListener("dragleave", function (event) {
+        if (event.relatedTarget && zone.contains(event.relatedTarget)) return;
+        zone.classList.remove("is-dragover");
+      });
+      zone.addEventListener("drop", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        zone.classList.remove("is-dragover");
+        var files = event.dataTransfer && event.dataTransfer.files;
+        if (files && files.length) addImages(form, files);
+      }, true);
+    }
+    if (photoInput) {
+      photoInput.addEventListener("change", function () {
+        addImages(form, photoInput.files);
+        photoInput.value = "";
+      });
+    }
+  }
+
   function bind(form) {
     fillFromQuery(form);
     syncHours(form);
+    bindImages(form);
     form.addEventListener("change", function (event) {
       var target = event.target;
       if (!target || !target.name) return;
@@ -191,45 +360,65 @@
     });
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      var body = payload(form);
-      var problem = invalid(body);
-      if (problem) {
-        status(form, problem.message, true);
-        focusField(form, problem.field);
-        return;
-      }
-      var button = form.querySelector('button[type="submit"]');
-      if (button) button.disabled = true;
-      status(form, "Sending…", false);
-      fetch("/api/list-restaurant", {
-        method: "POST",
-        headers: { "content-type": "application/json", accept: "application/json" },
-        body: JSON.stringify(body),
-      })
-        .then(function (response) {
-          return response.json().then(function (data) {
-            return { ok: response.ok, data: data };
-          }).catch(function () {
-            return { ok: false, data: {} };
-          });
-        })
-        .then(function (result) {
-          if (!result.ok || !result.data.ok) {
-            status(form, (result.data && result.data.error) || "The request could not be sent. Try again in a moment.", true);
-            return;
-          }
-          form.reset();
-          syncHours(form);
-          syncIntent(form);
-          status(form, "Thanks. We have your listing.", false);
-        })
-        .catch(function () {
-          status(form, "The request could not be sent. Try again in a moment.", true);
-        })
-        .then(function () {
-          if (button) button.disabled = false;
-        });
+      var pending = form._listingPending || Promise.resolve();
+      pending.then(function () {
+        sendListing(form);
+      });
     });
+  }
+
+  function sendListing(form) {
+    if (form._listingSending) return;
+    var body = payload(form);
+    var problem = invalid(body);
+    var images = imageFiles(form);
+    var imageError = imageProblem(images);
+    if (problem || imageError) {
+      showImageError(form, imageError);
+      status(form, problem ? problem.message : imageError, true);
+      focusField(form, problem ? problem.field : "photos");
+      return;
+    }
+    showImageError(form, "");
+    var button = form.querySelector('button[type="submit"]');
+    form._listingSending = true;
+    if (button) button.disabled = true;
+    status(form, "Sending…", false);
+    var data = new FormData(form);
+    data.delete("photos");
+    images.forEach(function (file) {
+      data.append("photos", file, file.name);
+    });
+    fetch("/api/list-restaurant", {
+      method: "POST",
+      headers: { accept: "application/json" },
+      body: data,
+    })
+      .then(function (response) {
+        return response.json().then(function (payload) {
+          return { ok: response.ok, data: payload };
+        }).catch(function () {
+          return { ok: false, data: {} };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok || !result.data.ok) {
+          status(form, (result.data && result.data.error) || "The request could not be sent. Try again in a moment.", true);
+          return;
+        }
+        form.reset();
+        setImageFiles(form, []);
+        syncHours(form);
+        syncIntent(form);
+        status(form, "Thanks. We have your listing.", false);
+      })
+      .catch(function () {
+        status(form, "The request could not be sent. Try again in a moment.", true);
+      })
+      .then(function () {
+        form._listingSending = false;
+        if (button) button.disabled = false;
+      });
   }
 
   document.querySelectorAll("form[data-list-restaurant]").forEach(bind);

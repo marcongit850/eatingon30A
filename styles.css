@@ -1344,6 +1344,90 @@ html.js-filter #cards .card { display: none; }
   margin-top: 0.1rem;
 }
 .listing-form input:disabled { opacity: 0.45; }
+.media-drop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 16rem);
+  min-height: 6.75rem;
+  margin: 0.15rem 0 0;
+  padding: 0.9rem 1rem;
+  border: 1px dashed rgba(23, 36, 33, 0.28);
+  background: transparent;
+  cursor: pointer;
+}
+.media-drop.is-dragover,
+.media-drop:focus-within {
+  border-color: var(--gulf);
+  background: rgba(28, 71, 66, 0.04);
+}
+.listing-form > label.media-drop > span {
+  margin: 0;
+  max-width: 12rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--muted);
+}
+.listing-form .media-drop input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.media-files {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.media-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+.media-files li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.media-files button {
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 0.15rem;
+  border: 0;
+  background: transparent;
+  color: var(--gulf);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.media-files button:hover,
+.media-files button:focus-visible {
+  background: transparent;
+  color: var(--coral-deep);
+}
+.media-error {
+  margin: 0;
+  color: var(--coral-deep);
+  font-size: 0.92rem;
+  font-weight: 300;
+  line-height: 1.45;
+}
 .hours-list { display: grid; gap: 0.85rem; }
 .hours-day {
   display: grid;
