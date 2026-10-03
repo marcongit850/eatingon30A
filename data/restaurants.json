@@ -1050,6 +1050,38 @@
     "image": "/images/restaurants/cafe-thirty-a-seagrove-beach/01.jpg"
   },
   {
+    "slug": "cajun-corner-sports-bar-and-grill",
+    "name": "Cajun Corner Sports Bar and Grill",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American"
+    ],
+    "foods": [
+      "Grill",
+      "Burgers"
+    ],
+    "price": "",
+    "lat": 30.39304,
+    "lng": -86.279708,
+    "address": "306 Bald Eagle Dr, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-1500",
+    "search": "cajun corner sports bar and grill grayton beach  grayton beach american lunch dinner grill burgers sports bar cajun corner is a grayton beach sports bar with boils and po\u2019boys. sunday brunch runs from 10am to 2pm, and saturday and sunday include bottomless mimosas from 11am to 2pm. bring in a fish you caught and hook n cook will blacken it over smoked gouda grits. boils po boys sunday brunch hook n cook mimosas grayton ",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/cajun-corner-sports-bar-and-grill/01.jpg"
+  },
+  {
     "slug": "caliza-restaurant-alys-beach",
     "name": "Caliza Restaurant",
     "area": "Alys Beach",
@@ -1460,6 +1492,38 @@
     "image": "/images/restaurants/crepes-du-soleil-seaside/01.jpg"
   },
   {
+    "slug": "crust-artisan-bakery",
+    "name": "Crust Artisan Bakery",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "Italian"
+    ],
+    "foods": [
+      "Pizza",
+      "Pasta",
+      "Bakery"
+    ],
+    "price": "",
+    "lat": 30.3737926,
+    "lng": -86.2577346,
+    "address": "4821 US Hwy 98 W, Ste 101, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 622-1022",
+    "search": "crust artisan bakery nearby us 98 nearby | us 98 italian dinner pizza pasta bakery restaurant crust grew out of an artisan bakery and still bakes for a small dining room on us 98. the plates people know are ziti with sunday gravy, veal parmesan, and piccata, along with a list of specialty pizzas. sunday gravy veal parmesan piccata specialty pizza bakery ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "cuvee-30a-inlet-beach",
     "name": "Cuvee 30A",
     "area": "Inlet Beach",
@@ -1521,6 +1585,39 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": null
+  },
+  {
+    "slug": "decadent-dessert-bar-and-bistro",
+    "name": "Decadent Dessert Bar & Bistro",
+    "area": "Inlet Beach",
+    "areaSlug": "inlet-beach",
+    "meals": [
+      "Breakfast",
+      "Desserts"
+    ],
+    "cuisines": [
+      "Dessert",
+      "Cafe"
+    ],
+    "foods": [
+      "Coffee",
+      "Dessert"
+    ],
+    "price": "",
+    "lat": 30.2812304,
+    "lng": -86.0107007,
+    "address": "12805 US Hwy 98 E, Inlet Beach, FL 32461, USA",
+    "phone": "(913) 258-8877",
+    "search": "decadent dessert bar & bistro inlet beach 30avenue inlet beach | 30avenue dessert cafe breakfast desserts coffee dessert cafe / coffee decadent is the coffee and dessert bar in the 30avenue block at inlet beach. desserts are made fresh through the day, and the coffee bar pours house blends, drinking chocolate, and fruit smoothies. 30avenue coffee drinking chocolate smoothies dessert bar ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/decadent-dessert-bar-and-bistro/01.jpg"
   },
   {
     "slug": "don-pedros-mexican-restaurant",
@@ -1647,6 +1744,37 @@
     "happyDrinks": true,
     "laurensFavorite": false,
     "image": "/images/restaurants/edwards-fine-food-and-wine-rosemary-beach/01.jpg"
+  },
+  {
+    "slug": "farm-and-fire",
+    "name": "Farm & Fire",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "Southern",
+      "American"
+    ],
+    "foods": [
+      "Pizza"
+    ],
+    "price": "$$",
+    "lat": 30.3883002,
+    "lng": -86.1746664,
+    "address": "24200 Hwy 331 S, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 789-6312",
+    "search": "farm & fire nearby hwy 331 nearby | us 98 southern american dinner pizza restaurant farm & fire is the upstairs room above north beach social, looking over choctawhatchee bay. the kitchen treats it as a meeting place, with a rotating seasonal menu meant to be shared and a full bar. jim shirley seasonal shared menu choctawhatchee bay north beach social $$",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": true,
+    "groups": true,
+    "happyFood": false,
+    "happyDrinks": true,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/farm-and-fire/01.jpg"
   },
   {
     "slug": "fat-daddys-pizza",
@@ -2539,6 +2667,66 @@
     "image": "/images/restaurants/lola-coastal-italian-seacrest/01.jpg"
   },
   {
+    "slug": "los-rancheros",
+    "name": "Los Rancheros",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Mexican"
+    ],
+    "foods": [
+      "Grill"
+    ],
+    "price": "",
+    "lat": 30.3750119,
+    "lng": -86.2684185,
+    "address": "5524 US Hwy 98 W, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 622-0754",
+    "search": "los rancheros nearby us 98 nearby | us 98 mexican lunch dinner grill bar & restaurant los rancheros is a mexican grill and bar on us 98 in santa rosa beach, with a sister shop in freeport. santa rosa beach freeport mexican grill and bar ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/los-rancheros/01.jpg"
+  },
+  {
+    "slug": "louis-louis",
+    "name": "Louis Louis",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Dinner"
+    ],
+    "cuisines": [
+      "Seafood",
+      "American"
+    ],
+    "foods": [],
+    "price": "",
+    "lat": 30.3751203,
+    "lng": -86.254836,
+    "address": "35 Mussett Bayou Rd, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-1500",
+    "search": "louis louis nearby mussett bayou rd nearby | us 98 seafood american dinner  restaurant louis louis is the sister restaurant of the red bar, on mussett bayou rather than in a 30a town. the room is festive and a little kitschy, and the plates people come back for are blackened grouper, crab cakes, and shrimp and crawfish pasta. red bar mussett bayou grouper crab cakes ",
+    "outdoor": true,
+    "kids": false,
+    "music": true,
+    "reservations": false,
+    "groups": true,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/louis-louis/01.jpg"
+  },
+  {
     "slug": "marble-slab-creamery-inlet-beach",
     "name": "Marble Slab Creamery",
     "area": "Inlet Beach",
@@ -2790,6 +2978,38 @@
     "image": null
   },
   {
+    "slug": "north-beach-social",
+    "name": "North Beach Social",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "American",
+      "Southern"
+    ],
+    "foods": [
+      "Burgers"
+    ],
+    "price": "$$",
+    "lat": 30.3883002,
+    "lng": -86.1746664,
+    "address": "24200 Hwy 331 S, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 318-4653",
+    "search": "north beach social nearby hwy 331 nearby | us 98 american southern lunch dinner burgers bar & restaurant north beach social is the open-air bar downstairs from farm & fire, at the south end of the 331 bridge. the deck faces the sunset over choctawhatchee bay, with a stretch of white sand out front. locals order grits a ya ya and poke bowls, and the staff lights a bonfire at night when the weather allows. 331 bridge choctawhatchee bay grits a ya ya poke bonfire farm and fire $$",
+    "outdoor": true,
+    "kids": true,
+    "music": true,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": true,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/north-beach-social/01.jpg"
+  },
+  {
     "slug": "o-ku-alys-beach",
     "name": "O-Ku",
     "area": "Alys Beach",
@@ -2948,6 +3168,38 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/papa-surf-burger-bar-gulf-place/01.jpg"
+  },
+  {
+    "slug": "pazzo-italiano-santa-rosa-beach",
+    "name": "Pazzo Italiano",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Italian"
+    ],
+    "foods": [
+      "Pizza",
+      "Pasta"
+    ],
+    "price": "",
+    "lat": 30.3756876,
+    "lng": -86.2292161,
+    "address": "111 N Hwy 393, Unit 301, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 213-4581",
+    "search": "pazzo italiano nearby hwy 393 nearby | us 98 italian lunch dinner pizza pasta restaurant this is the santa rosa beach pazzo, not the destin restaurant. alfonso di bonito, a pizza chef from napoli, and levente tischler run the kitchen, and the pies come out of a wood-fired oven. santa rosa beach wood fired napoli alfonso di bonito not destin ",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "reservations": true,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/pazzo-italiano-santa-rosa-beach/01.jpg"
   },
   {
     "slug": "pecan-jacks-gulf-place",
@@ -3678,6 +3930,38 @@
     "image": "/images/restaurants/shaka-sushi-and-noodle-bar-inlet-beach/01.jpg"
   },
   {
+    "slug": "shelbys-beach-bar-and-grill",
+    "name": "Shelby\u2019s Beach Bar and Grill",
+    "area": "Gulf Place",
+    "areaSlug": "gulf-place",
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Seafood",
+      "American"
+    ],
+    "foods": [
+      "Sandwiches"
+    ],
+    "price": "",
+    "lat": 30.3475765,
+    "lng": -86.2302672,
+    "address": "37 Town Center Loop, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 660-2069",
+    "search": "shelby\u2019s beach bar and grill gulf place  gulf place seafood american lunch dinner sandwiches bar & restaurant shelby\u2019s is the perfect pig family\u2019s beach bar at gulf place. the covered patio looks over ed walline beach access and the gulf, and the bar pours frozen cocktails. perfect pig gulf place ed walline beach bar frozen cocktails ",
+    "outdoor": true,
+    "kids": false,
+    "music": true,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/shelbys-beach-bar-and-grill/01.jpg"
+  },
+  {
     "slug": "shunk-gulley-oyster-bar-gulf-place",
     "name": "Shunk Gulley Oyster Bar",
     "area": "Gulf Place",
@@ -4147,6 +4431,39 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/the-donut-hole-inlet-beach/01.jpg"
+  },
+  {
+    "slug": "the-donut-hole-us-98",
+    "name": "The Donut Hole (US 98)",
+    "area": "Nearby",
+    "areaSlug": "nearby",
+    "meals": [
+      "Breakfast",
+      "Lunch",
+      "Dinner"
+    ],
+    "cuisines": [
+      "Southern"
+    ],
+    "foods": [
+      "Donuts",
+      "Bakery"
+    ],
+    "price": "",
+    "lat": 30.3748882,
+    "lng": -86.2895686,
+    "address": "6745 US Hwy 98 W, Santa Rosa Beach, FL 32459, USA",
+    "phone": "(850) 267-3239",
+    "search": "the donut hole (us 98) nearby us 98 nearby | us 98 southern breakfast lunch dinner donuts bakery restaurant this is the original donut hole on us 98 in santa rosa beach, separate from the inlet beach shop. the bakery is known for fresh donuts, pastries, and homemade pies. original santa rosa beach bakery pies pastries not inlet beach ",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": "/images/restaurants/the-donut-hole-us-98/01.jpg"
   },
   {
     "slug": "the-perfect-pig-seagrove-beach",

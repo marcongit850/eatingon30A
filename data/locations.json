@@ -12,7 +12,7 @@
     "name": "Gulf Place",
     "shortName": "Gulf Place",
     "description": "A vibrant hub on the west end of 30A with colorful architecture, local shops, live music, and easy beach access.",
-    "count": 9,
+    "count": 10,
     "image": "https://static.wixstatic.com/media/de29ed_eae4b4b4e89c453d8a67a90eab88552a~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/gulf-place.jpg"
   },
   {
@@ -28,7 +28,7 @@
     "name": "Grayton Beach",
     "shortName": "Grayton",
     "description": "A laid-back, artsy beach town with pristine beaches and local flavor.",
-    "count": 13,
+    "count": 14,
     "image": "https://static.wixstatic.com/media/de29ed_a9ea3f98c2d34bcaa531ed557eff0d31~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/grayton.jpg"
   },
   {
@@ -92,7 +92,7 @@
     "name": "Inlet Beach",
     "shortName": "Inlet Beach",
     "description": "Trendy, up-and-coming, and close to the action.",
-    "count": 15,
+    "count": 16,
     "image": "https://static.wixstatic.com/media/de29ed_d11419477d3a4cc8abc868c5abbdef5a~mv2.jpg/v1/fill/w_1200,h_800,al_c,q_75,enc_auto/inlet-beach.jpg"
   },
   {
@@ -108,7 +108,7 @@
     "name": "Nearby",
     "shortName": "Nearby",
     "description": "Everyday dining on the US 98 plazas, a short drive from Scenic Highway 30A.",
-    "count": 10,
+    "count": 17,
     "image": "/images/areas/nearby.jpg"
   }
 ]

@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 145, f"full CSV should stay at 145 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 145, "public json should include every published restaurant")
+check(len(source) == 155, f"full CSV should stay at 155 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 155, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -251,6 +251,7 @@ expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
+    "crust-artisan-bakery",
     "dawsons-yogurt-and-fudge-seaside",
     "dough-sea-dough-seagrove-beach",
     "drome-seaside",
@@ -261,7 +262,7 @@ expected_monograms = [
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 134, f"expected 134 restaurant photos, got {len(photos)}")
+check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
@@ -687,7 +688,7 @@ for town_slug, town_alt in (
     check('class="ph"' not in card, f"{town_slug} homepage card should not keep the placeholder")
 
 nearby_rows = [item for item in source if item["areaSlug"] == "nearby"]
-check(len(nearby_rows) == 10, f"Nearby should list 10 restaurants, got {len(nearby_rows)}")
+check(len(nearby_rows) == 17, f"Nearby should list 17 restaurants, got {len(nearby_rows)}")
 check(any(item["slug"] == "cafe-aroma-inlet-beach" and item["areaSlug"] == "inlet-beach" for item in source), "Café Aroma should stay in Inlet Beach")
 check("marco" not in {item["slug"] for item in source}, "Marco’s Pizza should stay off the guide")
 nearby_src = "/images/areas/nearby.jpg"
@@ -738,7 +739,7 @@ check('href="/guides/"' in shared_footer, "shared footer is missing the guides l
 check('href="/guides/best-seafood-30a/"' in home and 'href="/guides/"' in home, "homepage should mention the guides")
 check("Popular guides for a trip along Scenic Highway 30A." in home, "homepage guides mention should stay modest")
 seafood = build.seafood_restaurants(source, build.load_areas(source))
-check(len(seafood) == 31, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
+check(len(seafood) == 33, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")
