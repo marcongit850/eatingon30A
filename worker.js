@@ -624,7 +624,7 @@ export async function handleListRestaurant(request, env, fetchImpl = fetch) {
   const read = await readListRestaurantBody(request);
   if (read.error) return html ? thanksPage(read.error, 400) : json({ ok: false, error: read.error }, 400);
   if (honeypotTripped(read.body)) {
-    return html ? thanksPage("Thanks. We have your listing.", 200) : json({ ok: true, delivered: false }, 200);
+    return html ? thanksPage("Thanks!  We will review and get back to you shortly.", 200) : json({ ok: true, delivered: false }, 200);
   }
   const images = await collectListingImages(read.photos || []);
   if (images.error) return html ? thanksPage(images.error, 400) : json({ ok: false, error: images.error }, 400);
@@ -633,7 +633,7 @@ export async function handleListRestaurant(request, env, fetchImpl = fetch) {
   parsed.value.images = images.files;
   const result = await deliverListRestaurant(parsed.value, env, fetchImpl);
   if (!result.ok) return html ? thanksPage(result.error, 502) : json(result, 502);
-  return html ? thanksPage("Thanks. We have your listing.", 200) : json(result, 200);
+  return html ? thanksPage("Thanks!  We will review and get back to you shortly.", 200) : json(result, 200);
 }
 
 const CANONICAL_HOST = "www.eatingon30a.com";
