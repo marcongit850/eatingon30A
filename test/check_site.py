@@ -148,7 +148,9 @@ for restaurant in restaurants:
     check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 should be the name only {restaurant['slug']}")
     check('class="place"' not in page and "Other locations" not in page, f"detail page picked up listing chrome {restaurant['slug']}")
     check('aria-label="Related guides"' not in page, f"detail page should not add a guides nav {restaurant['slug']}")
-    check(build.e(full["notes"]) in page, f"detail notes missing {restaurant['slug']}")
+    story = page.split('class="prose profile-story"', 1)[1].split("</div>", 1)[0]
+    visible_story = re.sub(r"<[^>]+>", "", story)
+    check(build.e(full["notes"]) in visible_story, f"detail notes missing {restaurant['slug']}")
     check("Scenic Highway 30A" in page, f"detail intro missing 30A {restaurant['slug']}")
     check(f'href="/areas/{restaurant["areaSlug"]}/"' in page, f"detail missing area link {restaurant['slug']}")
     schema_match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page)
@@ -194,8 +196,8 @@ for restaurant in restaurants:
     if site_link:
         check(site_link in page, f"restaurant website should open in a new tab {restaurant['slug']}")
     check(
-        page.count('target="_blank"') == (1 if site_link else 0),
-        f"only the restaurant website should open in a new tab {restaurant['slug']}",
+        page.count('target="_blank"') == (1 if site_link else 0) + full.get("noteLinks", 0),
+        f"external note links should open in a new tab {restaurant['slug']}",
     )
 
 for spec in guide_specs:
@@ -797,8 +799,8 @@ for page in html_pages:
     parts = page.relative_to(ROOT).parts
     if len(parts) == 3 and parts[0] == "restaurants" and parts[2] == "index.html":
         site = full_by_slug[parts[1]]["website"]
-        expected = 1 if site else 0
-        check(blanks == expected, f"{rel} should open only the restaurant website in a new tab, got {blanks}")
+        expected = (1 if site else 0) + full_by_slug[parts[1]].get("noteLinks", 0)
+        check(blanks == expected, f"{rel} should open the website and note links in a new tab, got {blanks}")
         if site:
             check(build.website_link(site) in text, f"{rel} website link is missing new-tab attributes")
     else:
