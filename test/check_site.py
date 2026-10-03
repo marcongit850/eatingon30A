@@ -40,6 +40,19 @@ check("full restaurant CSV" not in home.lower(), "homepage should not say the CS
 check("<h1>Where to eat<br> on 30A.</h1>" in home, "homepage headline should say where to eat on 30A")
 check('<h1 id="listing-title">Restaurants on 30A</h1>' in directory, "directory heading should name restaurants on 30A")
 check("Filter by beach town, meal, or a few words." in directory, "directory intro should name the filters")
+tour_at = directory.find('class="video-tour"')
+tour = directory[tour_at:].split("</figure>", 1)[0] if tour_at >= 0 else ""
+check(tour_at > 0 and tour_at < directory.find('id="listing-title"'), "directory should place the video tour with the intro")
+check('aria-label="Video tour"' in tour, "video tour should have a short accessible name")
+check("Play video tour" in tour and "Stop video tour" in tour, "video tour button should offer play and stop")
+check('type="button"' in tour and "video-tour-control" in tour, "video tour control should be a button")
+check('src="/videos/eating-on-30a-tour.mp4"' in tour, "video tour should use the committed clip")
+check('src="/images/eating-on-30a-tour-poster.jpg"' in tour, "video tour should use the committed poster")
+check("autoplay" not in tour and "loop" not in tour, "video tour should not autoplay or loop")
+check("—" not in tour and "–" not in tour, "video tour copy should not use em or en dashes")
+check((ROOT / "videos" / "eating-on-30a-tour.mp4").is_file(), "tour video file should be in the repo")
+check((ROOT / "images" / "eating-on-30a-tour-poster.jpg").is_file(), "tour poster file should be in the repo")
+check('class="video-tour"' not in home, "homepage should not include the video tour")
 check('aria-label="Town guides"' not in directory, "town pages should not sit in a row above the filters")
 check('<select id="area"' in directory and ">All towns</option>" in directory, "directory should keep the town dropdown")
 switch_at = directory.find('class="view-switch"')
@@ -58,6 +71,13 @@ map_filters = map_page.find('id="filters"')
 check(0 < map_switch < map_filters, "map should offer List/Map above the filters")
 check('aria-current="page">Map</a>' in map_page and 'data-view-href="/restaurants/"' in map_page, "map should link back to the listing")
 check('id="browse-areas"' not in map_page, "browse by area belongs under the directory listings")
+check('class="video-tour"' not in map_page, "map should not include the video tour")
+detail_with_tour = [
+    page.parent.name
+    for page in detail_pages
+    if 'class="video-tour"' in page.read_text(encoding="utf-8")
+]
+check(not detail_with_tour, "video tour should stay off restaurant detail pages")
 check(
     'name="laurensFavorite"' in directory and ">Lauren’s Favorites</span>" in directory,
     "directory should offer a Lauren’s Favorites checkbox",

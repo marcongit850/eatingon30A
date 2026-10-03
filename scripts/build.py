@@ -1293,6 +1293,79 @@ def area_names(areas: list[dict]) -> str:
     return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
 
 
+VIDEO_TOUR_SCRIPT = """
+!function(){
+  var root=document.querySelector(".video-tour");
+  if(!root)return;
+  var video=root.querySelector("video");
+  var button=root.querySelector(".video-tour-control");
+  var label=button&&button.querySelector(".sr-only");
+  var playIcon=root.querySelector(".video-tour-icon-play");
+  var stopIcon=root.querySelector(".video-tour-icon-stop");
+  if(!video||!button||!label||!playIcon||!stopIcon)return;
+  var token=0;
+  function setPlaying(on){
+    button.setAttribute("aria-pressed",on?"true":"false");
+    label.textContent=on?"Stop video tour":"Play video tour";
+    playIcon.hidden=on;
+    stopIcon.hidden=!on;
+  }
+  function showPoster(){
+    video.pause();
+    try{video.currentTime=0;}catch(err){}
+    root.classList.remove("is-playing");
+    setPlaying(false);
+  }
+  function start(){
+    var mine=++token;
+    video.muted=false;
+    setPlaying(true);
+    var pending=video.play();
+    if(pending&&pending.then){
+      pending.then(function(){if(mine!==token)showPoster();}).catch(function(){if(mine===token)showPoster();});
+    }
+  }
+  button.addEventListener("click",function(){
+    if(video.paused||video.ended)start();
+    else{token+=1;showPoster();}
+  });
+  video.addEventListener("playing",function(){
+    if(!video.paused&&!video.ended)root.classList.add("is-playing");
+  });
+  video.addEventListener("ended",function(){token+=1;showPoster();});
+  video.removeAttribute("controls");
+  root.classList.add("is-ready");
+  button.hidden=false;
+  setPlaying(false);
+}();
+"""
+
+
+def video_tour() -> str:
+    """Poster-first tour for the restaurant directory. Play starts with sound. Stop returns to the poster."""
+    return (
+        '<figure class="video-tour" aria-label="Video tour">'
+        '<div class="video-tour-frame">'
+        '<video id="video-tour" controls playsinline preload="none" '
+        'poster="/images/eating-on-30a-tour-poster.jpg" width="540" height="960">'
+        '<source src="/videos/eating-on-30a-tour.mp4" type="video/mp4">'
+        "</video>"
+        '<img class="video-tour-poster" src="/images/eating-on-30a-tour-poster.jpg" alt="Video tour" width="540" height="960">'
+        '<button type="button" class="video-tour-control" hidden>'
+        '<svg class="video-tour-icon video-tour-icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        '<path fill="currentColor" d="M9 6.5v11l9-5.5-9-5.5z"/>'
+        "</svg>"
+        '<svg class="video-tour-icon video-tour-icon-stop" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>'
+        '<path fill="currentColor" d="M7 7h10v10H7z"/>'
+        "</svg>"
+        '<span class="sr-only">Play video tour</span>'
+        "</button>"
+        "</div>"
+        f"<script>{VIDEO_TOUR_SCRIPT}</script>"
+        "</figure>"
+    )
+
+
 def view_switch(current: str) -> str:
     """List and Map links beside the filters. Query state is copied onto both."""
     choices = (
@@ -1616,10 +1689,13 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     )
     body = (
         '<div class="wrap page-intro">'
+        '<div class="directory-intro">'
+        f"{video_tour()}"
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Restaurants</p>'
         '<p class="kicker">Directory</p>'
         '<h1 id="listing-title">Restaurants on 30A</h1>'
         '<p class="lede">Find restaurants along Scenic Highway 30A in Walton County. Filter by beach town, meal, or a few words.</p>'
+        "</div>"
         f"{view_switch('list')}"
         f"{filter_form(areas, cuisines)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'

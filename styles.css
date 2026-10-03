@@ -379,6 +379,95 @@ body.home .nav a[aria-current="page"] { box-shadow: inset 0 -1px 0 rgba(247, 242
 .page-intro h1, .profile-head h1 { max-width: 14ch; }
 .page-intro h1.town-title, .page-intro h1.guide-title { max-width: 18ch; }
 .page-intro h1.form-title { max-width: 11ch; }
+.directory-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.video-tour {
+  position: relative;
+  align-self: flex-end;
+  width: 6.35rem;
+  margin: 0 0 0.85rem;
+}
+.video-tour-frame { position: relative; }
+.video-tour-poster { display: none; }
+.video-tour video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--sand);
+  border: 1px solid var(--line);
+}
+.video-tour.is-ready .video-tour-frame {
+  aspect-ratio: 9 / 16;
+  background: var(--sand);
+  border: 1px solid var(--line);
+}
+.video-tour.is-ready video,
+.video-tour.is-ready .video-tour-poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+.video-tour.is-ready video { opacity: 0; }
+.video-tour.is-ready.is-playing video { opacity: 1; }
+.video-tour.is-ready .video-tour-poster {
+  z-index: 1;
+  pointer-events: none;
+}
+.video-tour.is-ready.is-playing .video-tour-poster { opacity: 0; }
+.video-tour-control {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 0.4rem;
+  transform: translateX(-50%);
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(16, 40, 37, 0.88);
+  color: #f7f2ea;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: 0 1px 4px rgba(16, 40, 37, 0.28);
+}
+.video-tour-control:hover,
+.video-tour-control:focus-visible {
+  background: var(--gulf-deep);
+  color: #f7f2ea;
+}
+.video-tour-icon {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.video-tour-icon-play { margin-left: 0.12rem; }
+@media (min-width: 760px) {
+  .directory-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1.75rem;
+    align-items: start;
+  }
+  .directory-intro > .video-tour {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: start;
+    width: 9.25rem;
+    margin: 0;
+  }
+  .directory-intro > .crumbs,
+  .directory-intro > .kicker,
+  .directory-intro > h1,
+  .directory-intro > .lede { grid-column: 1; }
+}
 .guide-faq {
   margin-top: 3.2rem;
   padding-top: 2.5rem;
