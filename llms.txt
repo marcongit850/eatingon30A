@@ -80,6 +80,7 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Cafe Tango](https://www.eatingon30a.com/restaurants/cafe-tango-blue-mountain-beach/): Mediterranean in Blue Mountain Beach on Scenic Highway 30A.
 - [Café Aroma](https://www.eatingon30a.com/restaurants/cafe-aroma-inlet-beach/): Cafe in Inlet Beach on Scenic Highway 30A.
 - [Café Thirty-A](https://www.eatingon30a.com/restaurants/cafe-thirty-a-seagrove-beach/): American and Seafood in Seagrove Beach on Scenic Highway 30A.
+- [Cajun Corner Sports Bar and Grill](https://www.eatingon30a.com/restaurants/cajun-corner-sports-bar-and-grill/): American in Grayton Beach on Scenic Highway 30A.
 - [Caliza Restaurant](https://www.eatingon30a.com/restaurants/caliza-restaurant-alys-beach/): American in Alys Beach on Scenic Highway 30A.
 - [Canopy Road Café](https://www.eatingon30a.com/restaurants/canopy-road-cafe-inlet-beach/): American in Inlet Beach on Scenic Highway 30A.
 - [Canopy Road Café](https://www.eatingon30a.com/restaurants/canopy-road-cafe-seagrove-beach/): American in Seagrove Beach on Scenic Highway 30A.
@@ -93,12 +94,15 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Crabby Steve’s](https://www.eatingon30a.com/restaurants/crabby-steves-rosemary-beach/): Seafood in Rosemary Beach on Scenic Highway 30A.
 - [Crackings](https://www.eatingon30a.com/restaurants/crackings-grayton-beach/): American in Grayton Beach on Scenic Highway 30A.
 - [Crepes du Soleil](https://www.eatingon30a.com/restaurants/crepes-du-soleil-seaside/): French in Seaside on Scenic Highway 30A.
+- [Crust Artisan Bakery](https://www.eatingon30a.com/restaurants/crust-artisan-bakery/): Italian in Nearby on US 98, near Scenic Highway 30A.
 - [Cuvee 30A](https://www.eatingon30a.com/restaurants/cuvee-30a-inlet-beach/): American and Seafood in Inlet Beach on Scenic Highway 30A.
 - [Dawson’s Yogurt & Fudge](https://www.eatingon30a.com/restaurants/dawsons-yogurt-and-fudge-seaside/): American and Dessert in Seaside on Scenic Highway 30A.
+- [Decadent Dessert Bar & Bistro](https://www.eatingon30a.com/restaurants/decadent-dessert-bar-and-bistro/): Dessert and Cafe in Inlet Beach on Scenic Highway 30A.
 - [Don Pedro’s Mexican Restaurant](https://www.eatingon30a.com/restaurants/don-pedros-mexican-restaurant/): Mexican in Nearby on US 98, near Scenic Highway 30A.
 - [Dough Sea Dough](https://www.eatingon30a.com/restaurants/dough-sea-dough-seagrove-beach/): American and Cafe in Seagrove Beach on Scenic Highway 30A.
 - [Down Island Gulf Seafood](https://www.eatingon30a.com/restaurants/down-island-gulf-seafood/): Seafood in Nearby on US 98, near Scenic Highway 30A.
 - [Edward’s Fine Food & Wine](https://www.eatingon30a.com/restaurants/edwards-fine-food-and-wine-rosemary-beach/): American in Rosemary Beach on Scenic Highway 30A.
+- [Farm & Fire](https://www.eatingon30a.com/restaurants/farm-and-fire/): Southern and American in Nearby on Hwy 331, near Scenic Highway 30A.
 - [Fat Daddy’s Pizza](https://www.eatingon30a.com/restaurants/fat-daddys-pizza/): American in Nearby on US 98, near Scenic Highway 30A.
 - [Fish Out of Water](https://www.eatingon30a.com/restaurants/fish-out-of-water-watercolor/): Seafood in WaterColor on Scenic Highway 30A.
 - [Fonville Press Market & Café](https://www.eatingon30a.com/restaurants/fonville-press-market-and-cafe-alys-beach/): American and Cafe in Alys Beach on Scenic Highway 30A.
@@ -127,6 +131,8 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Local Cantina](https://www.eatingon30a.com/restaurants/local-cantina/): Mexican in Seagrove Beach on Scenic Highway 30A.
 - [Local Catch Bar & Grill](https://www.eatingon30a.com/restaurants/local-catch-bar-and-grill-dune-allen-beach/): American and Seafood in Dune Allen Beach on Scenic Highway 30A.
 - [Lola Coastal Italian](https://www.eatingon30a.com/restaurants/lola-coastal-italian-seacrest/): Italian in Seacrest on Scenic Highway 30A.
+- [Los Rancheros](https://www.eatingon30a.com/restaurants/los-rancheros/): Mexican in Nearby on US 98, near Scenic Highway 30A.
+- [Louis Louis](https://www.eatingon30a.com/restaurants/louis-louis/): Seafood and American in Nearby on Mussett Bayou Rd, near Scenic Highway 30A.
 - [Marble Slab Creamery](https://www.eatingon30a.com/restaurants/marble-slab-creamery-inlet-beach/): American and Dessert in Inlet Beach on Scenic Highway 30A.
 - [Meltdown on 30A](https://www.eatingon30a.com/restaurants/meltdown-on-30a-seaside/): American in Seaside on Scenic Highway 30A.
 - [Mi Casita Mexican Grill](https://www.eatingon30a.com/restaurants/mi-casita-mexican-grill-seagrove-beach/): Mexican in Seagrove Beach on Scenic Highway 30A.
@@ -135,11 +141,13 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Mr. Gyro Hero](https://www.eatingon30a.com/restaurants/mr-gyro-hero-seaside/): Mediterranean in Seaside on Scenic Highway 30A.
 - [Neat Bottle Shop & Tasting Room](https://www.eatingon30a.com/restaurants/neat-bottle-shop-and-tasting-room-alys-beach/): American in Alys Beach on Scenic Highway 30A.
 - [Nigel’s Bananas](https://www.eatingon30a.com/restaurants/nigels-bananas-seaside/): American and Dessert in Seaside on Scenic Highway 30A.
+- [North Beach Social](https://www.eatingon30a.com/restaurants/north-beach-social/): American and Southern in Nearby on Hwy 331, near Scenic Highway 30A.
 - [O-Ku](https://www.eatingon30a.com/restaurants/o-ku-alys-beach/): Japanese in Alys Beach on Scenic Highway 30A.
 - [Obscure Wine Company](https://www.eatingon30a.com/restaurants/obscure-wine-company-inlet-beach/): American in Inlet Beach on Scenic Highway 30A.
 - [Old Florida Fish House](https://www.eatingon30a.com/restaurants/old-florida-fish-house-seagrove-beach/): Seafood and Japanese in Seagrove Beach on Scenic Highway 30A.
 - [Outcast Bar & Grill](https://www.eatingon30a.com/restaurants/outcast-bar-and-grill/): American and Seafood in Nearby on US 98, near Scenic Highway 30A.
 - [Papa Surf Burger Bar](https://www.eatingon30a.com/restaurants/papa-surf-burger-bar-gulf-place/): American in Gulf Place on Scenic Highway 30A.
+- [Pazzo Italiano](https://www.eatingon30a.com/restaurants/pazzo-italiano-santa-rosa-beach/): Italian in Nearby on Hwy 393, near Scenic Highway 30A.
 - [Pecan Jacks](https://www.eatingon30a.com/restaurants/pecan-jacks-gulf-place/): American and Dessert in Gulf Place on Scenic Highway 30A.
 - [Pecan Jacks](https://www.eatingon30a.com/restaurants/pecan-jacks-seagrove-beach/): American and Dessert in Seagrove Beach on Scenic Highway 30A.
 - [Pescado Seafood Grill & Rooftop Bar](https://www.eatingon30a.com/restaurants/pescado-seafood-grill-and-rooftop-bar-rosemary-beach/): Seafood in Rosemary Beach on Scenic Highway 30A.
@@ -163,6 +171,7 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [Seagrove Village Market Café](https://www.eatingon30a.com/restaurants/seagrove-village-market-cafe-seagrove-beach/): Seafood and American in Seagrove Beach on Scenic Highway 30A.
 - [Shades Bar & Grill](https://www.eatingon30a.com/restaurants/shades-bar-and-grill-inlet-beach/): American in Inlet Beach on Scenic Highway 30A.
 - [Shaka Sushi](https://www.eatingon30a.com/restaurants/shaka-sushi-and-noodle-bar-inlet-beach/): Japanese in Inlet Beach on Scenic Highway 30A.
+- [Shelby’s Beach Bar and Grill](https://www.eatingon30a.com/restaurants/shelbys-beach-bar-and-grill/): Seafood and American in Gulf Place on Scenic Highway 30A.
 - [Shunk Gulley Oyster Bar](https://www.eatingon30a.com/restaurants/shunk-gulley-oyster-bar-gulf-place/): Seafood in Gulf Place on Scenic Highway 30A.
 - [South of Philly](https://www.eatingon30a.com/restaurants/south-of-philly-gulf-place/): American in Gulf Place on Scenic Highway 30A.
 - [Steamboat Grill 30A](https://www.eatingon30a.com/restaurants/steamboat-grill-30a-seagrove-beach/): Seafood in Seagrove Beach on Scenic Highway 30A.
@@ -178,6 +187,7 @@ The towns along the highway are Dune Allen, Gulf Place, Blue Mountain, Grayton B
 - [The Citizen](https://www.eatingon30a.com/restaurants/the-citizen-alys-beach/): Seafood and American in Alys Beach on Scenic Highway 30A.
 - [The Daytrader Tiki Bar & Restaurant](https://www.eatingon30a.com/restaurants/the-daytrader-tiki-bar-and-restaurant-seaside/): Seafood and Asian in Seaside on Scenic Highway 30A.
 - [The Donut Hole](https://www.eatingon30a.com/restaurants/the-donut-hole-inlet-beach/): American and Dessert in Inlet Beach on Scenic Highway 30A.
+- [The Donut Hole (US 98)](https://www.eatingon30a.com/restaurants/the-donut-hole-us-98/): Southern in Nearby on US 98, near Scenic Highway 30A.
 - [The Perfect Pig](https://www.eatingon30a.com/restaurants/the-perfect-pig-seagrove-beach/): American and Southern in Seagrove Beach on Scenic Highway 30A.
 - [The Perfect Pig](https://www.eatingon30a.com/restaurants/the-perfect-pig-gulf-place/): American and Southern in Gulf Place on Scenic Highway 30A.
 - [The Perfect Pig](https://www.eatingon30a.com/restaurants/the-perfect-pig-watercolor/): American and Southern in WaterColor on Scenic Highway 30A.
