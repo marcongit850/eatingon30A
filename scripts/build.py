@@ -186,20 +186,23 @@ def clean_text(raw: str) -> str:
 NOTE_LINK = re.compile(r"\[([^\]]+)\]\((https://[^)\s]+)\)")
 
 
+def note_paragraphs(notes: str) -> list[str]:
+    """Listing notes split on a blank line. Each paragraph is single-spaced."""
+    raw = (notes or "").replace("\u00a0", " ").replace("\r\n", "\n").replace("\r", "\n")
+    return [part for part in (clean_text(part) for part in re.split(r"\n\s*\n", raw)) if part]
+
+
 def plain_notes(notes: str) -> str:
     """Listing notes with markdown links reduced to their visible label."""
-    return clean_text(NOTE_LINK.sub(r"\1", notes or ""))
+    return clean_text(" ".join(NOTE_LINK.sub(r"\1", part) for part in note_paragraphs(notes)))
 
 
 def note_link_count(notes: str) -> int:
     return len(NOTE_LINK.findall(notes or ""))
 
 
-def notes_markup(notes: str) -> str:
-    """One story paragraph. A markdown link opens in a new tab, same as the website link."""
-    notes = clean_text(notes)
-    if not notes:
-        return ""
+def note_paragraph_markup(notes: str) -> str:
+    """One paragraph. A markdown link opens in a new tab, same as the website link."""
     pieces = []
     cursor = 0
     for match in NOTE_LINK.finditer(notes):
@@ -210,7 +213,15 @@ def notes_markup(notes: str) -> str:
         )
         cursor = match.end()
     pieces.append(e(notes[cursor:]))
-    return f"<p>{''.join(pieces)}</p>"
+    return "".join(pieces)
+
+
+def notes_markup(notes: str) -> str:
+    """Story paragraphs. A blank line starts another paragraph."""
+    paragraphs = note_paragraphs(notes)
+    if not paragraphs:
+        return ""
+    return "".join(f"<p>{note_paragraph_markup(paragraph)}</p>" for paragraph in paragraphs)
 
 
 def clean_hours(raw: str) -> str:
@@ -492,8 +503,9 @@ def load_restaurants() -> list[dict]:
         category = categories[0] if categories else ""
         area = clean_text(row.get("map_area")) or SHORT_NAMES.get(area_slug, area_slug)
         subarea = clean_text(row.get("subarea"))
-        raw_notes = clean_text(row.get("notes"))
+        raw_notes = row.get("notes") or ""
         notes = plain_notes(raw_notes)
+        paragraphs = note_paragraphs(raw_notes)
         phone = clean_text(row.get("phone"))
         list_image = listed_image(row.get("List Image") or "", slug, 960, 600)
         detail_image = listed_image(row.get("Detail Image") or "", slug, 1400, 780)
@@ -538,6 +550,7 @@ def load_restaurants() -> list[dict]:
                 "price": clean_text(row.get("price")),
                 "notes": notes,
                 "notesHtml": notes_markup(raw_notes),
+                "noteParagraphs": len(paragraphs),
                 "noteLinks": note_link_count(raw_notes),
                 "hours": clean_hours(row.get("hours") or ""),
                 "cuisines": cuisines,
@@ -1755,6 +1768,14 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
     )
 
 
+def profile_story(restaurant: dict) -> str:
+    """Notes are the description. Two or more paragraphs replace the generated intro."""
+    notes_html = restaurant["notesHtml"] if restaurant["notes"] else ""
+    if restaurant.get("noteParagraphs", 0) > 1:
+        return notes_html
+    return f"<p>{e(listing_intro(restaurant))}</p>{notes_html}"
+
+
 def fact(label: str, value: str) -> str:
     if not value:
         return ""
@@ -1874,9 +1895,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         )
         + "</div>"
         + '<div class="wrap profile-grid">'
-        f'<div class="prose profile-story"><p>{e(listing_intro(restaurant))}</p>'
-        + (restaurant["notesHtml"] if restaurant["notes"] else "")
-        + "</div>"
+        f'<div class="prose profile-story">{profile_story(restaurant)}</div>'
         f"<aside>{logo}<dl class=\"facts\">{facts}</dl></aside>"
         "</div>"
         f"{map_block}{more}"

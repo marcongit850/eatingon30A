@@ -182,8 +182,17 @@ for restaurant in restaurants:
     check('class="place"' not in page and "Other locations" not in page, f"detail page picked up listing chrome {restaurant['slug']}")
     check('aria-label="Related guides"' not in page, f"detail page should not add a guides nav {restaurant['slug']}")
     story = page.split('class="prose profile-story"', 1)[1].split("</div>", 1)[0]
-    visible_story = re.sub(r"<[^>]+>", "", story)
+    visible_story = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", story)).strip()
     check(build.e(full["notes"]) in visible_story, f"detail notes missing {restaurant['slug']}")
+    if full.get("noteParagraphs", 0) > 1:
+        check(
+            story.count("<p>") == full["noteParagraphs"],
+            f"multi-paragraph notes should be the description {restaurant['slug']}",
+        )
+        check(
+            build.e(build.listing_intro(full)) not in story,
+            f"owner description should replace the generated intro {restaurant['slug']}",
+        )
     check("Scenic Highway 30A" in page, f"detail intro missing 30A {restaurant['slug']}")
     check(f'href="/areas/{restaurant["areaSlug"]}/"' in page, f"detail missing area link {restaurant['slug']}")
     schema_match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page)
