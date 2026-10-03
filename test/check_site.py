@@ -72,6 +72,19 @@ check(0 < map_switch < map_filters, "map should offer List/Map above the filters
 check('aria-current="page">Map</a>' in map_page and 'data-view-href="/restaurants/"' in map_page, "map should link back to the listing")
 check('id="browse-areas"' not in map_page, "browse by area belongs under the directory listings")
 check('class="video-tour"' not in map_page, "map should not include the video tour")
+coast_at = map_page.find('class="coast-360"')
+coast = map_page[coast_at:].split("</a>", 1)[0] if coast_at >= 0 else ""
+check(0 < coast_at < map_page.find('id="listing-title"'), "map should place the 360 thumbnail with the intro")
+check(coast_at < map_filters, "360 thumbnail should stay above the filters")
+check('href="https://www.youtube.com/watch?v=55EsjB_V_L8&amp;t=2720s"' in coast, "360 thumbnail should link to the 30A film")
+check('target="_blank"' in coast and 'rel="noopener"' in coast, "360 film should open in a new tab")
+check(">Click to see 30A in 360 degrees.</span>" in coast, "360 thumbnail should use the short caption")
+check('src="/images/30a-360.webp"' in coast, "360 thumbnail should use the committed image")
+check("—" not in coast and "–" not in coast, "360 caption should not use em or en dashes")
+coast_image = ROOT / "images" / "30a-360.webp"
+check(coast_image.is_file() and coast_image.stat().st_size < 120_000, "360 thumbnail should be a small web image")
+check('class="coast-360"' not in directory, "restaurants index should keep its own tour, not the 360 thumbnail")
+check('class="coast-360"' not in home, "homepage should not include the 360 thumbnail")
 detail_with_tour = [
     page.parent.name
     for page in detail_pages
@@ -823,6 +836,8 @@ for page in html_pages:
         check(blanks == expected, f"{rel} should open the website and note links in a new tab, got {blanks}")
         if site:
             check(build.website_link(site) in text, f"{rel} website link is missing new-tab attributes")
+    elif rel == "map/index.html":
+        check(blanks == 1, f"{rel} should open only the 360 film in a new tab, got {blanks}")
     else:
         check(blanks == 0, f"{rel} should keep links in the same tab")
     check('id="site-header"' in text, f"{rel} does not mount the shared header")
