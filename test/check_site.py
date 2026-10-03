@@ -379,8 +379,32 @@ listing_page = (ROOT / "list-your-restaurant" / "index.html").read_text(encoding
 check("<h1 class=\"form-title\">List your restaurant</h1>" in listing_page, "listing form page should use the list heading")
 check('rel="canonical" href="https://www.eatingon30a.com/list-your-restaurant/"' in listing_page, "listing form page should set a canonical URL")
 check("action=\"/api/list-restaurant\"" in listing_page and "data-list-restaurant" in listing_page, "listing form should post to the full endpoint")
+check('enctype="multipart/form-data"' in listing_page, "listing form should submit image files as multipart")
 check('name="eo30a_hp"' in listing_page, "listing form should include a honeypot")
-check("type=\"file\"" not in listing_page, "listing form should ask for links instead of file uploads")
+check(
+    'name="photos" type="file"' in listing_page and "multiple" in listing_page,
+    "listing form should offer one multi-image file field",
+)
+check(
+    'accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"' in listing_page,
+    "listing form should accept jpeg, png, and webp",
+)
+check("Drop logos or pictures here" in listing_page, "listing form should invite people to drop logos or pictures")
+check('class="media-error"' in listing_page, "listing form should show an image error beside the drop box")
+check(
+    'name="logoUrl"' not in listing_page and 'name="listPhotoUrl"' not in listing_page and 'name="detailPhotoUrl"' not in listing_page,
+    "listing form should not ask for photo URLs",
+)
+social_at = (
+    listing_page.find('name="facebook"'),
+    listing_page.find('name="instagram"'),
+    listing_page.find('name="videoUrl"'),
+    listing_page.find('name="photos"'),
+)
+check(
+    all(index >= 0 for index in social_at) and social_at == tuple(sorted(social_at)) and len(set(social_at)) == 4,
+    "social links and video should sit above the image drop box",
+)
 check(
     "Paste a link" not in listing_page and "email them after you submit" not in listing_page and "as a file" not in listing_page,
     "listing form should not add an upload or contact-form note on the media links",
@@ -388,7 +412,7 @@ check(
 check("Live music*" in listing_page and "Live music is seasonal and subject to change." in listing_page, "listing form should mark live music as seasonal")
 check("—" not in listing_page and "–" not in listing_page, "listing form page should not use em or en dashes")
 check('src="/list-restaurant.js"' in listing_page, "listing form page should load its script")
-for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "logoUrl", "listPhotoUrl", "detailPhotoUrl", "videoUrl", "notes", "authorized"):
+for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "videoUrl", "photos", "notes", "authorized"):
     check(f'name="{field}"' in listing_page, f"listing form missing {field}")
 for amenity in ("outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"):
     check(f'name="{amenity}"' in listing_page, f"listing form missing amenity {amenity}")
@@ -403,6 +427,12 @@ for meal in ("Breakfast", "Brunch", "Lunch", "Dinner", "Late night"):
     check(f'name="meals" value="{meal}"' in listing_page, f"listing form missing meal {meal}")
 list_js = (ROOT / "list-restaurant.js").read_text(encoding="utf-8")
 check("/api/list-restaurant" in list_js and "eo30a_hp" in list_js, "listing form script should post the honeypot with the form")
+check("FormData" in list_js and 'accept: "application/json"' in list_js, "listing form script should post the image files and ask for JSON")
+check('headers: { "content-type": "application/json"' not in list_js, "listing form script should let the browser set the multipart boundary")
+check("Use a JPEG, PNG, or WebP image." in list_js, "listing form script should reject other image types")
+check("Keep each image under 2 MB." in list_js, "listing form script should cap each image")
+check("Keep them under 8 MB altogether." in list_js, "listing form script should cap the images together")
+check("—" not in list_js and "–" not in list_js, "listing form script should not use em or en dashes")
 check("Thanks. We have your listing." in list_js, "listing form script should thank the restaurant")
 check(f"{build.ORIGIN}/list-your-restaurant/" in sitemap, "sitemap missing the listing form")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")

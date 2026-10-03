@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import listingOptions from "../data/listing-form.json" with { type: "json" };
 import worker, {
+  collectListingImages,
   deliverListRestaurant,
   formatListRestaurant,
   handleListRestaurant,
@@ -10,6 +11,13 @@ import worker, {
   parseListRestaurant,
   resetListRestaurantLimits,
 } from "../worker.js";
+
+const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
+const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const WEBP = Uint8Array.from([
+  0x52, 0x49, 0x46, 0x46, 0x1a, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+]);
+const GIF = Uint8Array.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
 
 function base(overrides = {}) {
   const body = {
@@ -34,9 +42,6 @@ function base(overrides = {}) {
     foods: [listingOptions.foods[0]],
     facebook: "https://facebook.com/example",
     instagram: "@jamiesporch",
-    logoUrl: "https://example.com/logo.png",
-    listPhotoUrl: "https://example.com/list.jpg",
-    detailPhotoUrl: "https://example.com/detail.jpg",
     videoUrl: "",
     notes: "Please call before you visit.",
     authorized: true,
@@ -119,10 +124,8 @@ test("the listing email labels every field", async () => {
     "Live music: Yes",
     "Facebook URL: https://facebook.com/example",
     "Instagram: @jamiesporch",
-    "Logo URL: https://example.com/logo.png",
-    "List photo URL: https://example.com/list.jpg",
-    "Detail photo URL: https://example.com/detail.jpg",
     "Video URL: Not provided",
+    "Images: Not provided",
     "Authorized to submit: Yes",
   ]) {
     assert.ok(text.includes(label), label);
@@ -149,8 +152,147 @@ test("the listing email labels every field", async () => {
   assert.deepEqual(mail.to, ["marc@example.com"]);
   assert.equal(mail.subject, "Eating on 30A restaurant form: Update an existing listing, Jamie's Porch");
   assert.equal(mail.subject.includes("—"), false);
+  assert.equal(mail.attachments, undefined);
   assert.match(mail.text, /Short description:\nA casual porch spot/);
   assert.match(mail.text, /Notes:\nPlease call before you visit\./);
+});
+
+test("old photo URL fields are ignored and not published", () => {
+  const parsed = parseListRestaurant(base({
+    logoUrl: "https://example.com/logo.png",
+    listPhotoUrl: "https://example.com/list.jpg",
+    detailPhotoUrl: "https://example.com/detail.jpg",
+  }));
+  assert.equal(parsed.error, undefined);
+  assert.equal(parsed.value.logoUrl, undefined);
+  const text = formatListRestaurant(parsed.value);
+  assert.equal(text.includes("logo.png"), false);
+  assert.equal(text.includes("list.jpg"), false);
+  assert.equal(text.includes("detail.jpg"), false);
+});
+
+function imageFile(name, bytes, type = "") {
+  return new File([bytes], name, { type });
+}
+
+function formRequest(files, ip, overrides = {}) {
+  const body = base(overrides);
+  const form = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    if (Array.isArray(value)) {
+      for (const item of value) form.append(key, String(item));
+    } else if (typeof value === "boolean") {
+      if (value) form.append(key, "yes");
+    } else if (value) {
+      form.append(key, String(value));
+    }
+  }
+  for (const file of files) form.append("photos", file, file.name);
+  return new Request("https://eatingon30a.example/api/list-restaurant", {
+    method: "POST",
+    headers: { accept: "application/json", "cf-connecting-ip": ip },
+    body: form,
+  });
+}
+
+const mailEnv = {
+  RESEND_API_KEY: "re_test",
+  CONTACT_EMAIL: "marc@example.com",
+  SUBSCRIBE_FROM: "Eating on 30A <listings@example.com>",
+};
+
+test("jpeg, png, and webp files are attached to the listing email", async () => {
+  resetListRestaurantLimits();
+  const files = [
+    imageFile("Logo.JPG", JPEG, "image/jpeg"),
+    imageFile("list photo.png", PNG, "image/png"),
+    imageFile("detail.webp", WEBP, "image/webp"),
+  ];
+  let init = null;
+  let calls = 0;
+  const response = await handleListRestaurant(formRequest(files, "203.0.113.51"), mailEnv, (url, nextInit) => {
+    calls += 1;
+    init = nextInit;
+    assert.equal(url, "https://api.resend.com/emails");
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, delivered: true });
+  assert.equal(calls, 1);
+  const mail = JSON.parse(init.body);
+  assert.equal(mail.text.includes("Images: Logo.jpg, list-photo.png, detail.webp"), true);
+  assert.equal(mail.text.includes("—"), false);
+  assert.equal(mail.text.includes("–"), false);
+  assert.deepEqual(mail.attachments.map((item) => item.filename), ["Logo.jpg", "list-photo.png", "detail.webp"]);
+  assert.deepEqual(mail.attachments.map((item) => item.content_type), ["image/jpeg", "image/png", "image/webp"]);
+  assert.equal(mail.attachments[0].content, Buffer.from(JPEG).toString("base64"));
+  assert.equal(mail.attachments[1].content, Buffer.from(PNG).toString("base64"));
+  assert.equal(JSON.stringify(mail).includes("/images/"), false);
+});
+
+test("other file types and oversized images are rejected", async () => {
+  resetListRestaurantLimits();
+  const gif = await handleListRestaurant(
+    formRequest([imageFile("anim.gif", GIF, "image/gif")], "203.0.113.52"),
+    mailEnv,
+    () => Promise.resolve(new Response("{}", { status: 200 })),
+  );
+  assert.equal(gif.status, 400);
+  assert.equal((await gif.json()).error, "Use a JPEG, PNG, or WebP image.");
+
+  resetListRestaurantLimits();
+  const fake = await handleListRestaurant(
+    formRequest([imageFile("logo.jpg", Uint8Array.from([1, 2, 3, 4]), "image/jpeg")], "203.0.113.53"),
+    mailEnv,
+    () => Promise.resolve(new Response("{}", { status: 200 })),
+  );
+  assert.equal(fake.status, 400);
+  assert.equal((await fake.json()).error, "Use a JPEG, PNG, or WebP image.");
+
+  resetListRestaurantLimits();
+  const big = new Uint8Array(2 * 1024 * 1024 + 1);
+  big[0] = 0xff;
+  big[1] = 0xd8;
+  big[2] = 0xff;
+  const oversized = await handleListRestaurant(
+    formRequest([imageFile("big.jpg", big, "image/jpeg")], "203.0.113.54"),
+    mailEnv,
+    () => Promise.resolve(new Response("{}", { status: 200 })),
+  );
+  assert.equal(oversized.status, 400);
+  assert.equal((await oversized.json()).error, "That file is too large. Keep each image under 2 MB.");
+
+  const chunk = new Uint8Array(2 * 1024 * 1024);
+  chunk[0] = 0xff;
+  chunk[1] = 0xd8;
+  chunk[2] = 0xff;
+  const packed = await collectListingImages([
+    imageFile("hero.jpg", chunk, "image/jpeg"),
+    imageFile("hero.jpg", chunk, "image/jpeg"),
+    imageFile("hero.jpg", chunk, "image/jpeg"),
+    imageFile("hero.jpg", chunk, "image/jpeg"),
+    imageFile("extra.jpg", JPEG, "image/jpeg"),
+  ]);
+  assert.equal(packed.error, "Those images are too large to send. Keep them under 8 MB altogether.");
+  const one = await collectListingImages([imageFile("hero.jpg", chunk, "image/jpeg")]);
+  assert.equal(one.files[0].content, Buffer.from(chunk).toString("base64"));
+
+  const collected = await collectListingImages([
+    imageFile("one.jpg", JPEG, "image/jpeg"),
+    imageFile("two.jpg", JPEG, "image/jpeg"),
+    imageFile("three.jpg", JPEG, "image/jpeg"),
+    imageFile("four.jpg", JPEG, "image/jpeg"),
+    imageFile("five.jpg", JPEG, "image/jpeg"),
+    imageFile("six.jpg", JPEG, "image/jpeg"),
+    imageFile("seven.jpg", JPEG, "image/jpeg"),
+    imageFile("eight.jpg", JPEG, "image/jpeg"),
+    imageFile("nine.jpg", JPEG, "image/jpeg"),
+    imageFile("ten.jpg", JPEG, "image/jpeg"),
+    imageFile("eleven.jpg", JPEG, "image/jpeg"),
+    imageFile("twelve.jpg", JPEG, "image/jpeg"),
+    imageFile("thirteen.jpg", JPEG, "image/jpeg"),
+  ]);
+  assert.equal(collected.error, "Keep it to 12 images.");
 });
 
 test("missing secrets accept the listing form and do not call Resend", async () => {

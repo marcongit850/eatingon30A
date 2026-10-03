@@ -2,8 +2,9 @@
  * Static assets are served by the assets binding.
  * /api/subscribe accepts a coupon signup and /api/listing accepts a restaurant
  * correction, edit, deletion, new listing, or other note. A restaurant name
- * is optional. /api/list-restaurant accepts the full listing form. When the
- * secrets exist, each one emails CONTACT_EMAIL through Resend (https://resend.com).
+ * is optional. /api/list-restaurant accepts the full listing form. Logo and photo
+ * files from that form are attached to the listing email and are not published.
+ * When the secrets exist, each one emails CONTACT_EMAIL through Resend (https://resend.com).
  * Nothing is emailed until all three are set: RESEND_API_KEY, SUBSCRIBE_FROM
  * (a verified Resend sender), CONTACT_EMAIL.
  * The full listing form keeps a honeypot field and a per-isolate rate limit.
@@ -21,6 +22,13 @@ import listingOptions from "./data/listing-form.json" with { type: "json" };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIST_WINDOW_MS = 10 * 60 * 1000;
 const LIST_MAX = 5;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_TOTAL_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_COUNT = 12;
+const IMAGE_TYPE_ERROR = "Use a JPEG, PNG, or WebP image.";
+const IMAGE_SIZE_ERROR = "That file is too large. Keep each image under 2 MB.";
+const IMAGE_TOTAL_ERROR = "Those images are too large to send. Keep them under 8 MB altogether.";
+const IMAGE_COUNT_ERROR = "Keep it to 12 images.";
 const listHits = new Map();
 const SHEETS_SITE = "30A";
 const SOURCE_PAGE = "https://www.eatingon30a.com/";
@@ -209,6 +217,105 @@ function optionalLink(value, max, message) {
   return { text };
 }
 
+function isUploadedFile(value) {
+  return Boolean(value)
+    && typeof value.arrayBuffer === "function"
+    && typeof value.size === "number"
+    && typeof value.name === "string";
+}
+
+function declaredImageType(type) {
+  const value = String(type || "").toLowerCase().split(";")[0].trim();
+  if (!value || value === "application/octet-stream") return "";
+  if (value === "image/jpg" || value === "image/pjpeg") return "image/jpeg";
+  if (value === "image/jpeg" || value === "image/png" || value === "image/webp") return value;
+  return "rejected";
+}
+
+function sniffImage(bytes) {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (
+    bytes.length >= 8
+    && bytes[0] === 0x89
+    && bytes[1] === 0x50
+    && bytes[2] === 0x4e
+    && bytes[3] === 0x47
+    && bytes[4] === 0x0d
+    && bytes[5] === 0x0a
+    && bytes[6] === 0x1a
+    && bytes[7] === 0x0a
+  ) return "image/png";
+  if (
+    bytes.length >= 12
+    && bytes[0] === 0x52
+    && bytes[1] === 0x49
+    && bytes[2] === 0x46
+    && bytes[3] === 0x46
+    && bytes[8] === 0x57
+    && bytes[9] === 0x45
+    && bytes[10] === 0x42
+    && bytes[11] === 0x50
+  ) return "image/webp";
+  return "";
+}
+
+function safeImageName(original, contentType, used) {
+  const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+  const raw = String(original || "image").split(/[/\\]/).pop() || "image";
+  const stem = raw
+    .replace(/\.[^.]+$/, "")
+    .replace(/[\u0000-\u001F\u007F]+/g, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+|[-.]+$/g, "")
+    .slice(0, 60);
+  const base = stem || "image";
+  let name = `${base}.${ext}`;
+  let count = 2;
+  while (used.has(name.toLowerCase())) {
+    name = `${base}-${count}.${ext}`;
+    count += 1;
+  }
+  used.add(name.toLowerCase());
+  return name;
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(index, index + chunk));
+  }
+  return btoa(binary);
+}
+
+export async function collectListingImages(values) {
+  const list = Array.isArray(values) ? values : [];
+  const uploads = list.filter((value) => isUploadedFile(value) && (value.name || value.size));
+  if (uploads.length > MAX_IMAGE_COUNT) return { error: IMAGE_COUNT_ERROR };
+  const files = [];
+  const used = new Set();
+  let total = 0;
+  for (const file of uploads) {
+    if (!file.size) return { error: IMAGE_TYPE_ERROR };
+    if (file.size > MAX_IMAGE_BYTES) return { error: IMAGE_SIZE_ERROR };
+    total += file.size;
+    if (total > MAX_IMAGE_TOTAL_BYTES) return { error: IMAGE_TOTAL_ERROR };
+    const declared = declaredImageType(file.type);
+    if (declared === "rejected") return { error: IMAGE_TYPE_ERROR };
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.length > MAX_IMAGE_BYTES) return { error: IMAGE_SIZE_ERROR };
+    const sniffed = sniffImage(bytes);
+    if (!sniffed || (declared && declared !== sniffed)) return { error: IMAGE_TYPE_ERROR };
+    files.push({
+      filename: safeImageName(file.name, sniffed, used),
+      contentType: sniffed,
+      content: bytesToBase64(bytes),
+    });
+  }
+  return { files };
+}
+
 function pickList(value, allowed, emptyError, unknownError) {
   const items = [];
   const seen = new Set();
@@ -325,12 +432,6 @@ export function parseListRestaurant(body) {
   if (facebook.error) return { error: facebook.error };
   const instagram = optionalLink(body.instagram, 300, "Check the Instagram link.");
   if (instagram.error) return { error: instagram.error };
-  const logoUrl = optionalLink(body.logoUrl, 300, "Check the logo link.");
-  if (logoUrl.error) return { error: logoUrl.error };
-  const listPhotoUrl = optionalLink(body.listPhotoUrl, 300, "Check the list photo link.");
-  if (listPhotoUrl.error) return { error: listPhotoUrl.error };
-  const detailPhotoUrl = optionalLink(body.detailPhotoUrl, 300, "Check the detail photo link.");
-  if (detailPhotoUrl.error) return { error: detailPhotoUrl.error };
   const videoUrl = optionalLink(body.videoUrl, 300, "Check the video link.");
   if (videoUrl.error) return { error: videoUrl.error };
   const notes = cleanBlock(body.notes, 4000);
@@ -362,9 +463,6 @@ export function parseListRestaurant(body) {
       amenities,
       facebook: facebook.text,
       instagram: instagram.text,
-      logoUrl: logoUrl.text,
-      listPhotoUrl: listPhotoUrl.text,
-      detailPhotoUrl: detailPhotoUrl.text,
       videoUrl: videoUrl.text,
       notes: notes.text,
       authorized: true,
@@ -419,10 +517,8 @@ export function formatListRestaurant(payload) {
     "Social and media",
     labeled("Facebook URL", payload.facebook),
     labeled("Instagram", payload.instagram),
-    labeled("Logo URL", payload.logoUrl),
-    labeled("List photo URL", payload.listPhotoUrl),
-    labeled("Detail photo URL", payload.detailPhotoUrl),
     labeled("Video URL", payload.videoUrl),
+    labeled("Images", Array.isArray(payload.images) ? payload.images.map((image) => image.filename).filter(Boolean).join(", ") : ""),
     "",
     "Anything else",
     "Notes:",
@@ -433,13 +529,22 @@ export function formatListRestaurant(payload) {
 }
 
 export async function deliverListRestaurant(payload, env, fetchImpl = fetch) {
+  const message = {
+    reply_to: payload.email,
+    subject: `Eating on 30A restaurant form: ${payload.intentLabel}, ${payload.restaurant}`,
+    text: formatListRestaurant(payload),
+  };
+  const images = Array.isArray(payload.images) ? payload.images : [];
+  if (images.length) {
+    message.attachments = images.map((image) => ({
+      filename: image.filename,
+      content: image.content,
+      content_type: image.contentType,
+    }));
+  }
   return postResend(
     env,
-    {
-      reply_to: payload.email,
-      subject: `Eating on 30A restaurant form: ${payload.intentLabel}, ${payload.restaurant}`,
-      text: formatListRestaurant(payload),
-    },
+    message,
     fetchImpl,
     "The request could not be sent.",
   );
@@ -474,9 +579,6 @@ function listRestaurantFromForm(form) {
     foods: formList(form, "foods"),
     facebook: form.get("facebook"),
     instagram: form.get("instagram"),
-    logoUrl: form.get("logoUrl"),
-    listPhotoUrl: form.get("listPhotoUrl"),
-    detailPhotoUrl: form.get("detailPhotoUrl"),
     videoUrl: form.get("videoUrl"),
     notes: form.get("notes"),
     authorized: form.get("authorized"),
@@ -489,34 +591,48 @@ function listRestaurantFromForm(form) {
   return body;
 }
 
+function prefersHtml(request) {
+  const accept = request.headers.get("accept") || "";
+  if (accept.includes("application/json")) return false;
+  const type = request.headers.get("content-type") || "";
+  return !type.includes("application/json");
+}
+
 async function readListRestaurantBody(request) {
   const type = request.headers.get("content-type") || "";
   if (type.includes("application/json")) {
     try {
-      return { html: false, body: await request.json() };
+      return { body: await request.json(), photos: [] };
     } catch {
-      return { html: false, error: "Send the request as JSON." };
+      return { error: "Send the request as JSON." };
     }
   }
-  const form = await request.formData();
-  return { html: true, body: listRestaurantFromForm(form) };
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return { error: "Send the request as a form." };
+  }
+  return { body: listRestaurantFromForm(form), photos: form.getAll("photos") };
 }
 
 export async function handleListRestaurant(request, env, fetchImpl = fetch) {
   if (request.method !== "POST") return json({ ok: false, error: "Use POST." }, 405);
+  const html = prefersHtml(request);
   if (limitListRestaurant(clientAddress(request))) {
     const error = "Please wait a few minutes and try again.";
-    const html = !(request.headers.get("content-type") || "").includes("application/json");
     return html ? thanksPage(error, 429) : json({ ok: false, error }, 429);
   }
   const read = await readListRestaurantBody(request);
-  const html = read.html;
   if (read.error) return html ? thanksPage(read.error, 400) : json({ ok: false, error: read.error }, 400);
   if (honeypotTripped(read.body)) {
     return html ? thanksPage("Thanks. We have your listing.", 200) : json({ ok: true, delivered: false }, 200);
   }
+  const images = await collectListingImages(read.photos || []);
+  if (images.error) return html ? thanksPage(images.error, 400) : json({ ok: false, error: images.error }, 400);
   const parsed = parseListRestaurant(read.body);
   if (parsed.error) return html ? thanksPage(parsed.error, 400) : json({ ok: false, error: parsed.error }, 400);
+  parsed.value.images = images.files;
   const result = await deliverListRestaurant(parsed.value, env, fetchImpl);
   if (!result.ok) return html ? thanksPage(result.error, 502) : json(result, 502);
   return html ? thanksPage("Thanks. We have your listing.", 200) : json(result, 200);
