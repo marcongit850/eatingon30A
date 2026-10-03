@@ -387,7 +387,7 @@
         form.reset();
         setImageFiles(form, []);
         syncHours(form);
-        status(form, "Thanks. We have your listing.", false);
+        status(form, "Thanks!  We will review and get back to you shortly.", false);
       })
       .catch(function () {
         status(form, "The request could not be sent. Try again in a moment.", true);

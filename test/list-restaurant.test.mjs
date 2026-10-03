@@ -422,7 +422,7 @@ test("a listing form post returns an HTML thanks page", async () => {
   const response = await handleListRestaurant(request, {});
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /text\/html/);
-  assert.match(await response.text(), /Thanks\. We have your listing\./);
+  assert.match(await response.text(), /Thanks!  We will review and get back to you shortly\./);
 });
 
 test("a non-POST listing form request is rejected", async () => {

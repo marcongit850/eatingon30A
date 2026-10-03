@@ -442,7 +442,7 @@ check("—" not in list_js and "–" not in list_js, "listing form script should
 check(".required" not in list_js, "listing form script should not mark fields required in the browser")
 check("Enter your name." in list_js and "Enter a valid email." in list_js, "listing form script should still require a name and email")
 check("Confirm you are authorized" not in list_js, "listing form script should not require the authorization checkbox")
-check("Thanks. We have your listing." in list_js, "listing form script should thank the restaurant")
+check("Thanks!  We will review and get back to you shortly." in list_js, "listing form script should thank the restaurant")
 check(f"{build.ORIGIN}/list-your-restaurant/" in sitemap, "sitemap missing the listing form")
 check("See the restaurants" in about and "Open the directory" not in about, "about button should invite visitors in")
 check("<h2 id=\"print-guides-heading\">Coming in 2027</h2>" in about, "about page should announce printed guides coming in 2027")
