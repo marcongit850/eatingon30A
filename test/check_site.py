@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 146, f"full CSV should stay at 146 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 146, "public json should include every published restaurant")
+check(len(source) == 145, f"full CSV should stay at 145 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 145, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -258,7 +258,6 @@ expected_monograms = [
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
     "pecan-jacks-seagrove-beach",
-    "pickles-sandbar-seaside",
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
@@ -808,11 +807,9 @@ check("fried shrimp baskets" in seafood_page, "seafood guide should keep the pra
 breakfast_guide = (ROOT / "guides" / "breakfast-30a" / "index.html").read_text(encoding="utf-8")
 check("listed west to east" not in breakfast_guide, "breakfast guide should not say listed west to east")
 check("isn’t kid friendly" not in breakfast_guide and "aren't kid friendly" not in breakfast_guide, "breakfast guide should not single out a place as not kid friendly")
-check("Pickle" not in breakfast_guide, "breakfast guide should not include Pickle’s Sandbar")
-sandbar = (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").read_text(encoding="utf-8")
-check('href="/restaurants/?meal=Breakfast"' not in sandbar, "Pickle’s Sandbar should not be tagged breakfast")
-check(">Kid friendly</li>" in sandbar, "Pickle’s Sandbar should be listed as kid friendly")
-check("21-and-over" not in sandbar and "Breakfast until" not in sandbar, "Pickle’s Sandbar should not be described as a 21-and-over breakfast bar")
+check("pickles-sandbar-seaside" not in breakfast_guide, "breakfast guide should not include Pickle’s Sandbar")
+check("/restaurants/pickles-burger-and-shake-seaside/" in breakfast_guide, "breakfast guide should include Pickle’s Burger and Shake")
+check(not (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").exists(), "Pickle’s Sandbar listing should be removed")
 check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
     "header should use the Eating on 30A logo",
