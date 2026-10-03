@@ -1366,6 +1366,18 @@ def video_tour() -> str:
     )
 
 
+def coast_360() -> str:
+    """Map-page thumbnail. The image opens the 30A 360 film in a new tab."""
+    return (
+        '<a class="coast-360" href="https://www.youtube.com/watch?v=55EsjB_V_L8&amp;t=2720s" '
+        'target="_blank" rel="noopener">'
+        '<img src="/images/30a-360.webp" alt="" width="896" height="512">'
+        "<span>Click to see 30A in 360 degrees.</span>"
+        '<span class="sr-only">Opens in a new tab.</span>'
+        "</a>"
+    )
+
+
 def view_switch(current: str) -> str:
     """List and Map links beside the filters. Query state is copied onto both."""
     choices = (
@@ -1954,10 +1966,13 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
 def build_map(areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro">'
+        '<div class="map-intro">'
+        f"{coast_360()}"
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> Map</p>'
         '<p class="kicker">The map</p>'
         '<h1 id="listing-title">Along the coast</h1>'
         "<p class=\"lede\">Explore restaurants on the map using the same filters as the directory. Tap a pin to see the restaurant name, street address, and full profile.</p>"
+        "</div>"
         + view_switch("map")
         + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
