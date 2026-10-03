@@ -51,13 +51,6 @@
     });
   }
 
-  function syncIntent(form) {
-    var selected = form.querySelector('input[name="intent"]:checked');
-    var listing = field(form, "existingListing");
-    if (!listing) return;
-    listing.required = Boolean(selected && selected.value === "update");
-  }
-
   function payload(form) {
     var body = {
       eo30a_hp: value(form, "eo30a_hp"),
@@ -103,7 +96,7 @@
 
   function invalid(body) {
     if (!body.name || body.name.length > 120) return { message: body.name ? "Keep your name under 120 characters." : "Enter your name.", field: "name" };
-    if (body.role !== "owner" && body.role !== "manager" && body.role !== "marketing" && body.role !== "other") {
+    if (body.role && body.role !== "owner" && body.role !== "manager" && body.role !== "marketing" && body.role !== "other") {
       return { message: "Choose your role.", field: "role" };
     }
     if (!EMAIL.test(body.email) || body.email.length > 200) return { message: "Enter a valid email.", field: "email" };
@@ -111,42 +104,29 @@
       return { message: "Enter a valid phone number.", field: "contactPhone" };
     }
     if (body.bestTime.length > 120) return { message: "Keep the best time under 120 characters.", field: "bestTime" };
-    if (body.intent !== "new" && body.intent !== "update") return { message: "Choose new listing or an update.", field: "intent" };
-    if (body.intent === "update" && !body.existingListing) {
-      return { message: "Add the current listing URL or the exact restaurant name.", field: "existingListing" };
-    }
+    if (body.intent && body.intent !== "new" && body.intent !== "update") return { message: "Choose new listing or an update.", field: "intent" };
     if (body.existingListing.length > 300) return { message: "Keep the current listing under 300 characters.", field: "existingListing" };
-    if (!body.restaurant || body.restaurant.length > 160) {
-      return { message: body.restaurant ? "Keep the restaurant name under 160 characters." : "Enter a restaurant name.", field: "restaurant" };
-    }
-    if (!body.area) return { message: "Choose an area.", field: "area" };
-    if (!body.address || body.address.length > 240) {
-      return { message: body.address ? "Keep the street address under 240 characters." : "Enter the street address.", field: "address" };
-    }
-    if (!body.restaurantPhone || digits(body.restaurantPhone).length < 7 || body.restaurantPhone.length > 40) {
+    if (body.restaurant.length > 160) return { message: "Keep the restaurant name under 160 characters.", field: "restaurant" };
+    if (body.address.length > 240) return { message: "Keep the street address under 240 characters.", field: "address" };
+    if (body.restaurantPhone && (digits(body.restaurantPhone).length < 7 || body.restaurantPhone.length > 40)) {
       return { message: "Enter the restaurant phone number.", field: "restaurantPhone" };
     }
     if (badLink(body.website)) return { message: "Check the website link.", field: "website" };
-    if (body.price !== "$" && body.price !== "$$" && body.price !== "$$$" && body.price !== "$$$$") {
+    if (body.price && body.price !== "$" && body.price !== "$$" && body.price !== "$$$" && body.price !== "$$$$") {
       return { message: "Choose a price range.", field: "price" };
     }
-    if (!body.description) return { message: "Add a short description.", field: "description" };
     if (body.description.length > 2000) return { message: "Keep the description under 2,000 characters.", field: "description" };
     var dayProblem = null;
     DAYS.forEach(function (day) {
       if (dayProblem) return;
-      if (!body[day[2]] && !body[day[1]]) dayProblem = { message: "Add hours for " + day[0] + ", or mark it closed.", field: day[1] };
       if (body[day[1]] && body[day[1]].length > 80) dayProblem = { message: "Keep " + day[0] + " hours under 80 characters.", field: day[1] };
     });
     if (dayProblem) return dayProblem;
     if (body.seasonalNote.length > 500) return { message: "Keep the seasonal note under 500 characters.", field: "seasonalNote" };
-    if (!body.cuisines.length) return { message: "Choose at least one cuisine type.", field: "cuisines" };
-    if (!body.meals.length) return { message: "Choose at least one meal.", field: "meals" };
     if (badLink(body.facebook)) return { message: "Check the Facebook link.", field: "facebook" };
     if (badLink(body.instagram)) return { message: "Check the Instagram link.", field: "instagram" };
     if (badLink(body.videoUrl)) return { message: "Check the video link.", field: "videoUrl" };
     if (body.notes.length > 4000) return { message: "Keep the notes under 4,000 characters.", field: "notes" };
-    if (!body.authorized) return { message: "Confirm you are authorized to submit for this restaurant.", field: "authorized" };
     return null;
   }
 
@@ -313,7 +293,6 @@
       var listingMax = listingField.maxLength > 0 ? listingField.maxLength : 300;
       listingField.value = listing.slice(0, listingMax);
     }
-    syncIntent(form);
   }
 
   function bindImages(form) {
@@ -355,7 +334,6 @@
     form.addEventListener("change", function (event) {
       var target = event.target;
       if (!target || !target.name) return;
-      if (target.name === "intent") syncIntent(form);
       if (/Closed$/.test(target.name)) syncHours(form);
     });
     form.addEventListener("submit", function (event) {
@@ -409,7 +387,6 @@
         form.reset();
         setImageFiles(form, []);
         syncHours(form);
-        syncIntent(form);
         status(form, "Thanks. We have your listing.", false);
       })
       .catch(function () {
