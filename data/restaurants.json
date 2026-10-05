@@ -3366,6 +3366,39 @@
     "image": null
   },
   {
+    "slug": "pecan-jacks-grayton-beach",
+    "name": "Pecan Jacks",
+    "area": "Grayton Beach",
+    "areaSlug": "grayton-beach",
+    "meals": [
+      "Desserts"
+    ],
+    "cuisines": [
+      "American",
+      "Dessert"
+    ],
+    "foods": [
+      "Ice Cream",
+      "Dessert"
+    ],
+    "price": "",
+    "lat": 30.3368588,
+    "lng": -86.1664298,
+    "address": "32 E County Hwy 30A, Unit 105, Grayton Beach, FL 32459",
+    "phone": "(850) 622-0011",
+    "search": "pecan jacks grayton beach  grayton beach american dessert desserts ice cream dessert dessert pecan jacks in grayton beach scoops small-batch ice cream and sells handcrafted candy. pecan jacks ice cream candy dessert grayton beach ",
+    "label": "Grayton Beach",
+    "outdoor": false,
+    "kids": true,
+    "music": false,
+    "reservations": false,
+    "groups": false,
+    "happyFood": false,
+    "happyDrinks": false,
+    "laurensFavorite": false,
+    "image": null
+  },
+  {
     "slug": "pescado-seafood-grill-and-rooftop-bar-rosemary-beach",
     "name": "Pescado Seafood Grill & Rooftop Bar",
     "area": "Rosemary Beach",

@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 155, f"full CSV should stay at 155 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 155, "public json should include every published restaurant")
+check(len(source) == 156, f"full CSV should stay at 156 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 156, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -270,6 +270,7 @@ expected_monograms = [
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
+    "pecan-jacks-grayton-beach",
     "pecan-jacks-seagrove-beach",
     "pizza-by-the-sea-seacrest",
 ]
