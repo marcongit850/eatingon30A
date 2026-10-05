@@ -3993,10 +3993,14 @@ def build_account_pages() -> None:
         '<label><span>Email <abbr title="required">*</abbr></span>'
         '<input name="email" type="email" required maxlength="200" autocomplete="email" inputmode="email" placeholder="you@example.com"></label>'
         '<label class="account-optin">'
-        '<input name="marketing" type="checkbox" value="yes">'
-        "<span>Email me occasional updates from Eating on 30A and Eating in Destin.</span>"
+        '<input name="coupons30a" type="checkbox" value="yes">'
+        "<span>Email me coupons and updates from Eating on 30A.</span>"
         "</label>"
-        '<p class="account-hint">Leave this unchecked if you only want the sign-in link.</p>'
+        '<label class="account-optin">'
+        '<input name="couponsDestin" type="checkbox" value="yes">'
+        "<span>Email me coupons and updates from Eating in Destin.</span>"
+        "</label>"
+        '<p class="account-hint">Leave both unchecked if you only want the sign-in link.</p>'
         '<button type="submit">Email me a sign-in link</button>'
         '<p class="account-status" role="status" aria-live="polite"></p>'
         "</form>"

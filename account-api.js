@@ -8,11 +8,27 @@
  * This Worker sets ea_session for its own host only (HttpOnly, SameSite=Lax,
  * Secure on https, no Domain attribute). The accounts Worker holds ea_central
  * on its own host and hands this Worker a one-time code.
+ *
+ * Checked coupon boxes append a Google Sheet row after the accounts Worker
+ * accepts the magic link. The body matches worker.js sheetPayload: token, site,
+ * email, coupons, sourcePage, and no audience. 30A uses GOOGLE_SHEETS_WEBHOOK_TOKEN
+ * and site 30A. Destin uses GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN and site Destin.
+ * Both boxes mean two posts. These writes do not send the Resend coupon signup
+ * email. A missing Destin token, a missing webhook, or a sheet error does not
+ * change the magic-link response.
  */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SESSION = "ea_session";
 const SESSION_SECONDS = 30 * 24 * 60 * 60;
+const ACCOUNT_SOURCE_PAGES = {
+  "30a": "https://www.eatingon30a.com/account/",
+  destin: "https://www.eatingindestin.com/account/",
+};
+const COUPON_SHEETS = [
+  { flag: "coupons30a", site: "30A", tokenKey: "GOOGLE_SHEETS_WEBHOOK_TOKEN" },
+  { flag: "couponsDestin", site: "Destin", tokenKey: "GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN" },
+];
 
 export function safeNext(value) {
   const text = String(value || "");
@@ -96,8 +112,51 @@ async function accountsJson(response) {
   return { status: response.status, body };
 }
 
-function optedIn(body) {
-  return body.marketingOptIn === true || body.marketing === true || body.marketing === "yes";
+function isChecked(value) {
+  return value === true || value === "yes" || value === "on";
+}
+
+function couponChoice(body) {
+  const coupons30a = isChecked(body.coupons30a);
+  const couponsDestin = isChecked(body.couponsDestin);
+  const marketingOptIn = coupons30a || couponsDestin || body.marketingOptIn === true || body.marketing === true || body.marketing === "yes";
+  return { coupons30a, couponsDestin, marketingOptIn };
+}
+
+function accountSourcePage(env) {
+  return ACCOUNT_SOURCE_PAGES[siteId(env)] || ACCOUNT_SOURCE_PAGES["30a"];
+}
+
+async function postCouponSheet(url, body, fetchImpl) {
+  try {
+    const response = await fetchImpl(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (response && typeof response.text === "function") await response.text();
+  } catch {
+    // A sheet miss must not fail the magic link.
+  }
+}
+
+async function recordAccountCoupons(env, email, choice, fetchImpl) {
+  const url = env && env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const sourcePage = accountSourcePage(env);
+  const jobs = [];
+  for (const item of COUPON_SHEETS) {
+    if (!choice[item.flag]) continue;
+    const token = env && env[item.tokenKey];
+    if (!url || !token) continue;
+    jobs.push(postCouponSheet(url, {
+      token,
+      site: item.site,
+      email,
+      coupons: true,
+      sourcePage,
+    }, fetchImpl));
+  }
+  await Promise.all(jobs);
 }
 
 async function readBody(request) {
@@ -112,6 +171,8 @@ async function readBody(request) {
       return {
         email: form.get("email"),
         marketing: form.get("marketing"),
+        coupons30a: form.get("coupons30a"),
+        couponsDestin: form.get("couponsDestin"),
         next: form.get("next"),
         slug: form.get("slug"),
         name: form.get("name"),
@@ -127,7 +188,7 @@ async function readBody(request) {
   return null;
 }
 
-export async function handleAccount(request, env) {
+export async function handleAccount(request, env, fetchImpl = fetch) {
   const url = new URL(request.url);
   const path = url.pathname;
   const site = siteId(env);
@@ -174,16 +235,20 @@ export async function handleAccount(request, env) {
     if (!next) return json({ ok: false, error: "That return address is not allowed." }, 400);
     const returnTo = new URL("/api/account/finish", url.origin);
     returnTo.searchParams.set("next", next);
+    const choice = couponChoice(body);
     const result = await accountsJson(await accountsFetch(env, "/v1/magic-link", {
       method: "POST",
       ip: request.headers.get("cf-connecting-ip") || "",
       body: {
         email,
-        marketingOptIn: optedIn(body),
+        marketingOptIn: choice.marketingOptIn,
         site,
         returnTo: returnTo.toString(),
       },
     }));
+    if (result.status < 400 && result.body && result.body.ok === true) {
+      await recordAccountCoupons(env, email, choice, fetchImpl);
+    }
     return json(result.body, result.status);
   }
 

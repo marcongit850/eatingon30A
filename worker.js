@@ -15,6 +15,10 @@
  * and {ok:false} stay recorded: false. A Sheets miss does not fail the signup
  * when Resend accepted it.
  * sourcePage is the live homepage. site.config.json origin stays the workers.dev preview.
+ * Account sign-in coupon boxes are recorded in account-api.js with the same webhook.
+ * Those rows do not send the coupon signup email. A Destin row needs
+ * GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN. A missing token or a sheet error does not
+ * fail the magic link.
  */
 
 import listingOptions from "./data/listing-form.json" with { type: "json" };

@@ -67,15 +67,27 @@ test("migration SQL matches the worker schema", () => {
   assert.equal(file, SCHEMA_SQL);
 });
 
-test("sign-in checkbox is off unless the visitor checks it", () => {
+test("sign-in coupon checkboxes are off unless the visitor checks them", () => {
   const html = readFileSync(new URL("../account/index.html", import.meta.url), "utf8");
-  const input = html.match(/<input name="marketing"[^>]*>/);
-  assert.ok(input, "marketing checkbox should be on the sign-in page");
-  assert.equal(input[0].includes("checked"), false);
-  assert.match(html, /Email me occasional updates from Eating on 30A and Eating in Destin/);
+  const script = readFileSync(new URL("../account.js", import.meta.url), "utf8");
+  for (const name of ["coupons30a", "couponsDestin"]) {
+    const input = html.match(new RegExp(`<input name="${name}"[^>]*>`));
+    assert.ok(input, `${name} checkbox should be on the sign-in page`);
+    assert.equal(input[0].includes("checked"), false);
+    assert.match(input[0], /type="checkbox"/);
+    assert.match(input[0], /value="yes"/);
+  }
+  assert.equal(html.includes('name="marketing"'), false);
+  assert.match(html, /Email me coupons and updates from Eating on 30A\./);
+  assert.match(html, /Email me coupons and updates from Eating in Destin\./);
+  assert.match(html, /Leave both unchecked if you only want the sign-in link\./);
   assert.equal(html.includes("—"), false);
+  assert.equal(html.includes("–"), false);
   assert.match(html, /fbq\('init', '2157446775153374'\)/);
   assert.match(html, /gtag\('config', 'G-3T7VN1WPX5'\)/);
+  assert.match(script, /coupons30a: coupons30a/);
+  assert.match(script, /couponsDestin: couponsDestin/);
+  assert.match(script, /marketingOptIn: coupons30a \|\| couponsDestin/);
 });
 
 test("my places page names both guides", () => {
@@ -301,6 +313,213 @@ test("missing account secret does not pretend the email was sent", async () => {
     body: JSON.stringify({ email: "guest@example.com" }),
   }), { ACCOUNT_SITE: "30a", ACCOUNTS_ORIGIN: "https://eating-accounts.352marc.workers.dev" });
   assert.equal(response.status, 503);
+});
+
+const SHEETS_URL = "https://script.google.com/macros/s/test-webhook/exec";
+const ACCOUNT_SOURCE = "https://www.eatingon30a.com/account/";
+
+function sheetEnv(db, extra = {}) {
+  return {
+    ...siteEnv(db, "30a"),
+    GOOGLE_SHEETS_WEBHOOK_URL: SHEETS_URL,
+    GOOGLE_SHEETS_WEBHOOK_TOKEN: "token-30a",
+    GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN: "token-destin",
+    RESEND_API_KEY: "re_test",
+    CONTACT_EMAIL: "marc@example.com",
+    SUBSCRIBE_FROM: "Eating on 30A <coupons@example.com>",
+    ...extra,
+  };
+}
+
+function captureFetch() {
+  const calls = [];
+  const fetchImpl = (url, init) => {
+    calls.push({ url, init });
+    return Promise.resolve(new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+  };
+  return { calls, fetchImpl };
+}
+
+async function requestSignIn(env, body, fetchImpl, headers = { "content-type": "application/json" }) {
+  const payload = headers["content-type"].includes("json") ? JSON.stringify(body) : body;
+  return handleAccount(new Request("https://www.eatingon30a.com/api/account/request", {
+    method: "POST",
+    headers,
+    body: payload,
+  }), env, fetchImpl);
+}
+
+function sheetRows(calls) {
+  return calls
+    .filter((call) => call.url === SHEETS_URL)
+    .map((call) => JSON.parse(call.init.body));
+}
+
+test("checked coupon boxes append one sheet row per site and skip the coupon email", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = captureFetch();
+  const response = await requestSignIn(sheetEnv(db), {
+    email: "both@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    marketingOptIn: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.match(payload.previewUrl, /\/v1\/verify\?/);
+  assert.equal(calls.some((call) => call.url === "https://api.resend.com/emails"), false);
+  const rows = sheetRows(calls);
+  assert.equal(rows.length, 2);
+  const row30 = rows.find((row) => row.site === "30A");
+  const rowDestin = rows.find((row) => row.site === "Destin");
+  assert.deepEqual(row30, {
+    token: "token-30a",
+    site: "30A",
+    email: "both@example.com",
+    coupons: true,
+    sourcePage: ACCOUNT_SOURCE,
+  });
+  assert.deepEqual(rowDestin, {
+    token: "token-destin",
+    site: "Destin",
+    email: "both@example.com",
+    coupons: true,
+    sourcePage: ACCOUNT_SOURCE,
+  });
+  assert.equal(Object.hasOwn(row30, "audience"), false);
+  assert.equal(Object.hasOwn(rowDestin, "audience"), false);
+  const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("both@example.com").first();
+  assert.equal(user.marketing_opt_in, 1);
+});
+
+test("one checked coupon box appends only that sheet row", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const destinOnly = captureFetch();
+  let response = await requestSignIn(sheetEnv(db), {
+    email: "destin-only@example.com",
+    coupons30a: false,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, destinOnly.fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(destinOnly.calls).map((row) => row.site), ["Destin"]);
+
+  const thirtyOnly = captureFetch();
+  response = await requestSignIn(sheetEnv(db), {
+    email: "thirty-only@example.com",
+    coupons30a: true,
+    couponsDestin: false,
+    next: "/my-places/",
+  }, thirtyOnly.fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(thirtyOnly.calls).map((row) => [row.site, row.token]), [["30A", "token-30a"]]);
+  const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("destin-only@example.com").first();
+  assert.equal(user.marketing_opt_in, 1);
+});
+
+test("a missing Destin token skips that row and still sends the magic link", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = captureFetch();
+  const response = await requestSignIn(sheetEnv(db, { GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN: "" }), {
+    email: "no-destin-token@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    marketingOptIn: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.deepEqual(sheetRows(calls).map((row) => row.site), ["30A"]);
+  const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("no-destin-token@example.com").first();
+  assert.equal(user.marketing_opt_in, 1);
+});
+
+test("unchecked coupon boxes do not call the sheet webhook", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = captureFetch();
+  const response = await requestSignIn(sheetEnv(db), {
+    email: "quiet-sheets@example.com",
+    coupons30a: false,
+    couponsDestin: false,
+    marketingOptIn: false,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 0);
+  const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("quiet-sheets@example.com").first();
+  assert.equal(user.marketing_opt_in, 0);
+});
+
+test("a sheet failure does not fail an accepted magic link", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const response = await requestSignIn(sheetEnv(db), {
+    email: "sheet-down@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, () => Promise.reject(new Error("sheet down")));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.match(payload.previewUrl, /\/v1\/verify\?/);
+});
+
+test("a rejected magic link does not write the coupon sheet", async () => {
+  const calls = [];
+  const env = sheetEnv(memoryDb(), {
+    ACCOUNTS: {
+      fetch() {
+        return new Response(JSON.stringify({ ok: false, error: "Please wait a while and try again." }), {
+          status: 429,
+          headers: { "content-type": "application/json" },
+        });
+      },
+    },
+  });
+  const response = await requestSignIn(env, {
+    email: "limited@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, (url) => {
+    calls.push(url);
+    return Promise.resolve(new Response("{}"));
+  });
+  assert.equal(response.status, 429);
+  assert.equal(calls.length, 0);
+});
+
+test("a form post with a coupon checkbox appends that sheet row", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = captureFetch();
+  const response = await requestSignIn(
+    sheetEnv(db),
+    new URLSearchParams({ email: "form@example.com", couponsDestin: "yes", next: "/my-places/" }),
+    fetchImpl,
+    { "content-type": "application/x-www-form-urlencoded" },
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(calls), [{
+    token: "token-destin",
+    site: "Destin",
+    email: "form@example.com",
+    coupons: true,
+    sourcePage: ACCOUNT_SOURCE,
+  }]);
+  const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("form@example.com").first();
+  assert.equal(user.marketing_opt_in, 1);
 });
 
 test("the site worker answers account config without touching assets", async () => {
