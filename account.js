@@ -386,6 +386,54 @@
     }
   }
 
+  function mountCouponOptIn(root) {
+    var block = root.querySelector("[data-coupon-optin]");
+    var form = root.querySelector("[data-coupon-optin-form]");
+    if (!block || !form) return;
+    var status = form.querySelector("[data-coupon-status]");
+    me().then(function (payload) {
+      if (payload && payload.user) block.hidden = false;
+    });
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var coupons30a = Boolean(form.coupons30a && form.coupons30a.checked);
+      var couponsDestin = Boolean(form.couponsDestin && form.couponsDestin.checked);
+      if (status) status.textContent = "";
+      if (!coupons30a && !couponsDestin) {
+        if (status) status.textContent = "Choose Eating on 30A, Eating in Destin, or both.";
+        return;
+      }
+      var button = form.querySelector('button[type="submit"]');
+      if (button) button.disabled = true;
+      fetch("/api/account/coupons", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          coupons30a: coupons30a,
+          couponsDestin: couponsDestin
+        })
+      }).then(function (response) {
+        return response.json().then(function (body) {
+          return { ok: response.ok, body: body };
+        }).catch(function () {
+          return { ok: false, body: {} };
+        });
+      }).then(function (result) {
+        if (!status) return;
+        if (!result.ok) {
+          status.textContent = (result.body && result.body.error) || "That could not be saved.";
+          return;
+        }
+        status.textContent = "Saved. Coupons and updates will go to the email on your account.";
+      }).catch(function () {
+        if (status) status.textContent = "That could not be saved.";
+      }).then(function () {
+        if (button) button.disabled = false;
+      });
+    });
+  }
+
   function emptyCopy(kind, site) {
     var noun = kind === "favorite" ? "favorites" : "places to try";
     if (site === "30a") return "No " + noun + " from 30A yet.";
@@ -400,7 +448,10 @@
     var page = document.querySelector("[data-account-page]");
     if (!page) return;
     if (page.getAttribute("data-account-page") === "signin") mountSignIn(page);
-    if (page.getAttribute("data-account-page") === "places") mountPlaces(page);
+    if (page.getAttribute("data-account-page") === "places") {
+      mountPlaces(page);
+      mountCouponOptIn(page);
+    }
   }
 
   document.addEventListener("site-header-ready", refreshNav);

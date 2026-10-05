@@ -126,6 +126,8 @@
   });
 
   if (dismissed()) return;
+  var path = location.pathname;
+  if (path === "/my-places" || path === "/my-places/") return;
   var wait = Math.max(0, DELAY - (Date.now() - visitStart()));
   window.setTimeout(function () {
     if (dismissed() || dialog.open) return;
