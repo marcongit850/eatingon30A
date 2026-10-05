@@ -18,6 +18,7 @@
  */
 
 import listingOptions from "./data/listing-form.json" with { type: "json" };
+import { handleAccount } from "./account-api.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIST_WINDOW_MS = 10 * 60 * 1000;
@@ -769,6 +770,7 @@ export default {
     if (url.pathname === "/api/subscribe") return handleSubscribe(request, env);
     if (url.pathname === "/api/listing") return handleListing(request, env);
     if (url.pathname === "/api/list-restaurant") return handleListRestaurant(request, env);
+    if (url.pathname.startsWith("/api/account/")) return handleAccount(request, env);
     return withPreviewRobots(url, await env.ASSETS.fetch(request));
   },
 };

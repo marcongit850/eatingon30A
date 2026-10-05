@@ -1527,3 +1527,120 @@ html.js-filter #cards .card { display: none; }
 @media (max-width: 639px) {
   .listing-form { margin-top: 1.5rem; }
 }
+
+.save-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.15rem 0 0;
+}
+.save-button {
+  gap: 0.4rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+.save-button svg { display: block; }
+.save-button[aria-pressed="true"] {
+  background: var(--gulf-deep);
+  border-color: var(--gulf-deep);
+  color: #f7f2ea;
+}
+.save-button:hover { background: var(--gulf-deep); color: #f7f2ea; }
+.save-note {
+  flex-basis: 100%;
+  margin: 0;
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.account-form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 32rem;
+  margin-top: 1.4rem;
+}
+.account-form label span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.92rem;
+}
+.account-optin {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  max-width: 36rem;
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.account-optin input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0.3rem 0 0;
+  flex: none;
+}
+.account-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.account-status {
+  min-height: 1.3em;
+  margin: 0;
+  color: var(--gulf);
+  font-size: 0.95rem;
+}
+.account-status a { color: inherit; }
+.account-signed .action-row { margin-top: 1rem; }
+.account-tabs,
+.account-sites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1.2rem 0 0;
+}
+.account-tabs button,
+.account-sites button {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+.account-tabs button[aria-selected="true"],
+.account-sites button[aria-pressed="true"] {
+  background: var(--gulf-deep);
+  border-color: var(--gulf-deep);
+  color: #f7f2ea;
+}
+.account-tabs button:hover,
+.account-sites button:hover { background: var(--gulf-deep); color: #f7f2ea; }
+.place-list { margin-top: 1.4rem; }
+.place-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+}
+.place-site {
+  margin: 0;
+  color: var(--coral-deep);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.place-card h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+.place-card h2 a { text-decoration: none; }
+.place-area { margin: 0; color: var(--muted); }
+.place-remove { margin-top: 0.55rem; justify-self: start; }
+.place-empty { color: var(--muted); }
