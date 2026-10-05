@@ -18,7 +18,9 @@
  * Account sign-in coupon boxes are recorded in account-api.js with the same webhook.
  * Those rows do not send the coupon signup email. A Destin row needs
  * GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN. A missing token or a sheet error does not
- * fail the magic link.
+ * fail the magic link. My places uses POST /api/account/coupons for a signed-in
+ * visitor. That route uses the session email and the same sheet tokens, and it
+ * does not send the coupon signup email.
  */
 
 import listingOptions from "./data/listing-form.json" with { type: "json" };

@@ -1693,3 +1693,19 @@ html.js-filter #cards .card { display: none; }
 .place-area { margin: 0; color: var(--muted); }
 .place-remove { margin-top: 0.55rem; justify-self: start; }
 .place-empty { color: var(--muted); }
+.coupon-quiet {
+  margin: 2.2rem 0 0;
+  max-width: 36rem;
+}
+.coupon-quiet summary {
+  width: fit-content;
+  color: var(--muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+.coupon-quiet summary::-webkit-details-marker { display: none; }
+.coupon-quiet summary:hover { color: var(--ink); }
+.coupon-quiet-form { margin-top: 0.9rem; }

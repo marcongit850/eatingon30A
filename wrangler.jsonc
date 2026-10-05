@@ -6,6 +6,7 @@
   // Coupon signups are also appended when GOOGLE_SHEETS_WEBHOOK_URL and GOOGLE_SHEETS_WEBHOOK_TOKEN are set.
   // Account sign-in can append a Destin coupon row when GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN is also set.
   // A missing Destin token skips that row and does not block the magic link.
+  // Signed-in My places opt-in uses those same tokens and does not send the coupon email.
   // Missing Sheets secrets skip the webhook (recorded: false) and do not change the Resend delivered flag.
   // recorded is true only when the webhook body is JSON with ok: true. HTTP 200 alone is not enough.
   "name": "eatingon30a",

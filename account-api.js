@@ -16,6 +16,11 @@
  * Both boxes mean two posts. These writes do not send the Resend coupon signup
  * email. A missing Destin token, a missing webhook, or a sheet error does not
  * change the magic-link response.
+ *
+ * POST /api/account/coupons is the same sheet write for someone who is already
+ * signed in. The email comes from the session. An email in the body is ignored.
+ * sourcePage is the My places page. This route does not send a Resend coupon
+ * email and does not send a magic link.
  */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,6 +29,10 @@ const SESSION_SECONDS = 30 * 24 * 60 * 60;
 const ACCOUNT_SOURCE_PAGES = {
   "30a": "https://www.eatingon30a.com/account/",
   destin: "https://www.eatingindestin.com/account/",
+};
+const PLACES_SOURCE_PAGES = {
+  "30a": "https://www.eatingon30a.com/my-places/",
+  destin: "https://www.eatingindestin.com/my-places/",
 };
 const COUPON_SHEETS = [
   { flag: "coupons30a", site: "30A", tokenKey: "GOOGLE_SHEETS_WEBHOOK_TOKEN" },
@@ -127,6 +136,10 @@ function accountSourcePage(env) {
   return ACCOUNT_SOURCE_PAGES[siteId(env)] || ACCOUNT_SOURCE_PAGES["30a"];
 }
 
+function placesSourcePage(env) {
+  return PLACES_SOURCE_PAGES[siteId(env)] || PLACES_SOURCE_PAGES["30a"];
+}
+
 async function postCouponSheet(url, body, fetchImpl) {
   try {
     const response = await fetchImpl(url, {
@@ -140,9 +153,9 @@ async function postCouponSheet(url, body, fetchImpl) {
   }
 }
 
-async function recordAccountCoupons(env, email, choice, fetchImpl) {
+async function recordAccountCoupons(env, email, choice, fetchImpl, sourcePage) {
   const url = env && env.GOOGLE_SHEETS_WEBHOOK_URL;
-  const sourcePage = accountSourcePage(env);
+  const page = sourcePage || accountSourcePage(env);
   const jobs = [];
   for (const item of COUPON_SHEETS) {
     if (!choice[item.flag]) continue;
@@ -153,7 +166,7 @@ async function recordAccountCoupons(env, email, choice, fetchImpl) {
       site: item.site,
       email,
       coupons: true,
-      sourcePage,
+      sourcePage: page,
     }, fetchImpl));
   }
   await Promise.all(jobs);
@@ -250,6 +263,27 @@ export async function handleAccount(request, env, fetchImpl = fetch) {
       await recordAccountCoupons(env, email, choice, fetchImpl);
     }
     return json(result.body, result.status);
+  }
+
+  if (path === "/api/account/coupons" && request.method === "POST") {
+    const body = await readBody(request);
+    if (!body) return json({ ok: false, error: "Send the request as JSON." }, 400);
+    const session = await accountsJson(await accountsFetch(env, "/v1/me", {
+      session: readCookie(request, SESSION),
+    }));
+    const email = session.body && session.body.user && String(session.body.user.email || "").trim();
+    if (!email || !EMAIL.test(email)) {
+      if (session.status >= 400) {
+        return json(session.body || { ok: false, error: "Sign in to save this." }, session.status);
+      }
+      return json({ ok: false, error: "Sign in to save this." }, 401);
+    }
+    const choice = couponChoice(body);
+    if (!choice.coupons30a && !choice.couponsDestin) {
+      return json({ ok: false, error: "Choose Eating on 30A, Eating in Destin, or both." }, 400);
+    }
+    await recordAccountCoupons(env, email, choice, fetchImpl, placesSourcePage(env));
+    return json({ ok: true });
   }
 
   if (path === "/api/account/me" && request.method === "GET") {
