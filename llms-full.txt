@@ -13,7 +13,7 @@ Each profile gives the street address and a map pin. A photograph appears when t
 - [Guides](https://www.eatingon30a.com/guides/)
 - [About](https://www.eatingon30a.com/about/)
 - [Contact](https://www.eatingon30a.com/contact/)
-- [List your restaurant](https://www.eatingon30a.com/list-your-restaurant/)
+- [List or Update your restaurant](https://www.eatingon30a.com/list-your-restaurant/)
 - [Short index](https://www.eatingon30a.com/llms.txt)
 - [Sitemap](https://www.eatingon30a.com/sitemap.xml)
 
