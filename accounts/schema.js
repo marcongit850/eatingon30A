@@ -1,5 +1,9 @@
 // Shared account store for Eating on 30A and Eating in Destin.
 // accounts/migrations/0001_init.sql must stay identical to SCHEMA_SQL.
+// accounts/migrations/0002_save_note.sql adds saves.note for private notes.
+// ensureSchema applies that alter when an existing database is missing it.
+
+export const SAVE_NOTE_SQL = "ALTER TABLE saves ADD COLUMN note TEXT NOT NULL DEFAULT ''";
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS users (

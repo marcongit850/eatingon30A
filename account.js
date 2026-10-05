@@ -74,6 +74,23 @@
     return "/account/?next=" + encodeURIComponent(location.pathname);
   }
 
+  function putSave(payload) {
+    return fetch("/api/account/saves", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (response) {
+      if (response.status === 401) {
+        location.href = signInHref();
+        return null;
+      }
+      return response.json().then(function (body) {
+        return { ok: response.ok, body: body };
+      });
+    });
+  }
+
   function mountSaves() {
     var slug = listingSlug();
     var head = document.querySelector("article.profile .profile-head");
@@ -86,27 +103,104 @@
     var bar = document.createElement("div");
     bar.className = "save-bar";
     bar.innerHTML = buttonHtml("favorite", false) + buttonHtml("want", false) + '<p class="save-note" role="status"></p>';
+    var panel = document.createElement("div");
+    panel.className = "personal-note";
+    panel.hidden = true;
+    panel.innerHTML = '<label class="personal-note-label"><span>Your note</span><textarea maxlength="280" rows="3" placeholder="Add a personal note..."></textarea></label><div class="note-actions"><button type="button" class="button" data-note-save>Save note</button><button type="button" class="button secondary" data-note-clear>Clear</button></div><p class="personal-note-hint">Only you can see this. It also shows on My places. About 280 characters.</p><p class="personal-note-status" role="status" aria-live="polite"></p>';
     var chips = head.querySelector(".chips");
     if (chips) head.insertBefore(bar, chips);
     else head.appendChild(bar);
+    bar.insertAdjacentElement("afterend", panel);
     var note = bar.querySelector(".save-note");
+    var field = panel.querySelector("textarea");
+    var noteStatus = panel.querySelector(".personal-note-status");
+    var savedKinds = {};
+    var stored = "";
+
+    function showPanel() {
+      var on = Object.keys(savedKinds).length > 0;
+      panel.hidden = !on;
+      if (!on) noteStatus.textContent = "";
+    }
+
+    function remember(kind, on, copiedNote, settled) {
+      if (on) savedKinds[kind] = true;
+      else delete savedKinds[kind];
+      if (settled && !on && !Object.keys(savedKinds).length) {
+        field.value = "";
+        stored = "";
+      } else if (copiedNote && !stored) {
+        stored = copiedNote;
+        field.value = copiedNote;
+      }
+      showPanel();
+    }
+
     bar.addEventListener("click", function (event) {
       var button = event.target.closest("[data-kind]");
       if (!button) return;
-      toggle(button, slug, name, area, note);
+      toggle(button, slug, name, area, note, remember);
     });
+
+    function writeListingNote(text, clearing) {
+      var kinds = Object.keys(savedKinds);
+      if (!kinds.length) return;
+      if (text.length > 280) {
+        noteStatus.textContent = "Keep the note under 280 characters.";
+        return;
+      }
+      noteStatus.textContent = "";
+      var buttons = panel.querySelectorAll("button");
+      buttons.forEach(function (button) { button.disabled = true; });
+      Promise.all(kinds.map(function (kind) {
+        return putSave({ slug: slug, name: name, area: area, kind: kind, saved: true, note: text });
+      })).then(function (results) {
+        buttons.forEach(function (button) { button.disabled = false; });
+        if (results.some(function (result) { return !result; })) return;
+        var failed = results.find(function (result) { return !result.ok; });
+        if (failed) {
+          field.value = stored;
+          noteStatus.textContent = (failed.body && failed.body.error) || "That note could not be saved.";
+          return;
+        }
+        var savedNote = results[0].body && typeof results[0].body.note === "string" ? results[0].body.note : text.trim();
+        stored = savedNote;
+        field.value = savedNote;
+        noteStatus.textContent = clearing || !savedNote ? "Note cleared." : "Note saved.";
+      }).catch(function () {
+        buttons.forEach(function (button) { button.disabled = false; });
+        field.value = stored;
+        noteStatus.textContent = "That note could not be saved.";
+      });
+    }
+
+    panel.querySelector("[data-note-save]").addEventListener("click", function () {
+      writeListingNote(field.value, false);
+    });
+    panel.querySelector("[data-note-clear]").addEventListener("click", function () {
+      field.value = "";
+      writeListingNote("", true);
+    });
+
     me().then(function (payload) {
       if (!payload || !payload.user) return;
       return fetch("/api/account/saves", { credentials: "same-origin" })
         .then(function (response) { return response.json(); })
         .then(function (body) {
           var saves = (body && body.saves) || [];
-          config().then(function (cfg) {
+          return config().then(function (cfg) {
+            var text = "";
             saves.forEach(function (save) {
               if (save.slug !== slug || save.site !== cfg.site) return;
               var button = bar.querySelector('[data-kind="' + save.kind + '"]');
               if (button) setPressed(button, true);
+              savedKinds[save.kind] = true;
+              if (save.kind === "favorite" && save.note) text = save.note;
+              else if (!text && save.note) text = save.note;
             });
+            stored = text;
+            field.value = text;
+            showPanel();
           });
         });
     });
@@ -123,7 +217,7 @@
     button.innerHTML = icon(kind, on) + "<span>" + (kind === "favorite" ? "Favorite" : "Want to try") + "</span>";
   }
 
-  function toggle(button, slug, name, area, note) {
+  function toggle(button, slug, name, area, note, remember) {
     var kind = button.getAttribute("data-kind");
     var next = button.getAttribute("aria-pressed") !== "true";
     me().then(function (payload) {
@@ -132,27 +226,23 @@
         return;
       }
       setPressed(button, next);
-      fetch("/api/account/saves", {
-        method: "PUT",
-        credentials: "same-origin",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ slug: slug, name: name, area: area, kind: kind, saved: next })
-      }).then(function (response) {
-        if (response.status === 401) {
-          location.href = signInHref();
-          return null;
-        }
-        return response.json().then(function (body) { return { ok: response.ok, body: body }; });
-      }).then(function (result) {
+      if (remember) remember(kind, next);
+      putSave({ slug: slug, name: name, area: area, kind: kind, saved: next }).then(function (result) {
         if (!result) return;
         if (!result.ok) {
           setPressed(button, !next);
+          if (remember) remember(kind, !next);
           note.textContent = (result.body && result.body.error) || "That place could not be saved.";
           return;
         }
         note.textContent = next ? "Saved." : "Removed.";
+        if (remember) {
+          var copied = next && result.body && typeof result.body.note === "string" ? result.body.note : "";
+          remember(kind, next, copied, true);
+        }
       }).catch(function () {
         setPressed(button, !next);
+        if (remember) remember(kind, !next);
         note.textContent = "That place could not be saved.";
       });
     });
@@ -310,33 +400,138 @@
         area.textContent = save.area;
         article.appendChild(area);
       }
+      var noteWrap = document.createElement("div");
+      noteWrap.className = "place-note";
+      var noteLabel = document.createElement("p");
+      noteLabel.className = "place-note-label";
+      noteLabel.id = "note-label-" + save.site + "-" + save.kind + "-" + save.slug;
+      noteLabel.textContent = "Your note";
+      var view = document.createElement("p");
+      view.className = "place-note-view";
+      var empty = document.createElement("p");
+      empty.className = "place-note-empty";
+      empty.textContent = "Add a personal note...";
+      var editor = document.createElement("textarea");
+      editor.className = "place-note-input";
+      editor.maxLength = 280;
+      editor.rows = 3;
+      editor.placeholder = "Add a personal note...";
+      editor.setAttribute("aria-labelledby", noteLabel.id);
+      var actions = document.createElement("div");
+      actions.className = "note-actions";
+      var editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "button secondary";
+      var saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "button";
+      saveBtn.textContent = "Save note";
+      var cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "button secondary";
+      cancelBtn.textContent = "Cancel";
       var remove = document.createElement("button");
       remove.type = "button";
       remove.className = "button secondary place-remove";
       remove.textContent = "Remove";
+      var editing = false;
+
+      function paint() {
+        var text = save.note || "";
+        var has = text.trim().length > 0;
+        view.textContent = text;
+        view.hidden = editing || !has;
+        empty.hidden = editing || has;
+        editor.hidden = !editing;
+        if (!editing) editor.value = text;
+        editBtn.hidden = editing;
+        editBtn.textContent = has ? "Edit note" : "Add note";
+        saveBtn.hidden = !editing;
+        cancelBtn.hidden = !editing;
+      }
+
+      editBtn.addEventListener("click", function () {
+        editing = true;
+        editor.value = save.note || "";
+        paint();
+        editor.focus();
+      });
+      cancelBtn.addEventListener("click", function () {
+        editing = false;
+        status.textContent = "";
+        paint();
+      });
+      saveBtn.addEventListener("click", function () {
+        var text = editor.value;
+        if (text.length > 280) {
+          status.textContent = "Keep the note under 280 characters.";
+          return;
+        }
+        status.textContent = "";
+        saveBtn.disabled = true;
+        putSave({
+          slug: save.slug,
+          name: save.name,
+          area: save.area,
+          kind: save.kind,
+          site: save.site,
+          note: text
+        }).then(function (result) {
+          saveBtn.disabled = false;
+          if (!result) return;
+          if (!result.ok) {
+            status.textContent = (result.body && result.body.error) || "That note could not be saved.";
+            return;
+          }
+          var nextNote = result.body && typeof result.body.note === "string" ? result.body.note : text.trim();
+          saves.forEach(function (item) {
+            if (item.site === save.site && item.slug === save.slug) item.note = nextNote;
+          });
+          status.textContent = nextNote ? "Note saved." : "Note cleared.";
+          render();
+        }).catch(function () {
+          saveBtn.disabled = false;
+          status.textContent = "That note could not be saved.";
+        });
+      });
       remove.addEventListener("click", function () {
-        fetch("/api/account/saves", {
-          method: "PUT",
-          credentials: "same-origin",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ slug: save.slug, name: save.name, area: save.area, kind: save.kind, site: save.site, saved: false })
-        }).then(function (response) {
-          if (!response.ok) throw new Error("remove");
+        putSave({
+          slug: save.slug,
+          name: save.name,
+          area: save.area,
+          kind: save.kind,
+          site: save.site,
+          saved: false
+        }).then(function (result) {
+          if (!result || !result.ok) throw new Error("remove");
           saves = saves.filter(function (item) {
             return !(item.site === save.site && item.slug === save.slug && item.kind === save.kind);
           });
+          status.textContent = "";
           render();
         }).catch(function () {
           status.textContent = "That place could not be removed.";
         });
       });
-      article.appendChild(remove);
+
+      actions.appendChild(editBtn);
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      actions.appendChild(remove);
+      noteWrap.appendChild(noteLabel);
+      noteWrap.appendChild(view);
+      noteWrap.appendChild(empty);
+      noteWrap.appendChild(editor);
+      noteWrap.appendChild(actions);
+      paint();
+      article.appendChild(noteWrap);
       return article;
     }
 
     root.querySelectorAll("[data-tab]").forEach(function (tab) {
       tab.addEventListener("click", function () {
         kind = tab.getAttribute("data-tab");
+        status.textContent = "";
         root.querySelectorAll("[data-tab]").forEach(function (item) {
           item.setAttribute("aria-selected", item === tab ? "true" : "false");
         });
@@ -346,6 +541,7 @@
     root.querySelectorAll("[data-site-filter]").forEach(function (button) {
       button.addEventListener("click", function () {
         siteFilter = button.getAttribute("data-site-filter");
+        status.textContent = "";
         root.querySelectorAll("[data-site-filter]").forEach(function (item) {
           item.setAttribute("aria-pressed", item === button ? "true" : "false");
         });

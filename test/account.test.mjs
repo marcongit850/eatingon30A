@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 import { handleAccount } from "../account-api.js";
-import { SCHEMA_SQL } from "../accounts/schema.js";
-import { handleAccounts, resetLimits } from "../accounts/worker.js";
+import { SAVE_NOTE_SQL, SCHEMA_SQL } from "../accounts/schema.js";
+import { ensureSchema, handleAccounts, resetLimits } from "../accounts/worker.js";
 import worker from "../worker.js";
 
 function memoryDb() {
@@ -97,7 +97,43 @@ test("my places page names both guides", () => {
   assert.match(html, /data-site-filter="30a"/);
   assert.match(html, /data-site-filter="destin"/);
   assert.match(html, /Each card is labeled 30A or Destin/);
+  assert.match(html, /Notes stay private on your account\. Shown on My places for each saved restaurant \(Favorites and Want to try\)\./);
   assert.equal(html.includes("—"), false);
+});
+
+test("note migration matches the worker alter", () => {
+  const file = readFileSync(new URL("../accounts/migrations/0002_save_note.sql", import.meta.url), "utf8");
+  assert.equal(file.includes(SAVE_NOTE_SQL), true);
+  assert.equal(file.includes("—"), false);
+});
+
+test("an existing saves table gains a note column", async () => {
+  const db = memoryDb();
+  const before = await db.prepare("PRAGMA table_info(saves)").all();
+  assert.equal(before.results.some((column) => column.name === "note"), false);
+  await ensureSchema(db);
+  const after = await db.prepare("PRAGMA table_info(saves)").all();
+  assert.equal(after.results.some((column) => column.name === "note"), true);
+  await ensureSchema(db);
+});
+
+test("personal notes stay on the account and off public listing html", () => {
+  const script = readFileSync(new URL("../account.js", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../restaurants/the-donut-hole-inlet-beach/index.html", import.meta.url), "utf8");
+  assert.match(script, /Add a personal note\.\.\./);
+  assert.match(script, /Only you can see this\. It also shows on My places\. About 280 characters\./);
+  assert.match(script, /Save note/);
+  assert.match(script, /Edit note/);
+  assert.match(script, /maxlength="280"/);
+  assert.match(script, /maxLength = 280/);
+  assert.match(script, /view\.textContent = text/);
+  assert.equal(script.includes("—"), false);
+  assert.equal(script.includes("card-grid"), false);
+  assert.match(css, /\.personal-note \{/);
+  assert.match(css, /\.place-note-empty \{/);
+  assert.equal(page.includes("Only you can see this"), false);
+  assert.equal(page.includes("personal-note"), false);
 });
 
 test("shared magic link, cookies, and labeled saves", async () => {
@@ -520,6 +556,186 @@ test("a form post with a coupon checkbox appends that sheet row", async () => {
   }]);
   const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("form@example.com").first();
   assert.equal(user.marketing_opt_in, 1);
+});
+
+async function signIn(db, siteName, email) {
+  const env = siteEnv(db, siteName);
+  const origin = siteName === "30a" ? "http://127.0.0.1:8788" : "http://127.0.0.1:8789";
+  const response = await handleAccount(new Request(`${origin}/api/account/request`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, next: "/my-places/" }),
+  }), env);
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  const verify = await handleAccounts(new Request(payload.previewUrl), accountsEnv(db));
+  assert.equal(verify.status, 302);
+  const finish = await handleAccount(new Request(verify.headers.get("location")), env);
+  assert.equal(finish.status, 302);
+  return { env, origin, token: cookieValue(finish.headers.get("set-cookie"), "ea_session") };
+}
+
+async function putSave(env, origin, token, body) {
+  return handleAccount(new Request(`${origin}/api/account/saves`, {
+    method: "PUT",
+    headers: { "content-type": "application/json", cookie: `ea_session=${token}` },
+    body: JSON.stringify(body),
+  }), env);
+}
+
+async function listSaves(env, origin, token) {
+  const response = await handleAccount(new Request(`${origin}/api/account/saves`, {
+    headers: { cookie: `ea_session=${token}` },
+  }), env);
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  return payload.saves;
+}
+
+test("private notes stay on the save and leave with it", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const primary = await signIn(db, "30a", "notes@example.com");
+  const other = await signIn(db, "30a", "other@example.com");
+
+  let response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    name: "The Donut Hole",
+    area: "Santa Rosa Beach",
+    kind: "favorite",
+    saved: true,
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).note, "");
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    name: "The Donut Hole",
+    area: "Santa Rosa Beach",
+    kind: "favorite",
+    note: "  Kids love the powdered ones. Ask for the booth by the window.  ",
+  });
+  let payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.saved, true);
+  assert.equal(payload.note, "Kids love the powdered ones. Ask for the booth by the window.");
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    name: "The Donut Hole",
+    area: "Santa Rosa Beach",
+    kind: "favorite",
+    saved: true,
+  });
+  assert.equal((await response.json()).note, "Kids love the powdered ones. Ask for the booth by the window.");
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    name: "The Donut Hole",
+    area: "Santa Rosa Beach",
+    kind: "want",
+    saved: true,
+  });
+  assert.equal((await response.json()).note, "Kids love the powdered ones. Ask for the booth by the window.");
+
+  const tooLong = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    kind: "favorite",
+    note: "x".repeat(281),
+  });
+  assert.equal(tooLong.status, 400);
+  assert.equal((await tooLong.json()).error, "Keep the note under 280 characters.");
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    kind: "want",
+    note: "Crawfish étouffée.",
+  });
+  assert.equal((await response.json()).note, "Crawfish étouffée.");
+  let saves = await listSaves(primary.env, primary.origin, primary.token);
+  assert.deepEqual(
+    saves.filter((item) => item.slug === "the-donut-hole-inlet-beach").map((item) => [item.kind, item.note]).sort(),
+    [
+      ["favorite", "Crawfish étouffée."],
+      ["want", "Crawfish étouffée."],
+    ],
+  );
+
+  const outsider = await listSaves(other.env, other.origin, other.token);
+  assert.deepEqual(outsider, []);
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    kind: "favorite",
+    note: "   ",
+  });
+  assert.equal((await response.json()).note, "");
+  saves = await listSaves(primary.env, primary.origin, primary.token);
+  assert.equal(saves.find((item) => item.kind === "favorite").note, "");
+  assert.equal(saves.find((item) => item.kind === "want").note, "");
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    kind: "favorite",
+    site: "30a",
+    saved: false,
+  });
+  assert.equal((await response.json()).saved, false);
+  saves = await listSaves(primary.env, primary.origin, primary.token);
+  assert.deepEqual(saves.map((item) => item.kind), ["want"]);
+
+  response = await putSave(primary.env, primary.origin, primary.token, {
+    slug: "the-donut-hole-inlet-beach",
+    kind: "want",
+    saved: false,
+  });
+  assert.equal((await response.json()).saved, false);
+  assert.deepEqual(await listSaves(primary.env, primary.origin, primary.token), []);
+});
+
+test("a Destin note can be edited from the 30A list without creating a new save", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const home = await signIn(db, "30a", "home@example.com");
+  const destin = await signIn(db, "destin", "home@example.com");
+
+  let response = await putSave(destin.env, destin.origin, destin.token, {
+    slug: "louisiana-lagniappe",
+    name: "Louisiana Lagniappe",
+    area: "Destin",
+    kind: "want",
+    saved: true,
+    note: "Reservation under Marc.",
+  });
+  assert.equal(response.status, 200);
+
+  response = await putSave(home.env, home.origin, home.token, {
+    slug: "louisiana-lagniappe",
+    name: "Louisiana Lagniappe",
+    area: "Destin",
+    kind: "want",
+    site: "destin",
+    saved: true,
+    note: "Reservation under Marc. Crawfish étouffée.",
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).note, "Reservation under Marc. Crawfish étouffée.");
+
+  const blocked = await putSave(home.env, home.origin, home.token, {
+    slug: "new-destin-place",
+    name: "New Destin Place",
+    area: "Destin",
+    kind: "favorite",
+    site: "destin",
+    saved: true,
+    note: "Should not create a save.",
+  });
+  assert.equal(blocked.status, 400);
+
+  const saves = await listSaves(home.env, home.origin, home.token);
+  assert.deepEqual(saves.map((item) => [item.site, item.slug, item.note]), [
+    ["destin", "louisiana-lagniappe", "Reservation under Marc. Crawfish étouffée."],
+  ]);
 });
 
 test("the site worker answers account config without touching assets", async () => {

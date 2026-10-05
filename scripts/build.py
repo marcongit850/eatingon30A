@@ -4024,6 +4024,7 @@ def build_account_pages() -> None:
         "</div>"
         '<div id="place-list" class="place-list" data-places></div>'
         '<p class="account-status" data-places-status role="status" aria-live="polite"></p>'
+        '<p class="place-privacy">Notes stay private on your account. Shown on My places for each saved restaurant (Favorites and Want to try).</p>'
         "</div>"
     )
     write(

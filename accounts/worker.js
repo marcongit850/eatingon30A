@@ -13,12 +13,13 @@
  * unset in production.
  */
 
-import { SCHEMA_SQL } from "./schema.js";
+import { SAVE_NOTE_SQL, SCHEMA_SQL } from "./schema.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SITES = new Set(["30a", "destin"]);
 const KINDS = new Set(["favorite", "want"]);
+const NOTE_MAX = 280;
 const LINK_MS = 20 * 60 * 1000;
 const CODE_MS = 2 * 60 * 1000;
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -34,10 +35,23 @@ export function resetLimits() {
   hits.clear();
 }
 
+function columnNames(info) {
+  const rows = info && info.results ? info.results : [];
+  return rows.map((column) => column && column.name).filter(Boolean);
+}
+
 export async function ensureSchema(db) {
   const statements = SCHEMA_SQL.split(";").map((part) => part.trim()).filter(Boolean);
   for (const statement of statements) {
     await db.prepare(statement).run();
+  }
+  const names = columnNames(await db.prepare("PRAGMA table_info(saves)").all());
+  if (names.includes("note")) return;
+  try {
+    await db.prepare(SAVE_NOTE_SQL).run();
+  } catch (error) {
+    const message = String((error && error.message) || error);
+    if (!/duplicate column/i.test(message)) throw error;
   }
 }
 
@@ -191,6 +205,18 @@ function cleanLine(value, max) {
   const text = String(value || "").replace(/[\u0000-\u001F\u007F]+/g, " ").replace(/\s+/g, " ").trim();
   if (!text || text.length > max) return "";
   return text;
+}
+
+function parseNote(value) {
+  if (typeof value !== "string") return { ok: false, error: "That note could not be saved." };
+  const text = value
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\t/g, " ")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .trim();
+  if (text.length > NOTE_MAX) return { ok: false, error: "Keep the note under 280 characters." };
+  return { ok: true, text };
 }
 
 async function readJson(request) {
@@ -402,7 +428,7 @@ async function listSaves(request, env) {
   const row = await userBySession(env.DB, request.headers.get("x-session") || "", site);
   if (!row) return json({ ok: false, error: "Sign in to see your places." }, 401);
   const result = await env.DB.prepare(
-    "SELECT site, slug, name, area, kind, created_at FROM saves WHERE user_id = ? ORDER BY created_at DESC, name COLLATE NOCASE",
+    "SELECT site, slug, name, area, kind, note, created_at FROM saves WHERE user_id = ? ORDER BY created_at DESC, name COLLATE NOCASE",
   ).bind(row.id).all();
   const saves = (result.results || []).map((item) => ({
     site: item.site,
@@ -410,9 +436,16 @@ async function listSaves(request, env) {
     name: item.name,
     area: item.area,
     kind: item.kind,
+    note: item.note ? String(item.note) : "",
     createdAt: item.created_at,
   }));
   return json({ ok: true, saves });
+}
+
+async function writeNote(db, userId, site, slug, note) {
+  await db.prepare(
+    "UPDATE saves SET note = ? WHERE user_id = ? AND site = ? AND slug = ?",
+  ).bind(note, userId, site, slug).run();
 }
 
 async function putSave(request, env) {
@@ -425,27 +458,62 @@ async function putSave(request, env) {
   const kind = String(body.kind || "");
   const site = String(body.site || "");
   const slug = String(body.slug || "");
-  const saved = body.saved === true;
+  const hasNote = Object.hasOwn(body, "note");
   if (!KINDS.has(kind) || !SITES.has(site) || !SLUG.test(slug) || slug.length > 140) {
     return json({ ok: false, error: "That place could not be saved." }, 400);
   }
-  if (saved && site !== caller) return json({ ok: false, error: "Save this place on its own guide." }, 400);
-  if (!saved) {
+  let note = "";
+  if (hasNote) {
+    const parsed = parseNote(body.note);
+    if (!parsed.ok) return json({ ok: false, error: parsed.error }, 400);
+    note = parsed.text;
+  }
+  const saving = body.saved === true;
+  if (body.saved === false || (!saving && !hasNote)) {
     await env.DB.prepare(
       "DELETE FROM saves WHERE user_id = ? AND site = ? AND slug = ? AND kind = ?",
     ).bind(row.id, site, slug, kind).run();
     return json({ ok: true, saved: false });
   }
+  const existing = await env.DB.prepare(
+    "SELECT note FROM saves WHERE user_id = ? AND site = ? AND slug = ? AND kind = ?",
+  ).bind(row.id, site, slug, kind).first();
+  // A note write must not create a save, and must not turn one off.
+  // Cross-guide calls can edit a note on a row that already exists.
+  if (!saving || site !== caller) {
+    if (!existing) {
+      const error = site !== caller
+        ? "Save this place on its own guide."
+        : "Save this place before adding a note.";
+      return json({ ok: false, error }, 400);
+    }
+    if (!hasNote) return json({ ok: false, error: "Save this place on its own guide." }, 400);
+    await writeNote(env.DB, row.id, site, slug, note);
+    return json({ ok: true, saved: true, note });
+  }
   const name = cleanLine(body.name, 160);
   if (!name) return json({ ok: false, error: "That place could not be saved." }, 400);
   const area = cleanLine(body.area, 120);
+  let storedNote = "";
+  if (hasNote) storedNote = note;
+  else if (existing && existing.note) storedNote = String(existing.note);
+  else if (!existing) {
+    const sibling = await env.DB.prepare(
+      "SELECT note FROM saves WHERE user_id = ? AND site = ? AND slug = ? AND note != '' LIMIT 1",
+    ).bind(row.id, site, slug).first();
+    storedNote = sibling && sibling.note ? String(sibling.note) : "";
+  }
   const now = Date.now();
   await env.DB.prepare(
-    `INSERT INTO saves (user_id, site, slug, name, area, kind, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(user_id, site, slug, kind) DO UPDATE SET name = excluded.name, area = excluded.area`,
-  ).bind(row.id, site, slug, name, area, kind, now).run();
-  return json({ ok: true, saved: true });
+    `INSERT INTO saves (user_id, site, slug, name, area, kind, note, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(user_id, site, slug, kind) DO UPDATE SET
+       name = excluded.name,
+       area = excluded.area,
+       note = excluded.note`,
+  ).bind(row.id, site, slug, name, area, kind, storedNote, now).run();
+  if (hasNote) await writeNote(env.DB, row.id, site, slug, note);
+  return json({ ok: true, saved: true, note: storedNote });
 }
 
 export async function handleAccounts(request, env, fetchImpl = fetch) {
