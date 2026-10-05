@@ -22,7 +22,7 @@ const KINDS = new Set(["favorite", "want"]);
 const NOTE_MAX = 280;
 const LINK_MS = 20 * 60 * 1000;
 const CODE_MS = 2 * 60 * 1000;
-const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const PRODUCTION_HOSTS = {
   "30a": new Set(["www.eatingon30a.com", "eatingon30a.com", "eatingon30a.352marc.workers.dev"]),
   destin: new Set(["www.eatingindestin.com", "eatingindestin.com", "eatingindestin.352marc.workers.dev"]),
