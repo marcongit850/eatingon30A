@@ -100,6 +100,8 @@ Coupon signups (`POST /api/subscribe`) are also posted to a Google Sheets Apps S
 
 The webhook body includes `site` (`30A`), the email, coupons, an optional `audience` of `local` or `visitor`, and `sourcePage` set to the live homepage `https://www.eatingon30a.com/`. Preview canonical links stay on the workers.dev origin in `site.config.json`. The JSON response reports `recorded` separately from `delivered`. `recorded` is `true` only when the webhook body is JSON and `ok` is `true`. An HTTP 200 HTML page such as “Script function not found: doPost”, any other non-JSON body, or `{ok:false}` leaves `recorded` as `false`. If either Sheets secret is missing, the webhook is skipped and `recorded` is `false`. A Sheets error still returns success when Resend accepted the signup, so the browser does not retry and send a second email. Listing mail does not call the webhook.
 
+The account sign-in form can append the same kind of coupon row. A checked Eating on 30A box uses `GOOGLE_SHEETS_WEBHOOK_TOKEN` and `site` `30A`. A checked Eating in Destin box uses a separate secret, `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`, and `site` `Destin`. See Shared accounts for the dashboard steps. `POST /api/subscribe` does not use the Destin token.
+
 ```bash
 npx wrangler deploy
 ```
@@ -148,7 +150,32 @@ npx wrangler secret put ACCOUNTS_SHARED_SECRET
 
 Do not set `MAGIC_LINK_PREVIEW` on the deployed accounts Worker. That variable is for local testing only. When it is `1`, the sign-in API includes the link in the JSON response.
 
-The marketing checkbox on the sign-in form is off unless the visitor checks it. A new account stores that choice. A later sign-in can turn updates on, and leaving the box unchecked does not turn an existing opt-in off.
+The sign-in form has two coupon checkboxes. Both are off unless the visitor checks them.
+
+- Email me coupons and updates from Eating on 30A.
+- Email me coupons and updates from Eating in Destin.
+
+Leave both unchecked to receive only the sign-in link. Checking either box stores `marketing_opt_in` on the account. A later sign-in can turn that on. Leaving both unchecked does not turn an existing opt-in off.
+
+A checked box also appends one coupon row through the same Google Sheets webhook as `POST /api/subscribe`. The 30A box posts `site` `30A` with `GOOGLE_SHEETS_WEBHOOK_TOKEN`. The Destin box posts `site` `Destin` with `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`. Both checked means two posts. Each post sets `coupons` to true, omits `audience`, and sets `sourcePage` to `https://www.eatingon30a.com/account/`. These rows do not send the Resend coupon signup email. The magic-link email is unchanged. If a sheet post fails, the magic link still succeeds when the accounts Worker accepted it.
+
+`GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN` is optional. If it is missing, the Destin row is skipped and sign-in still succeeds. The 30A row still posts when that box is checked and the existing URL and 30A token are set. Set the Destin token on the `eatingon30a` Worker. Do not put it in `wrangler.jsonc`.
+
+In the Cloudflare dashboard:
+
+1. Open the account that owns the `eatingon30a` Worker.
+2. Go to Workers & Pages and open the Worker named `eatingon30a`.
+3. Open Settings, then Variables and Secrets.
+4. Add a secret. Name it `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`. Paste the Apps Script token that writes the DESTIN tab. Save.
+5. Leave `GOOGLE_SHEETS_WEBHOOK_URL` and `GOOGLE_SHEETS_WEBHOOK_TOKEN` as they are. The URL is shared. The existing token stays the 30A token.
+
+Saving the secret publishes it on `eatingon30a`. From this repo, the same secret is:
+
+```bash
+npx wrangler secret put GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN
+```
+
+Wrangler prompts for the Destin token and publishes it on `eatingon30a`.
 
 ## Pages
 

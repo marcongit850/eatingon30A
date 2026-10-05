@@ -222,13 +222,20 @@
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       var email = form.email.value.trim();
-      var marketing = form.marketing && form.marketing.checked === true;
+      var coupons30a = Boolean(form.coupons30a && form.coupons30a.checked);
+      var couponsDestin = Boolean(form.couponsDestin && form.couponsDestin.checked);
       status.textContent = "";
       fetch("/api/account/request", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: email, marketingOptIn: marketing, next: nextField.value })
+        body: JSON.stringify({
+          email: email,
+          coupons30a: coupons30a,
+          couponsDestin: couponsDestin,
+          marketingOptIn: coupons30a || couponsDestin,
+          next: nextField.value
+        })
       }).then(function (response) {
         return response.json().then(function (body) { return { ok: response.ok, body: body }; });
       }).then(function (result) {
