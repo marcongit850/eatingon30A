@@ -77,7 +77,7 @@ Columns that show up on the site:
 
 Image columns are `List Image`, `Detail Image`, and `Logo`. In this export, and on the live Wix site checked 29 Sep 2026, only Stinky’s Fish Camp has them filled. The list image is a black heart, so the build skips it. Stinky’s logo is still the local file from that export. Town photos still come from `locations.csv`.
 
-Restaurant photos live in `images/restaurants/<slug>/`. `01` is the cover on the card, the profile hero, the map popup, and the Open Graph image. `02` and `03` show in a strip under the hero when they exist. A single file named with the site slug (`images/restaurants/o-ku-alys-beach.jpg`, `.jpeg`, `.webp`, or `.png`) still works as a cover when that folder is absent. A listing with neither keeps the monogram. The build does not call Google Places.
+Restaurant photos live in `images/restaurants/<slug>/`. `01` is the cover on the card, the profile hero, the map popup, and the Open Graph image. `02` through `07` show in a strip under the hero when they exist. A single file named with the site slug (`images/restaurants/o-ku-alys-beach.jpg`, `.jpeg`, `.webp`, or `.png`) still works as a cover when that folder is absent. A listing with neither keeps the monogram. The build does not call Google Places.
 
 The raw CSV is not uploaded with the site (see `.assetsignore`). It includes export columns such as owner ids and `googlePlaceId`. Those columns are not read into the public JSON and are not sent to Google.
 
