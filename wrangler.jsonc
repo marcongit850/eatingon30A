@@ -19,6 +19,14 @@
     "ACCOUNT_SITE": "30a",
     "ACCOUNTS_ORIGIN": "https://eating-accounts.352marc.workers.dev"
   },
+  // wrangler preview will not inherit production vars. These are the same
+  // workers.dev account settings already used above.
+  "previews": {
+    "vars": {
+      "ACCOUNT_SITE": "30a",
+      "ACCOUNTS_ORIGIN": "https://eating-accounts.352marc.workers.dev"
+    }
+  },
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
