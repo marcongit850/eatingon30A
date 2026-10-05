@@ -933,6 +933,12 @@ check("CONTACT_EMAIL" in worker_js and "RESEND_API_KEY" in worker_js and "SUBSCR
 check('pathname === "/api/listing"' in worker_js and "reply_to" in worker_js, "listing mail should use the same Resend secrets and a reply address")
 check('other: "Other"' in worker_js, "worker should accept an Other listing request")
 check("Enter the restaurant name." not in worker_js, "worker should not require a restaurant name")
+check(
+    "fbevents.js" in worker_js
+    and f"fbq('init', '{build.META_PIXEL_ID}')" in worker_js
+    and f"https://www.facebook.com/tr?id={build.META_PIXEL_ID}&ev=PageView&noscript=1" in worker_js,
+    "form thanks pages should include the Meta pixel head code and noscript image",
+)
 check("run_worker_first" in wrangler and '"main": "worker.js"' in wrangler, "api subscribe should be served by the worker")
 html_pages = [
     path
@@ -964,6 +970,27 @@ for page in html_pages:
         text.count(f"gtag('config', '{build.GA_MEASUREMENT_ID}')") == 1,
         f"{rel} should configure GA4 once",
     )
+    head, _, _ = text.partition("</head>")
+    check(
+        head.count(f"fbq('init', '{build.META_PIXEL_ID}')") == 1,
+        f"{rel} should init the Meta pixel once in the head",
+    )
+    check(
+        head.count("fbq('track', 'PageView')") == 1,
+        f"{rel} should track Meta PageView once in the head",
+    )
+    check(
+        head.count("https://connect.facebook.net/en_US/fbevents.js") == 1,
+        f"{rel} should load fbevents.js once in the head",
+    )
+    body_open = re.search(r"<body(?: class=\"home\")?>\n", text)
+    check(body_open is not None, f"{rel} should have a body tag")
+    if body_open:
+        check(
+            text.startswith(build.META_PIXEL_NOSCRIPT, body_open.end()),
+            f"{rel} should place the Meta noscript immediately after body",
+        )
+    check(text.count(build.META_PIXEL_ID) == 2, f"{rel} should include {build.META_PIXEL_ID} once in init and once in the noscript image")
     check('id="site-header"' in text, f"{rel} does not mount the shared header")
     check('id="site-footer"' in text, f"{rel} does not mount the shared footer")
     check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")
