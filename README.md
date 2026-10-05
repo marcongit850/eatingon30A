@@ -190,6 +190,8 @@ Leave both unchecked to receive only the sign-in link. Checking either box store
 
 A checked box also appends one coupon row through the same Google Sheets webhook as `POST /api/subscribe`. The 30A box posts `site` `30A` with `GOOGLE_SHEETS_WEBHOOK_TOKEN`. The Destin box posts `site` `Destin` with `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`. Both checked means two posts. Each post sets `coupons` to true, omits `audience`, and sets `sourcePage` to `https://www.eatingon30a.com/account/`. These rows do not send the Resend coupon signup email. The magic-link email is unchanged. If a sheet post fails, the magic link still succeeds when the accounts Worker accepted it.
 
+My places has the same two checkboxes for someone who is already signed in. The block stays hidden until `/api/account/me` returns a user. It is a disclosure on the page, not a popup, and the coupon popup does not open on `/my-places/`. Submit posts to `POST /api/account/coupons`. The Worker uses the session email and ignores any email in the body. A checked box appends a row through the same webhook and token as sign-in. `sourcePage` is `https://www.eatingon30a.com/my-places/`. These rows do not send the Resend coupon signup email. A missing token or a sheet error still returns success. Neither box checked returns an error and does not call the webhook.
+
 `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN` is optional. If it is missing, the Destin row is skipped and sign-in still succeeds. The 30A row still posts when that box is checked and the existing URL and 30A token are set. Set the Destin token on the `eatingon30a` Worker. Do not put it in `wrangler.jsonc`.
 
 In the Cloudflare dashboard:
@@ -218,5 +220,5 @@ Wrangler prompts for the Destin token and publishes it on `eatingon30a`.
 - `/guides/` and one page per guide, built from directory tags: seafood, breakfast, coffee and cafes, kid-friendly, dinner in Seaside, Rosemary Beach, WaterColor, walkable towns (Seaside, Alys Beach, and Rosemary Beach; there is no walkable tag), Lauren’s Favorites, and Nearby restaurants on US 98 (near 30A, not on the beach road)
 - `/about/` and `/contact/`
 - `/account/` email sign-in, shared with Eating in Destin
-- `/my-places/` favorites and want to try, labeled 30A or Destin
+- `/my-places/` favorites and want to try, labeled 30A or Destin, plus a quiet coupon opt-in for signed-in visitors
 - `sitemap.xml`, `robots.txt`, `llms.txt`

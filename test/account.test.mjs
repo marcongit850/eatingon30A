@@ -90,6 +90,29 @@ test("sign-in coupon checkboxes are off unless the visitor checks them", () => {
   assert.match(script, /marketingOptIn: coupons30a \|\| couponsDestin/);
 });
 
+test("restaurant cards save with the same sign-in and PUT behavior", () => {
+  const script = readFileSync(new URL("../account.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const directory = readFileSync(new URL("../restaurants/index.html", import.meta.url), "utf8");
+  const area = readFileSync(new URL("../areas/seaside/index.html", import.meta.url), "utf8");
+  const nearby = readFileSync(new URL("../areas/nearby/index.html", import.meta.url), "utf8");
+  const guide = readFileSync(new URL("../guides/best-seafood-30a/index.html", import.meta.url), "utf8");
+  const guideIndex = readFileSync(new URL("../guides/index.html", import.meta.url), "utf8");
+  for (const html of [directory, area, nearby, guide]) {
+    assert.match(html, /class="card-link"/);
+    assert.match(html, /class="save-slot"/);
+    assert.equal(html.includes('class="card-save"'), false);
+  }
+  assert.equal(guideIndex.includes('class="save-slot"'), false);
+  assert.match(script, /querySelectorAll\("\.save-slot"\)/);
+  assert.match(script, /location\.href = signInHref\(\)/);
+  assert.match(script, /method: "PUT"/);
+  assert.match(script, /if \(chips\) head\.insertBefore\(bar, chips\)/);
+  assert.match(styles, /\.card \.save-slot \{[^}]*align-self: end/);
+  assert.match(styles, /linear-gradient\(to top, rgba\(16, 40, 37, 0\.62\)/);
+  assert.equal(script.includes("—"), false);
+});
+
 test("my places page names both guides", () => {
   const html = readFileSync(new URL("../my-places/index.html", import.meta.url), "utf8");
   assert.match(html, /data-tab="favorite"/);
@@ -99,6 +122,37 @@ test("my places page names both guides", () => {
   assert.match(html, /Each card is labeled 30A or Destin/);
   assert.match(html, /Notes stay private on your account\. Shown on My places for each saved restaurant \(Favorites and Want to try\)\./);
   assert.equal(html.includes("—"), false);
+  assert.equal(html.includes("–"), false);
+});
+
+test("my places coupon opt-in is a quiet section, not a popup", () => {
+  const html = readFileSync(new URL("../my-places/index.html", import.meta.url), "utf8");
+  const script = readFileSync(new URL("../account.js", import.meta.url), "utf8");
+  const subscribe = readFileSync(new URL("../subscribe.js", import.meta.url), "utf8");
+  assert.match(html, /data-coupon-optin hidden/);
+  assert.match(html, /action="\/api\/account\/coupons"/);
+  assert.equal(html.includes("<dialog"), false);
+  assert.equal(html.includes("subscribe-popup"), false);
+  assert.equal(html.includes('type="email"'), false);
+  assert.equal(html.includes("—"), false);
+  assert.equal(html.includes("–"), false);
+  for (const name of ["coupons30a", "couponsDestin"]) {
+    const input = html.match(new RegExp(`<input name="${name}"[^>]*>`));
+    assert.ok(input, `${name} checkbox should be on My places`);
+    assert.equal(input[0].includes("checked"), false);
+    assert.match(input[0], /type="checkbox"/);
+    assert.match(input[0], /value="yes"/);
+  }
+  assert.match(html, /Email me coupons and updates from Eating on 30A\./);
+  assert.match(html, /Email me coupons and updates from Eating in Destin\./);
+  assert.match(html, /This uses the email on your account\./);
+  assert.match(script, /block\.hidden = false/);
+  assert.match(script, /\/api\/account\/coupons/);
+  assert.match(script, /JSON\.stringify\(\{\s*coupons30a: coupons30a,\s*couponsDestin: couponsDestin\s*\}\)/);
+  assert.equal(script.includes("api.resend.com"), false);
+  assert.equal(script.includes("—"), false);
+  assert.equal(script.includes("–"), false);
+  assert.match(subscribe, /path === "\/my-places" \|\| path === "\/my-places\/"/);
 });
 
 test("note migration matches the worker alter", () => {
@@ -353,6 +407,7 @@ test("missing account secret does not pretend the email was sent", async () => {
 
 const SHEETS_URL = "https://script.google.com/macros/s/test-webhook/exec";
 const ACCOUNT_SOURCE = "https://www.eatingon30a.com/account/";
+const PLACES_SOURCE = "https://www.eatingon30a.com/my-places/";
 
 function sheetEnv(db, extra = {}) {
   return {
@@ -392,6 +447,30 @@ function sheetRows(calls) {
   return calls
     .filter((call) => call.url === SHEETS_URL)
     .map((call) => JSON.parse(call.init.body));
+}
+
+async function sessionFor(db, email) {
+  const site = siteEnv(db, "30a");
+  const response = await requestSignIn(site, { email, next: "/my-places/" });
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  const verify = await handleAccounts(new Request(payload.previewUrl), accountsEnv(db));
+  assert.equal(verify.status, 302);
+  const finish = await handleAccount(new Request(verify.headers.get("location")), site);
+  assert.equal(finish.status, 302);
+  return cookieValue(finish.headers.get("set-cookie"), "ea_session");
+}
+
+async function postCoupons(env, token, body, fetchImpl, headers = { "content-type": "application/json" }) {
+  const payload = headers["content-type"].includes("json") ? JSON.stringify(body) : body;
+  return handleAccount(new Request("https://www.eatingon30a.com/api/account/coupons", {
+    method: "POST",
+    headers: {
+      ...headers,
+      ...(token ? { cookie: `ea_session=${token}` } : {}),
+    },
+    body: payload,
+  }), env, fetchImpl);
 }
 
 test("checked coupon boxes append one sheet row per site and skip the coupon email", async () => {
@@ -736,6 +815,147 @@ test("a Destin note can be edited from the 30A list without creating a new save"
   assert.deepEqual(saves.map((item) => [item.site, item.slug, item.note]), [
     ["destin", "louisiana-lagniappe", "Reservation under Marc. Crawfish étouffée."],
   ]);
+});
+
+test("my places opt-in appends sheet rows for the session email and skips Resend", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "session@example.com");
+  const { calls, fetchImpl } = captureFetch();
+  const response = await postCoupons(sheetEnv(db), token, {
+    email: "someone-else@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
+  assert.equal(calls.some((call) => String(call.url).includes("resend.com")), false);
+  const rows = sheetRows(calls);
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows.find((row) => row.site === "30A"), {
+    token: "token-30a",
+    site: "30A",
+    email: "session@example.com",
+    coupons: true,
+    sourcePage: PLACES_SOURCE,
+  });
+  assert.deepEqual(rows.find((row) => row.site === "Destin"), {
+    token: "token-destin",
+    site: "Destin",
+    email: "session@example.com",
+    coupons: true,
+    sourcePage: PLACES_SOURCE,
+  });
+  assert.equal(rows.some((row) => row.email === "someone-else@example.com"), false);
+});
+
+test("my places opt-in appends only the checked sheet row", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "one-list@example.com");
+  const destinOnly = captureFetch();
+  let response = await postCoupons(sheetEnv(db), token, {
+    coupons30a: false,
+    couponsDestin: true,
+  }, destinOnly.fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(destinOnly.calls).map((row) => [row.site, row.token, row.email]), [
+    ["Destin", "token-destin", "one-list@example.com"],
+  ]);
+
+  const thirtyOnly = captureFetch();
+  response = await postCoupons(sheetEnv(db), token, {
+    coupons30a: "yes",
+    couponsDestin: "",
+  }, thirtyOnly.fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(thirtyOnly.calls), [{
+    token: "token-30a",
+    site: "30A",
+    email: "one-list@example.com",
+    coupons: true,
+    sourcePage: PLACES_SOURCE,
+  }]);
+});
+
+test("my places opt-in skips a missing Destin token", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "no-destin@example.com");
+  const { calls, fetchImpl } = captureFetch();
+  const response = await postCoupons(
+    sheetEnv(db, { GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN: "" }),
+    token,
+    { coupons30a: true, couponsDestin: true },
+    fetchImpl,
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(calls).map((row) => row.site), ["30A"]);
+});
+
+test("my places opt-in without a box does not call the sheet", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "none@example.com");
+  const { calls, fetchImpl } = captureFetch();
+  const response = await postCoupons(sheetEnv(db), token, {
+    email: "none@example.com",
+    coupons30a: false,
+    couponsDestin: false,
+  }, fetchImpl);
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error, "Choose Eating on 30A, Eating in Destin, or both.");
+  assert.equal(calls.length, 0);
+});
+
+test("my places opt-in without a session does not call the sheet", async () => {
+  const { calls, fetchImpl } = captureFetch();
+  const response = await postCoupons(sheetEnv(memoryDb()), "", {
+    email: "guest@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+  }, fetchImpl);
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).error, "Sign in to save this.");
+  assert.equal(calls.length, 0);
+  assert.equal(calls.some((call) => String(call.url).includes("resend.com")), false);
+});
+
+test("a sheet failure does not fail a signed-in coupon opt-in", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "sheet-down-places@example.com");
+  const response = await postCoupons(sheetEnv(db), token, {
+    coupons30a: true,
+    couponsDestin: true,
+  }, () => Promise.reject(new Error("sheet down")));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
+});
+
+test("a form post from My places uses the session email", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "form-places@example.com");
+  const { calls, fetchImpl } = captureFetch();
+  const response = await postCoupons(
+    sheetEnv(db),
+    token,
+    new URLSearchParams({
+      email: "typed@example.com",
+      couponsDestin: "yes",
+    }),
+    fetchImpl,
+    { "content-type": "application/x-www-form-urlencoded" },
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(calls), [{
+    token: "token-destin",
+    site: "Destin",
+    email: "form-places@example.com",
+    coupons: true,
+    sourcePage: PLACES_SOURCE,
+  }]);
 });
 
 test("the site worker answers account config without touching assets", async () => {

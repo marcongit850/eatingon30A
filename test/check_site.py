@@ -275,6 +275,44 @@ expected_monograms = [
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
 check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+check(
+    build.listing_photos("pecan-jacks-grayton-beach")
+    == [f"/images/restaurants/pecan-jacks-grayton-beach/0{n}.jpg" for n in range(1, 5)],
+    "Grayton Pecan Jacks should use the four supplied frames",
+)
+grayton_cover = build.local_image_info(ROOT / "images/restaurants/pecan-jacks-grayton-beach/01.jpg")
+check(
+    grayton_cover
+    and grayton_cover[0] > grayton_cover[1]
+    and grayton_cover[0] / grayton_cover[1] >= 1.4,
+    f"Grayton Pecan Jacks cover should be a landscape hero, got {grayton_cover}",
+)
+check(
+    build.listing_photos("pecan-jacks-seagrove-beach") == [],
+    "Seagrove Pecan Jacks should stay a monogram",
+)
+check(
+    all(item["slug"] != "pecan-jacks-gulf-place" for item in restaurants),
+    "closed Gulf Place Pecan Jacks should stay off the site",
+)
+grayton_page = (ROOT / "restaurants" / "pecan-jacks-grayton-beach" / "index.html").read_text(encoding="utf-8")
+grayton_hero = grayton_page.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check(
+    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_hero and "hero-logo" not in grayton_hero,
+    "Grayton Pecan Jacks hero should be the landscape cover",
+)
+for frame in ("02.jpg", "03.jpg", "04.jpg"):
+    check(
+        f"/images/restaurants/pecan-jacks-grayton-beach/{frame}" in grayton_page,
+        f"Grayton Pecan Jacks film should include {frame}",
+    )
+grayton_card = directory[directory.find('id="r-pecan-jacks-grayton-beach"') :][:2200]
+check(
+    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_card and "card-logo" not in grayton_card,
+    "Grayton Pecan Jacks card should use the cover photo",
+)
+seagrove_page = (ROOT / "restaurants" / "pecan-jacks-seagrove-beach" / "index.html").read_text(encoding="utf-8")
+check('class="mono"' in seagrove_page and "pecan-jacks-grayton-beach" not in seagrove_page, "Seagrove Pecan Jacks should stay a monogram")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
@@ -604,6 +642,11 @@ check("visibilitychange" in site_js and "pagehide" in site_js, "featured auto-ro
 check("prefers-reduced-motion: reduce" in site_js, "featured auto-rotate should respect reduced motion")
 check("mapListCard" in site_js and "map-thumb" in site_js and "openPopup" in site_js, "map list should use compact cards and still open the pin")
 check("#map-list .map-hit" in styles and "#map-list .map-thumb" in styles, "map list cards should stay compact")
+check("save-slot" in site_js and "map-hit-link" in site_js, "map list cards should include a save slot outside the link")
+check(
+    ".card .save-slot" in styles and "align-self: end" in styles and "rgba(16, 40, 37, 0.62)" in styles,
+    "card save controls should sit on the photo with a light dark gradient",
+)
 check(".cover-arrow" in styles and "min-width: 44px" in styles, "featured arrows should stay large enough to tap")
 for slug in featured:
     check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")
@@ -627,6 +670,28 @@ if card:
     tag = card.group(0)
     check('data-area="inlet-beach"' in tag, "Big Bad Breakfast area filter data")
     check("Breakfast" in tag and "Lunch" in tag, "Big Bad Breakfast meal data")
+bbb = directory[directory.find('id="r-big-bad-breakfast-inlet-beach"'):]
+bbb = bbb[: bbb.find("</article>") + len("</article>")]
+check('class="card-link"' in bbb and 'href="/restaurants/big-bad-breakfast-inlet-beach/"' in bbb, "card link should open the profile")
+check('class="save-slot"' in bbb, "directory cards should carry a save slot")
+check('data-slug="big-bad-breakfast-inlet-beach"' in bbb, "save slot should include the slug")
+check('data-name="Big Bad Breakfast"' in bbb, "save slot should include the name")
+check('data-area="Inlet Beach | The Pointe"' in bbb, "save slot area should match the listing label")
+check(bbb.find("</a>") < bbb.find('class="save-slot"'), "save controls should sit outside the card link")
+check(directory.count('class="save-slot"') == len(restaurants), "every directory card should have one save slot")
+check("save-slot" not in (ROOT / "guides" / "index.html").read_text(encoding="utf-8"), "guide teasers are not restaurant cards")
+check("save-slot" not in (ROOT / "about" / "index.html").read_text(encoding="utf-8"), "pages without restaurant cards should not include save slots")
+seaside_area = (ROOT / "areas" / "seaside" / "index.html").read_text(encoding="utf-8")
+check('class="save-slot"' in seaside_area and 'data-slug="bud-and-alleys-seaside"' in seaside_area, "town pages should save from restaurant cards")
+check(
+    'class="save-slot"' in (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8"),
+    "guide restaurant grids should save from the same card",
+)
+account_js = (ROOT / "account.js").read_text(encoding="utf-8")
+check("mountCardSaves" in account_js and ".save-slot" in account_js, "account.js should mount saves on card slots")
+check('"/api/account/saves"' in account_js and "cards-mounted" in account_js, "card saves should use the account API and refresh with the map list")
+check("Want to try" in account_js and "Favorite" in account_js, "save buttons should keep the listing labels")
+check("—" not in account_js and "–" not in account_js, "account copy should not use em or en dashes")
 
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "Stinky's should use the supplied cover")
