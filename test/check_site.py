@@ -706,6 +706,35 @@ gallion = (ROOT / "restaurants" / "gallions-rosemary-beach" / "index.html").read
 check(shunk_url in shunk and ">Photo: Shunk Gulley Oyster Bar</a>" in shunk, "Shunk Gulley should credit its photos and link its site")
 check(build.e(gallion_url) in gallion and build.e(gallion_reserve) in gallion and "opentable" not in gallion.lower(), "Gallion's reserve link should stay on the restaurant site")
 check(">Photo: Gallion" in gallion, "Gallion's photos should be credited")
+website_hours = {
+    "shunk-gulley-oyster-bar-gulf-place": shunk_url,
+    "gallions-rosemary-beach": gallion_url,
+    "beach-happy-cafe-seagrove-beach": happy_url,
+    "beach-happy-cafe-watercolor": happy_url,
+}
+for slug, url in website_hours.items():
+    row = full_by_slug[slug]
+    page = {
+        "shunk-gulley-oyster-bar-gulf-place": shunk,
+        "gallions-rosemary-beach": gallion,
+        "beach-happy-cafe-seagrove-beach": happy,
+        "beach-happy-cafe-watercolor": watercolor,
+    }[slug]
+    facts = page.split('<dl class="facts">', 1)[1].split("</dl>", 1)[0]
+    hours_dd = facts.split("<dt>Hours</dt><dd>", 1)[1].split("</dd>", 1)[0]
+    expected = "Check " + build.external_link(url, "website") + " for hours"
+    check(row["hours"] == "Check website for hours", f"{slug} hours should point to the website, got {row['hours']}")
+    check(hours_dd == expected, f"{slug} Hours fact should link website, got {hours_dd}")
+    check("See the current" in page and ">menu</a>" in page and ">hours</a>" in page and ">events</a>" in page, f"{slug} should keep the menu, hours, and events links")
+    check("—" not in hours_dd and "–" not in hours_dd, f"{slug} Hours fact should not use a dash")
+check(
+    sorted(slug for slug, row in full_by_slug.items() if row.get("hours") == "Check website for hours") == sorted(website_hours),
+    "only the Haley Miett listings should drop concrete hours",
+)
+pig = (ROOT / "restaurants" / "the-perfect-pig-watercolor" / "index.html").read_text(encoding="utf-8")
+check("<dt>Hours</dt><dd>Daily 8am-9pm</dd>" in pig, "other listings should keep concrete hours")
+check(build.clean_hours("Mon-Fri: Unknown Sat & Sun: Unknown") == "", "hours without a clock time should stay unlisted")
+check(build.clean_hours("check website for hours") == "Check website for hours", "website hours phrase should survive the hours cleaner")
 seagrove_row = full_by_slug["beach-happy-cafe-seagrove-beach"]
 check(seagrove_row["meals"] == ["Drinks"], f"Seagrove meals should be drinks only, got {seagrove_row['meals']}")
 check("Breakfast" not in seagrove_row["meals"] and "Lunch" not in seagrove_row["meals"], "Seagrove should not be a food meal")

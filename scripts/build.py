@@ -236,9 +236,17 @@ def notes_markup(notes: str) -> str:
     return "".join(f"<p>{note_paragraph_markup(paragraph)}</p>" for paragraph in paragraphs)
 
 
+# Concrete clock times stay in the Hours fact. This phrase sends people to the restaurant site instead.
+WEBSITE_HOURS = "Check website for hours"
+
+
 def clean_hours(raw: str) -> str:
     text = clean_text(raw)
-    if not text or not re.search(r"\d", text):
+    if not text:
+        return ""
+    if text.casefold() == WEBSITE_HOURS.casefold():
+        return WEBSITE_HOURS
+    if not re.search(r"\d", text):
         return ""
     return text
 
@@ -437,8 +445,21 @@ def photo_credit_markup(restaurant: dict) -> str:
     return f'<p class="photo-credit">{external_link(url, "Photo: " + label)}</p>'
 
 
+def hours_refer_to_website(restaurant: dict) -> bool:
+    """Hours that name the restaurant site instead of a clock time."""
+    return restaurant.get("hours") == WEBSITE_HOURS and bool(restaurant.get("website"))
+
+
+def hours_markup(restaurant: dict) -> str:
+    """Hours fact. The website word links to the listing's own site, including its UTM query."""
+    if hours_refer_to_website(restaurant):
+        return "Check " + external_link(restaurant["website"], "website") + " for hours"
+    hours = restaurant.get("hours") or ""
+    return e(hours) if hours else "Hours not listed"
+
+
 def external_link_count(restaurant: dict) -> int:
-    """New-tab links on a listing: sidebar website, partner button, photo credit, reserve, and note links."""
+    """New-tab links on a listing: sidebar website, partner button, photo credit, reserve, hours referral, and note links."""
     count = 1 if restaurant.get("website") else 0
     count += restaurant.get("noteLinks", 0)
     if restaurant.get("websiteCta") and restaurant.get("website"):
@@ -446,6 +467,8 @@ def external_link_count(restaurant: dict) -> int:
     if restaurant.get("photoCredit") and restaurant.get("website") and restaurant.get("photos"):
         count += 1
     if restaurant.get("reserveUrl"):
+        count += 1
+    if hours_refer_to_website(restaurant):
         count += 1
     return count
 
@@ -1897,7 +1920,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         socials.append(f'<a href="{e(restaurant["facebook"])}" rel="noopener noreferrer">Facebook</a>')
     facts = "".join(
         [
-            fact("Hours", e(restaurant["hours"]) if restaurant["hours"] else "Hours not listed"),
+            fact("Hours", hours_markup(restaurant)),
             fact("Phone", phone),
             fact("Website", website),
             fact("Address", e(restaurant["address"])),
