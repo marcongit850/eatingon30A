@@ -270,12 +270,49 @@ expected_monograms = [
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
-    "pecan-jacks-grayton-beach",
     "pecan-jacks-seagrove-beach",
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 142, f"expected 142 restaurant photos, got {len(photos)}")
+check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+check(
+    build.listing_photos("pecan-jacks-grayton-beach")
+    == [f"/images/restaurants/pecan-jacks-grayton-beach/0{n}.jpg" for n in range(1, 5)],
+    "Grayton Pecan Jacks should use the four supplied frames",
+)
+grayton_cover = build.local_image_info(ROOT / "images/restaurants/pecan-jacks-grayton-beach/01.jpg")
+check(
+    grayton_cover
+    and grayton_cover[0] > grayton_cover[1]
+    and grayton_cover[0] / grayton_cover[1] >= 1.4,
+    f"Grayton Pecan Jacks cover should be a landscape hero, got {grayton_cover}",
+)
+check(
+    build.listing_photos("pecan-jacks-seagrove-beach") == [],
+    "Seagrove Pecan Jacks should stay a monogram",
+)
+check(
+    all(item["slug"] != "pecan-jacks-gulf-place" for item in restaurants),
+    "closed Gulf Place Pecan Jacks should stay off the site",
+)
+grayton_page = (ROOT / "restaurants" / "pecan-jacks-grayton-beach" / "index.html").read_text(encoding="utf-8")
+grayton_hero = grayton_page.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check(
+    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_hero and "hero-logo" not in grayton_hero,
+    "Grayton Pecan Jacks hero should be the landscape cover",
+)
+for frame in ("02.jpg", "03.jpg", "04.jpg"):
+    check(
+        f"/images/restaurants/pecan-jacks-grayton-beach/{frame}" in grayton_page,
+        f"Grayton Pecan Jacks film should include {frame}",
+    )
+grayton_card = directory[directory.find('id="r-pecan-jacks-grayton-beach"') :][:2200]
+check(
+    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_card and "card-logo" not in grayton_card,
+    "Grayton Pecan Jacks card should use the cover photo",
+)
+seagrove_page = (ROOT / "restaurants" / "pecan-jacks-seagrove-beach" / "index.html").read_text(encoding="utf-8")
+check('class="mono"' in seagrove_page and "pecan-jacks-grayton-beach" not in seagrove_page, "Seagrove Pecan Jacks should stay a monogram")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")
