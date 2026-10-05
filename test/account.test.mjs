@@ -90,6 +90,29 @@ test("sign-in coupon checkboxes are off unless the visitor checks them", () => {
   assert.match(script, /marketingOptIn: coupons30a \|\| couponsDestin/);
 });
 
+test("restaurant cards save with the same sign-in and PUT behavior", () => {
+  const script = readFileSync(new URL("../account.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const directory = readFileSync(new URL("../restaurants/index.html", import.meta.url), "utf8");
+  const area = readFileSync(new URL("../areas/seaside/index.html", import.meta.url), "utf8");
+  const nearby = readFileSync(new URL("../areas/nearby/index.html", import.meta.url), "utf8");
+  const guide = readFileSync(new URL("../guides/best-seafood-30a/index.html", import.meta.url), "utf8");
+  const guideIndex = readFileSync(new URL("../guides/index.html", import.meta.url), "utf8");
+  for (const html of [directory, area, nearby, guide]) {
+    assert.match(html, /class="card-link"/);
+    assert.match(html, /class="save-slot"/);
+    assert.equal(html.includes('class="card-save"'), false);
+  }
+  assert.equal(guideIndex.includes('class="save-slot"'), false);
+  assert.match(script, /querySelectorAll\("\.save-slot"\)/);
+  assert.match(script, /location\.href = signInHref\(\)/);
+  assert.match(script, /method: "PUT"/);
+  assert.match(script, /if \(chips\) head\.insertBefore\(bar, chips\)/);
+  assert.match(styles, /\.card \.save-slot \{[^}]*align-self: end/);
+  assert.match(styles, /linear-gradient\(to top, rgba\(16, 40, 37, 0\.62\)/);
+  assert.equal(script.includes("—"), false);
+});
+
 test("my places page names both guides", () => {
   const html = readFileSync(new URL("../my-places/index.html", import.meta.url), "utf8");
   assert.match(html, /data-tab="favorite"/);
