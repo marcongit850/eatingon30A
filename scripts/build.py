@@ -39,6 +39,28 @@ GA4_HEAD = (
     "</script>\n"
 )
 
+# Meta Pixel for eatingon30a.com only. layout() puts the base code in every page head
+# and the noscript image immediately after the opening body tag.
+META_PIXEL_ID = "2157446775153374"
+META_PIXEL_HEAD = (
+    "<script>\n"
+    "!function(f,b,e,v,n,t,s)\n"
+    "{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\n"
+    "n.callMethod.apply(n,arguments):n.queue.push(arguments)};\n"
+    "if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\n"
+    "n.queue=[];t=b.createElement(e);t.async=!0;\n"
+    "t.src=v;s=b.getElementsByTagName(e)[0];\n"
+    "s.parentNode.insertBefore(t,s)}(window, document,'script',\n"
+    "'https://connect.facebook.net/en_US/fbevents.js');\n"
+    f"fbq('init', '{META_PIXEL_ID}');\n"
+    "fbq('track', 'PageView');\n"
+    "</script>\n"
+)
+META_PIXEL_NOSCRIPT = (
+    '<noscript><img height="1" width="1" style="display:none" '
+    f'src="https://www.facebook.com/tr?id={META_PIXEL_ID}&ev=PageView&noscript=1"/></noscript>\n'
+)
+
 WEST_TO_EAST = [
     "dune-allen-beach",
     "gulf-place",
@@ -236,9 +258,17 @@ def notes_markup(notes: str) -> str:
     return "".join(f"<p>{note_paragraph_markup(paragraph)}</p>" for paragraph in paragraphs)
 
 
+# Concrete clock times stay in the Hours fact. This phrase sends people to the restaurant site instead.
+WEBSITE_HOURS = "Check website for hours"
+
+
 def clean_hours(raw: str) -> str:
     text = clean_text(raw)
-    if not text or not re.search(r"\d", text):
+    if not text:
+        return ""
+    if text.casefold() == WEBSITE_HOURS.casefold():
+        return WEBSITE_HOURS
+    if not re.search(r"\d", text):
         return ""
     return text
 
@@ -281,7 +311,24 @@ def parse_address(raw: str) -> dict:
     }
 
 
-PHOTO_FRAMES = ("01", "02", "03", "04", "05", "06")
+PHOTO_FRAMES = ("01", "02", "03", "04", "05", "06", "07")
+
+# Haley / Shunk Gulley group. Website is the main button. Photo credit uses that same URL.
+PARTNERS = {
+    "shunk-gulley-oyster-bar-gulf-place": {
+        "photoCredit": "Shunk Gulley Oyster Bar",
+    },
+    "gallions-rosemary-beach": {
+        "photoCredit": "Gallion’s",
+        "reserveUrl": "https://www.gallions30a.com/?utm_source=eatingon30a&utm_medium=referral&utm_content=reservations",
+    },
+    "beach-happy-cafe-watercolor": {
+        "photoCredit": "Beach Happy Cafe",
+    },
+    "beach-happy-cafe-seagrove-beach": {
+        "photoCredit": "Beach Happy Cafe",
+    },
+}
 
 
 def local_listing_photo(slug: str) -> str | None:
@@ -393,6 +440,59 @@ def website_link(url: str) -> str:
         return ""
     host = re.sub(r"^www\.", "", re.sub(r"^https?://", "", url).split("/")[0])
     return f'<a href="{e(url)}" target="_blank" rel="noopener noreferrer">{e(host)}</a>'
+
+
+def external_link(url: str, label: str, klass: str = "") -> str:
+    """Off-site link. Same new-tab treatment as the website link."""
+    class_attr = f' class="{e(klass)}"' if klass else ""
+    return f'<a{class_attr} href="{e(url)}" target="_blank" rel="noopener noreferrer">{e(label)}</a>'
+
+
+def website_cta(restaurant: dict) -> str:
+    """Main website button under the name. Partners only, so the rest of the directory stays as it is."""
+    if not restaurant.get("websiteCta") or not restaurant.get("website"):
+        return ""
+    links = [external_link(restaurant["website"], "Visit website", "button")]
+    if restaurant.get("reserveUrl"):
+        links.append(external_link(restaurant["reserveUrl"], "Reserve", "button secondary"))
+    return f'<p class="action-row profile-cta">{"".join(links)}</p>'
+
+
+def photo_credit_markup(restaurant: dict) -> str:
+    """One credit for the photos on the listing, linked back to the restaurant site."""
+    label = restaurant.get("photoCredit") or ""
+    url = restaurant.get("website") or ""
+    if not label or not url or not restaurant.get("photos"):
+        return ""
+    return f'<p class="photo-credit">{external_link(url, "Photo: " + label)}</p>'
+
+
+def hours_refer_to_website(restaurant: dict) -> bool:
+    """Hours that name the restaurant site instead of a clock time."""
+    return restaurant.get("hours") == WEBSITE_HOURS and bool(restaurant.get("website"))
+
+
+def hours_markup(restaurant: dict) -> str:
+    """Hours fact. The website word links to the listing's own site, including its UTM query."""
+    if hours_refer_to_website(restaurant):
+        return "Check " + external_link(restaurant["website"], "website") + " for hours"
+    hours = restaurant.get("hours") or ""
+    return e(hours) if hours else "Hours not listed"
+
+
+def external_link_count(restaurant: dict) -> int:
+    """New-tab links on a listing: sidebar website, partner button, photo credit, reserve, hours referral, and note links."""
+    count = 1 if restaurant.get("website") else 0
+    count += restaurant.get("noteLinks", 0)
+    if restaurant.get("websiteCta") and restaurant.get("website"):
+        count += 1
+    if restaurant.get("photoCredit") and restaurant.get("website") and restaurant.get("photos"):
+        count += 1
+    if restaurant.get("reserveUrl"):
+        count += 1
+    if hours_refer_to_website(restaurant):
+        count += 1
+    return count
 
 
 def tone_for(cuisines: list[str], foods: list[str], category: str) -> str:
@@ -523,6 +623,7 @@ def load_restaurants() -> list[dict]:
         detail_image = listed_image(row.get("Detail Image") or "", slug, 1400, 780)
         logo = restaurant_logo(row.get("Logo") or "", slug)
         photos = listing_photos(slug)
+        partner = PARTNERS.get(slug, {})
         dropped = photos[0] if photos else None
         card_image = dropped or list_image or detail_image
         hero_image = dropped or detail_image or list_image
@@ -584,6 +685,9 @@ def load_restaurants() -> list[dict]:
                 "heroImage": hero_image,
                 "photos": photos,
                 "logo": logo,
+                "websiteCta": bool(partner),
+                "photoCredit": partner.get("photoCredit", ""),
+                "reserveUrl": partner.get("reserveUrl", ""),
                 "tone": tone_for(cuisines, foods, category),
                 "search": search,
                 "updated": ymd(row.get("Updated Date") or ""),
@@ -1281,6 +1385,7 @@ def layout(
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         + GA4_HEAD
+        + META_PIXEL_HEAD
         + f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
         f'<link rel="canonical" href="{e(canonical)}">\n'
@@ -1297,6 +1402,7 @@ def layout(
         '<link rel="stylesheet" href="/styles.css">\n'
         + extra_head
         + f"</head>\n<body{body_attr}>\n"
+        + META_PIXEL_NOSCRIPT
         + '<div id="site-header"></div>\n'
         + banner
         + '<main id="main">\n'
@@ -1838,7 +1944,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         socials.append(f'<a href="{e(restaurant["facebook"])}" rel="noopener noreferrer">Facebook</a>')
     facts = "".join(
         [
-            fact("Hours", e(restaurant["hours"]) if restaurant["hours"] else "Hours not listed"),
+            fact("Hours", hours_markup(restaurant)),
             fact("Phone", phone),
             fact("Website", website),
             fact("Address", e(restaurant["address"])),
@@ -1896,10 +2002,12 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         '<article class="profile">'
         f'<div class="profile-hero">{listing_mark(restaurant, hero=True)}</div>'
         f"{filmstrip(restaurant)}"
+        f"{photo_credit_markup(restaurant)}"
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
         f"<h1>{e(restaurant['name'])}</h1>"
+        f"{website_cta(restaurant)}"
         f'<ul class="chips">{"".join(chips)}</ul>'
         + (
             '<p class="music-note">Live music is seasonal and subject to change — confirm with the restaurant.</p>'

@@ -239,7 +239,12 @@ test("a form post returns an HTML thanks page", async () => {
   const response = await handleSubscribe(request, {});
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /text\/html/);
-  assert.match(await response.text(), /Thanks\. We have your signup\./);
+  const html = await response.text();
+  assert.match(html, /Thanks\. We have your signup\./);
+  assert.match(html, /fbq\('init', '2157446775153374'\)/);
+  assert.match(html, /fbq\('track', 'PageView'\)/);
+  assert.match(html, /connect\.facebook\.net\/en_US\/fbevents\.js/);
+  assert.match(html, /<body[^>]*>\s*<noscript><img height="1" width="1" style="display:none" src="https:\/\/www\.facebook\.com\/tr\?id=2157446775153374&ev=PageView&noscript=1"\/><\/noscript>/);
 });
 
 test("a form post still thanks the visitor when Sheets is down and Resend succeeded", async () => {

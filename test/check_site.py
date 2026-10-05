@@ -183,7 +183,10 @@ for restaurant in restaurants:
     check('aria-label="Related guides"' not in page, f"detail page should not add a guides nav {restaurant['slug']}")
     story = page.split('class="prose profile-story"', 1)[1].split("</div>", 1)[0]
     visible_story = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", story)).strip()
-    check(build.e(full["notes"]) in visible_story, f"detail notes missing {restaurant['slug']}")
+    # Inline note links leave a space where the tag was, so "menu," becomes "menu ,".
+    def story_text(value: str) -> str:
+        return re.sub(r"\s+([,.;:!?])", r"\1", value)
+    check(story_text(build.e(full["notes"])) in story_text(visible_story), f"detail notes missing {restaurant['slug']}")
     if full.get("noteParagraphs", 0) > 1:
         check(
             story.count("<p>") == full["noteParagraphs"],
@@ -238,7 +241,7 @@ for restaurant in restaurants:
     if site_link:
         check(site_link in page, f"restaurant website should open in a new tab {restaurant['slug']}")
     check(
-        page.count('target="_blank"') == (1 if site_link else 0) + full.get("noteLinks", 0),
+        page.count('target="_blank"') == build.external_link_count(full),
         f"external note links should open in a new tab {restaurant['slug']}",
     )
 
@@ -281,6 +284,11 @@ check(
         "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg",
     ],
     "Beach Happy Seagrove should use the supplied frames",
+)
+check(
+    build.listing_photos("beach-happy-cafe-watercolor")
+    == [f"/images/restaurants/beach-happy-cafe-watercolor/0{n}.jpg" for n in range(1, 7)],
+    "Beach Happy WaterColor should use six frames",
 )
 check(
     build.listing_photos("steamboat-grill-30a-seagrove-beach")
@@ -672,9 +680,72 @@ happy_hero = happy.split('class="profile-hero"', 1)[1].split('class="profile-fil
 check("/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg" in happy_hero, "Beach Happy Seagrove hero should be the supplied cover")
 check(
     "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg" in happy
-    and "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg" in happy,
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg" in happy
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/04.jpg" not in happy
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/05.jpg" not in happy,
     "Beach Happy Seagrove profile should show the extra photos",
 )
+seagrove_dir = ROOT / "images" / "restaurants" / "beach-happy-cafe-seagrove-beach"
+watercolor_dir = ROOT / "images" / "restaurants" / "beach-happy-cafe-watercolor"
+check(not (watercolor_dir / "07.jpg").exists(), "WaterColor should not keep a seventh frame")
+check(
+    not any((seagrove_dir / name).exists() for name in ("04.jpg", "05.jpg")),
+    "Seagrove should not keep the extra frames",
+)
+check("Shannon" not in happy and "Chris" not in happy, "Beach Happy Seagrove should not name Shannon or Chris")
+watercolor = (ROOT / "restaurants" / "beach-happy-cafe-watercolor" / "index.html").read_text(encoding="utf-8")
+watercolor_hero = watercolor.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+check("/images/restaurants/beach-happy-cafe-watercolor/01.jpg" in watercolor_hero, "WaterColor hero should be the storefront")
+check("/images/restaurants/beach-happy-cafe-watercolor/06.jpg" in watercolor, "WaterColor gallery should include the sixth frame")
+check("/images/restaurants/beach-happy-cafe-watercolor/07.jpg" not in watercolor, "WaterColor gallery should not include a seventh frame")
+check("Shannon" not in watercolor and "Chris" not in watercolor, "Beach Happy WaterColor should not name Shannon or Chris")
+happy_url = "https://beachhappycafe.com/?utm_source=eatingon30a&utm_medium=referral"
+shunk_url = "https://www.shunkgulley.com/?utm_source=eatingon30a&utm_medium=referral"
+gallion_url = "https://gallions30a.com/?utm_source=eatingon30a&utm_medium=referral"
+gallion_reserve = "https://www.gallions30a.com/?utm_source=eatingon30a&utm_medium=referral&utm_content=reservations"
+check(happy.count(build.e(happy_url)) >= 2 and ">Visit website</a>" in happy, "Seagrove should link the Beach Happy site")
+check(">Photo: Beach Happy Cafe</a>" in happy and ">Photo: Beach Happy Cafe</a>" in watercolor, "Beach Happy photos should be credited")
+shunk = (ROOT / "restaurants" / "shunk-gulley-oyster-bar-gulf-place" / "index.html").read_text(encoding="utf-8")
+gallion = (ROOT / "restaurants" / "gallions-rosemary-beach" / "index.html").read_text(encoding="utf-8")
+check(shunk_url in shunk and ">Photo: Shunk Gulley Oyster Bar</a>" in shunk, "Shunk Gulley should credit its photos and link its site")
+check("/images/restaurants/shunk-gulley-oyster-bar-gulf-place/03.jpg" in shunk, "Shunk Gulley should show the grouper as the third photo")
+check(build.e(gallion_url) in gallion and build.e(gallion_reserve) in gallion and "opentable" not in gallion.lower(), "Gallion's reserve link should stay on the restaurant site")
+check(">Photo: Gallion" in gallion, "Gallion's photos should be credited")
+check("/images/restaurants/gallions-rosemary-beach/05.jpg" in gallion, "Gallion's should show the waffle frame")
+website_hours = {
+    "shunk-gulley-oyster-bar-gulf-place": shunk_url,
+    "gallions-rosemary-beach": gallion_url,
+    "beach-happy-cafe-seagrove-beach": happy_url,
+    "beach-happy-cafe-watercolor": happy_url,
+}
+for slug, url in website_hours.items():
+    row = full_by_slug[slug]
+    page = {
+        "shunk-gulley-oyster-bar-gulf-place": shunk,
+        "gallions-rosemary-beach": gallion,
+        "beach-happy-cafe-seagrove-beach": happy,
+        "beach-happy-cafe-watercolor": watercolor,
+    }[slug]
+    facts = page.split('<dl class="facts">', 1)[1].split("</dl>", 1)[0]
+    hours_dd = facts.split("<dt>Hours</dt><dd>", 1)[1].split("</dd>", 1)[0]
+    expected = "Check " + build.external_link(url, "website") + " for hours"
+    check(row["hours"] == "Check website for hours", f"{slug} hours should point to the website, got {row['hours']}")
+    check(hours_dd == expected, f"{slug} Hours fact should link website, got {hours_dd}")
+    check("See the current" in page and ">menu</a>" in page and ">hours</a>" in page and ">events</a>" in page, f"{slug} should keep the menu, hours, and events links")
+    check("—" not in hours_dd and "–" not in hours_dd, f"{slug} Hours fact should not use a dash")
+check(
+    sorted(slug for slug, row in full_by_slug.items() if row.get("hours") == "Check website for hours") == sorted(website_hours),
+    "only the Haley Miett listings should drop concrete hours",
+)
+pig = (ROOT / "restaurants" / "the-perfect-pig-watercolor" / "index.html").read_text(encoding="utf-8")
+check("<dt>Hours</dt><dd>Daily 8am-9pm</dd>" in pig, "other listings should keep concrete hours")
+check(build.clean_hours("Mon-Fri: Unknown Sat & Sun: Unknown") == "", "hours without a clock time should stay unlisted")
+check(build.clean_hours("check website for hours") == "Check website for hours", "website hours phrase should survive the hours cleaner")
+seagrove_row = full_by_slug["beach-happy-cafe-seagrove-beach"]
+check(seagrove_row["meals"] == ["Drinks"], f"Seagrove meals should be drinks only, got {seagrove_row['meals']}")
+check("Breakfast" not in seagrove_row["meals"] and "Lunch" not in seagrove_row["meals"], "Seagrove should not be a food meal")
+check(seagrove_row["cuisines"] == ["Cafe"], f"Seagrove cuisine should be Cafe, got {seagrove_row['cuisines']}")
+check(seagrove_row["foods"] == ["Coffee", "Smoothies"], f"Seagrove foods should be coffee and smoothies, got {seagrove_row['foods']}")
 plain = (ROOT / "restaurants" / "nigels-bananas-seaside" / "index.html").read_text(encoding="utf-8")
 plain_hero = plain.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
 check('class="ph"' in plain_hero and 'class="mono"' in plain_hero, "a listing without a photo should keep the monogram")
@@ -819,6 +890,10 @@ check("listed west to east" not in breakfast_guide, "breakfast guide should not 
 check("isn’t kid friendly" not in breakfast_guide and "aren't kid friendly" not in breakfast_guide, "breakfast guide should not single out a place as not kid friendly")
 check("pickles-sandbar-seaside" not in breakfast_guide, "breakfast guide should not include Pickle’s Sandbar")
 check("/restaurants/pickles-burger-and-shake-seaside/" in breakfast_guide, "breakfast guide should include Pickle’s Burger and Shake")
+check("/restaurants/beach-happy-cafe-seagrove-beach/" not in breakfast_guide, "breakfast guide should not include Beach Happy Seagrove")
+check("/restaurants/beach-happy-cafe-watercolor/" in breakfast_guide, "breakfast guide should keep Beach Happy WaterColor")
+coffee_guide = (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(encoding="utf-8")
+check("/restaurants/beach-happy-cafe-seagrove-beach/" in coffee_guide, "coffee guide should keep Beach Happy Seagrove")
 check(not (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").exists(), "Pickle’s Sandbar listing should be removed")
 check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
@@ -864,6 +939,14 @@ check("CONTACT_EMAIL" in worker_js and "RESEND_API_KEY" in worker_js and "SUBSCR
 check('pathname === "/api/listing"' in worker_js and "reply_to" in worker_js, "listing mail should use the same Resend secrets and a reply address")
 check('other: "Other"' in worker_js, "worker should accept an Other listing request")
 check("Enter the restaurant name." not in worker_js, "worker should not require a restaurant name")
+check(
+    "fbevents.js" in worker_js
+    and "fbq('init', '${META_PIXEL_ID}')" in worker_js
+    and "fbq('track', 'PageView')" in worker_js
+    and "tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1" in worker_js
+    and f'const META_PIXEL_ID = "{build.META_PIXEL_ID}"' in worker_js,
+    "form thanks pages should include the Meta pixel head code and noscript image",
+)
 check("run_worker_first" in wrangler and '"main": "worker.js"' in wrangler, "api subscribe should be served by the worker")
 html_pages = [
     path
@@ -878,7 +961,7 @@ for page in html_pages:
     parts = page.relative_to(ROOT).parts
     if len(parts) == 3 and parts[0] == "restaurants" and parts[2] == "index.html":
         site = full_by_slug[parts[1]]["website"]
-        expected = (1 if site else 0) + full_by_slug[parts[1]].get("noteLinks", 0)
+        expected = build.external_link_count(full_by_slug[parts[1]])
         check(blanks == expected, f"{rel} should open the website and note links in a new tab, got {blanks}")
         if site:
             check(build.website_link(site) in text, f"{rel} website link is missing new-tab attributes")
@@ -895,6 +978,27 @@ for page in html_pages:
         text.count(f"gtag('config', '{build.GA_MEASUREMENT_ID}')") == 1,
         f"{rel} should configure GA4 once",
     )
+    head, _, _ = text.partition("</head>")
+    check(
+        head.count(f"fbq('init', '{build.META_PIXEL_ID}')") == 1,
+        f"{rel} should init the Meta pixel once in the head",
+    )
+    check(
+        head.count("fbq('track', 'PageView')") == 1,
+        f"{rel} should track Meta PageView once in the head",
+    )
+    check(
+        head.count("https://connect.facebook.net/en_US/fbevents.js") == 1,
+        f"{rel} should load fbevents.js once in the head",
+    )
+    body_open = re.search(r"<body(?: class=\"home\")?>\n", text)
+    check(body_open is not None, f"{rel} should have a body tag")
+    if body_open:
+        check(
+            text.startswith(build.META_PIXEL_NOSCRIPT, body_open.end()),
+            f"{rel} should place the Meta noscript immediately after body",
+        )
+    check(text.count(build.META_PIXEL_ID) == 2, f"{rel} should include {build.META_PIXEL_ID} once in init and once in the noscript image")
     check('id="site-header"' in text, f"{rel} does not mount the shared header")
     check('id="site-footer"' in text, f"{rel} does not mount the shared footer")
     check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")

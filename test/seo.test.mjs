@@ -278,6 +278,8 @@ for (const path of walk(root)) {
   const html = readFileSync(path, "utf8");
   for (const match of html.matchAll(/<img\b[^>]*>/g)) {
     const tag = match[0];
+    // The Meta noscript pixel is a 1x1 tracking image, not page content.
+    if (tag.includes("https://www.facebook.com/tr?") && tag.includes("noscript=1")) continue;
     const alt = tag.match(/\salt="([^"]*)"/);
     assert.ok(alt, "missing alt " + path);
     assert.ok(alt[1].trim().length > 0, "empty alt " + path);
