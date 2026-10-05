@@ -281,7 +281,7 @@ def parse_address(raw: str) -> dict:
     }
 
 
-PHOTO_FRAMES = ("01", "02", "03", "04", "05")
+PHOTO_FRAMES = ("01", "02", "03", "04", "05", "06")
 
 
 def local_listing_photo(slug: str) -> str | None:
