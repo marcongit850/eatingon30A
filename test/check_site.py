@@ -935,8 +935,10 @@ check('other: "Other"' in worker_js, "worker should accept an Other listing requ
 check("Enter the restaurant name." not in worker_js, "worker should not require a restaurant name")
 check(
     "fbevents.js" in worker_js
-    and f"fbq('init', '{build.META_PIXEL_ID}')" in worker_js
-    and f"https://www.facebook.com/tr?id={build.META_PIXEL_ID}&ev=PageView&noscript=1" in worker_js,
+    and "fbq('init', '${META_PIXEL_ID}')" in worker_js
+    and "fbq('track', 'PageView')" in worker_js
+    and "tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1" in worker_js
+    and f'const META_PIXEL_ID = "{build.META_PIXEL_ID}"' in worker_js,
     "form thanks pages should include the Meta pixel head code and noscript image",
 )
 check("run_worker_first" in wrangler and '"main": "worker.js"' in wrangler, "api subscribe should be served by the worker")
