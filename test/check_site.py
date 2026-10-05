@@ -285,6 +285,23 @@ check(
     ],
     "Beach Happy Seagrove should use the supplied frames",
 )
+seagrove_cover = build.local_image_info(ROOT / "images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg")
+check(
+    seagrove_cover
+    and seagrove_cover[0] > seagrove_cover[1]
+    and seagrove_cover[0] / seagrove_cover[1] >= 1.4,
+    f"Beach Happy Seagrove cover should be a landscape hero, got {seagrove_cover}",
+)
+seagrove_coffee = build.local_image_info(ROOT / "images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg")
+check(
+    seagrove_coffee and seagrove_coffee[0] > seagrove_coffee[1],
+    f"Beach Happy Seagrove iced coffee should be a landscape film crop, got {seagrove_coffee}",
+)
+seagrove_drink = build.local_image_info(ROOT / "images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg")
+check(
+    seagrove_drink == (1067, 1600, "image/jpeg"),
+    f"Beach Happy Seagrove cocktail frame should stay the original portrait, got {seagrove_drink}",
+)
 check(
     build.listing_photos("beach-happy-cafe-watercolor")
     == [f"/images/restaurants/beach-happy-cafe-watercolor/0{n}.jpg" for n in range(1, 7)],
