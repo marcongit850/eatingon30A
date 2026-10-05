@@ -27,6 +27,18 @@ HERO_IMAGE = "/images/hero-beachside-dining.jpg"
 HERO_WEBP = "/images/hero-beachside-dining.webp"
 HERO_ALT = "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background."
 
+# Google Analytics 4. One measurement ID, injected once by layout() into every page head.
+GA_MEASUREMENT_ID = "G-3T7VN1WPX5"
+GA4_HEAD = (
+    f'<script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>\n'
+    "<script>\n"
+    "window.dataLayer = window.dataLayer || [];\n"
+    "function gtag(){dataLayer.push(arguments);}\n"
+    "gtag('js', new Date());\n"
+    f"gtag('config', '{GA_MEASUREMENT_ID}');\n"
+    "</script>\n"
+)
+
 WEST_TO_EAST = [
     "dune-allen-beach",
     "gulf-place",
@@ -1268,7 +1280,8 @@ def layout(
         '<html lang="en">\n<head>\n'
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        f"<title>{e(title)}</title>\n"
+        + GA4_HEAD
+        + f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
         f'<link rel="canonical" href="{e(canonical)}">\n'
         + robots

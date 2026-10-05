@@ -886,6 +886,15 @@ for page in html_pages:
         check(blanks == 1, f"{rel} should open only the 360 film in a new tab, got {blanks}")
     else:
         check(blanks == 0, f"{rel} should keep links in the same tab")
+    check(text.count(build.GA_MEASUREMENT_ID) == 2, f"{rel} should include {build.GA_MEASUREMENT_ID} once in the loader and once in gtag config")
+    check(
+        text.count(f"https://www.googletagmanager.com/gtag/js?id={build.GA_MEASUREMENT_ID}") == 1,
+        f"{rel} should load gtag.js once",
+    )
+    check(
+        text.count(f"gtag('config', '{build.GA_MEASUREMENT_ID}')") == 1,
+        f"{rel} should configure GA4 once",
+    )
     check('id="site-header"' in text, f"{rel} does not mount the shared header")
     check('id="site-footer"' in text, f"{rel} does not mount the shared footer")
     check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")
