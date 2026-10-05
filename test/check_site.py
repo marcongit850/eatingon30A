@@ -282,15 +282,13 @@ check(
         "/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg",
         "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg",
         "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg",
-        "/images/restaurants/beach-happy-cafe-seagrove-beach/04.jpg",
-        "/images/restaurants/beach-happy-cafe-seagrove-beach/05.jpg",
     ],
     "Beach Happy Seagrove should use the supplied frames",
 )
 check(
     build.listing_photos("beach-happy-cafe-watercolor")
-    == [f"/images/restaurants/beach-happy-cafe-watercolor/0{n}.jpg" for n in range(1, 8)],
-    "Beach Happy WaterColor should use seven frames",
+    == [f"/images/restaurants/beach-happy-cafe-watercolor/0{n}.jpg" for n in range(1, 7)],
+    "Beach Happy WaterColor should use six frames",
 )
 check(
     build.listing_photos("steamboat-grill-30a-seagrove-beach")
@@ -682,18 +680,24 @@ happy_hero = happy.split('class="profile-hero"', 1)[1].split('class="profile-fil
 check("/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg" in happy_hero, "Beach Happy Seagrove hero should be the supplied cover")
 check(
     "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg" in happy
-    and "/images/restaurants/beach-happy-cafe-seagrove-beach/05.jpg" in happy,
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg" in happy
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/04.jpg" not in happy
+    and "/images/restaurants/beach-happy-cafe-seagrove-beach/05.jpg" not in happy,
     "Beach Happy Seagrove profile should show the extra photos",
 )
-chicken = (ROOT / "images" / "restaurants" / "beach-happy-cafe-watercolor" / "07.jpg").read_bytes()
 seagrove_dir = ROOT / "images" / "restaurants" / "beach-happy-cafe-seagrove-beach"
-check(chicken not in {path.read_bytes() for path in seagrove_dir.iterdir()}, "chicken sandwich photo stays off Seagrove")
+watercolor_dir = ROOT / "images" / "restaurants" / "beach-happy-cafe-watercolor"
+check(not (watercolor_dir / "07.jpg").exists(), "WaterColor should not keep a seventh frame")
+check(
+    not any((seagrove_dir / name).exists() for name in ("04.jpg", "05.jpg")),
+    "Seagrove should not keep the extra frames",
+)
 check("Shannon" not in happy and "Chris" not in happy, "Beach Happy Seagrove should not name Shannon or Chris")
 watercolor = (ROOT / "restaurants" / "beach-happy-cafe-watercolor" / "index.html").read_text(encoding="utf-8")
 watercolor_hero = watercolor.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
 check("/images/restaurants/beach-happy-cafe-watercolor/01.jpg" in watercolor_hero, "WaterColor hero should be the storefront")
-check("/images/restaurants/beach-happy-cafe-watercolor/07.jpg" not in watercolor_hero, "chicken sandwich should not be the WaterColor hero")
-check("/images/restaurants/beach-happy-cafe-watercolor/07.jpg" in watercolor, "chicken sandwich should stay in the WaterColor gallery")
+check("/images/restaurants/beach-happy-cafe-watercolor/06.jpg" in watercolor, "WaterColor gallery should include the sixth frame")
+check("/images/restaurants/beach-happy-cafe-watercolor/07.jpg" not in watercolor, "WaterColor gallery should not include a seventh frame")
 check("Shannon" not in watercolor and "Chris" not in watercolor, "Beach Happy WaterColor should not name Shannon or Chris")
 happy_url = "https://beachhappycafe.com/?utm_source=eatingon30a&utm_medium=referral"
 shunk_url = "https://www.shunkgulley.com/?utm_source=eatingon30a&utm_medium=referral"
@@ -704,8 +708,10 @@ check(">Photo: Beach Happy Cafe</a>" in happy and ">Photo: Beach Happy Cafe</a>"
 shunk = (ROOT / "restaurants" / "shunk-gulley-oyster-bar-gulf-place" / "index.html").read_text(encoding="utf-8")
 gallion = (ROOT / "restaurants" / "gallions-rosemary-beach" / "index.html").read_text(encoding="utf-8")
 check(shunk_url in shunk and ">Photo: Shunk Gulley Oyster Bar</a>" in shunk, "Shunk Gulley should credit its photos and link its site")
+check("/images/restaurants/shunk-gulley-oyster-bar-gulf-place/03.jpg" in shunk, "Shunk Gulley should show the grouper as the third photo")
 check(build.e(gallion_url) in gallion and build.e(gallion_reserve) in gallion and "opentable" not in gallion.lower(), "Gallion's reserve link should stay on the restaurant site")
 check(">Photo: Gallion" in gallion, "Gallion's photos should be credited")
+check("/images/restaurants/gallions-rosemary-beach/05.jpg" in gallion, "Gallion's should show the waffle frame")
 website_hours = {
     "shunk-gulley-oyster-bar-gulf-place": shunk_url,
     "gallions-rosemary-beach": gallion_url,
