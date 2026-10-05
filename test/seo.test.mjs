@@ -100,7 +100,7 @@ assert.equal(home["@graph"][1].publisher["@id"], `${ORIGIN}/#organization`);
 
 const directory = jsonLd(read("restaurants/index.html"));
 const list = directory["@graph"].find((node) => node["@type"] === "ItemList");
-assert.equal(list.numberOfItems, 156);
+assert.equal(list.numberOfItems, 155);
 assert.equal(directory["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
 const directoryHtml = read("restaurants/index.html");
 assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
@@ -248,7 +248,7 @@ for (const slug of [
 }
 assert.equal(locs.filter((url) => url.includes("/guides/")).length, 11);
 assert.equal(locs.includes(`${ORIGIN}/list-your-restaurant/`), true);
-assert.equal(locs.length, 7 + 11 + 14 + 156);
+assert.equal(locs.length, 7 + 11 + 14 + 155);
 assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
 assert.equal(sitemap.includes("workers.dev"), false);
 

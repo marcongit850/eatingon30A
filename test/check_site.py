@@ -31,8 +31,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 156, f"full CSV should stay at 156 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 156, "public json should include every published restaurant")
+check(len(source) == 155, f"full CSV should stay at 155 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 155, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -275,7 +275,7 @@ expected_monograms = [
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+check(len(photos) == 142, f"expected 142 restaurant photos, got {len(photos)}")
 check(build.local_listing_photo("not-a-restaurant") is None, "a slug without a dropped file should stay a monogram")
 check(
     build.listing_photos("beach-happy-cafe-seagrove-beach")

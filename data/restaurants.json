@@ -3300,39 +3300,6 @@
     "image": "/images/restaurants/pazzo-italiano-santa-rosa-beach/01.jpg"
   },
   {
-    "slug": "pecan-jacks-gulf-place",
-    "name": "Pecan Jacks",
-    "area": "Gulf Place",
-    "areaSlug": "gulf-place",
-    "meals": [
-      "Desserts"
-    ],
-    "cuisines": [
-      "American",
-      "Dessert"
-    ],
-    "foods": [
-      "Ice Cream",
-      "Dessert"
-    ],
-    "price": "$$",
-    "lat": 30.34733069999999,
-    "lng": -86.2293839,
-    "address": "4368 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 622-0011",
-    "search": "pecan jacks gulf place  gulf place american dessert desserts ice cream dessert dessert pecan jacks is a must-visit for homemade ice cream, pralines, and sweet treats. perfect for satisfying your dessert cravings. pecan jacks dessert ice cream dessert american casual dining gulf place $$",
-    "label": "Gulf Place",
-    "outdoor": false,
-    "kids": true,
-    "music": false,
-    "reservations": false,
-    "groups": false,
-    "happyFood": false,
-    "happyDrinks": false,
-    "laurensFavorite": false,
-    "image": "/images/restaurants/pecan-jacks-gulf-place/01.jpg"
-  },
-  {
     "slug": "pecan-jacks-seagrove-beach",
     "name": "Pecan Jacks",
     "area": "Seagrove Beach",
