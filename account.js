@@ -76,6 +76,24 @@
 
   var savedState = null;
   var savesPromise = null;
+  var listingNote = null;
+
+  function putSave(payload) {
+    return fetch("/api/account/saves", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (response) {
+      if (response.status === 401) {
+        location.href = signInHref();
+        return null;
+      }
+      return response.json().then(function (body) {
+        return { ok: response.ok, body: body };
+      });
+    });
+  }
 
   function kindLabel(kind) {
     return kind === "favorite" ? "Favorite" : "Want to try";
@@ -119,9 +137,120 @@
     var name = title.textContent.replace(/\s+/g, " ").trim();
     var area = areaLink ? areaLink.textContent.replace(/\s+/g, " ").trim() : "";
     var bar = createBar(slug, name, area, false);
+    var panel = document.createElement("div");
+    panel.className = "personal-note";
+    panel.hidden = true;
+    panel.innerHTML = '<label class="personal-note-label"><span>Your note</span><textarea maxlength="280" rows="3" placeholder="Add a personal note..."></textarea></label><div class="note-actions"><button type="button" class="button" data-note-save>Save note</button><button type="button" class="button secondary" data-note-clear>Clear</button></div><p class="personal-note-hint">Only you can see this. It also shows on My places. About 280 characters.</p><p class="personal-note-status" role="status" aria-live="polite"></p>';
     var chips = head.querySelector(".chips");
     if (chips) head.insertBefore(bar, chips);
     else head.appendChild(bar);
+    bar.insertAdjacentElement("afterend", panel);
+    listingNote = {
+      slug: slug,
+      name: name,
+      area: area,
+      panel: panel,
+      field: panel.querySelector("textarea"),
+      status: panel.querySelector(".personal-note-status"),
+      stored: ""
+    };
+    panel.querySelector("[data-note-save]").addEventListener("click", function () {
+      writeListingNote(listingNote.field.value, false);
+    });
+    panel.querySelector("[data-note-clear]").addEventListener("click", function () {
+      listingNote.field.value = "";
+      writeListingNote("", true);
+    });
+  }
+
+  function noteForSlug(state, slug) {
+    var text = "";
+    var on = false;
+    if (!state || !state.saves) return { on: false, text: "" };
+    for (var i = 0; i < state.saves.length; i++) {
+      var save = state.saves[i];
+      if (save.slug !== slug || save.site !== state.site) continue;
+      on = true;
+      if (save.kind === "favorite" && save.note) text = save.note;
+      else if (!text && save.note) text = save.note;
+    }
+    return { on: on, text: text };
+  }
+
+  function syncListingNote(state) {
+    if (!listingNote) return;
+    if (!state || !state.user) {
+      listingNote.panel.hidden = true;
+      return;
+    }
+    var found = noteForSlug(state, listingNote.slug);
+    listingNote.panel.hidden = !found.on;
+    if (!found.on) {
+      listingNote.field.value = "";
+      listingNote.stored = "";
+      listingNote.status.textContent = "";
+      return;
+    }
+    if (listingNote.field.value === listingNote.stored) {
+      listingNote.stored = found.text || "";
+      listingNote.field.value = listingNote.stored;
+    }
+  }
+
+  function writeListingNote(text, clearing) {
+    if (!listingNote) return;
+    ensureSaves().then(function (state) {
+      if (!state || !state.user) return;
+      var kinds = [];
+      for (var i = 0; i < state.saves.length; i++) {
+        var save = state.saves[i];
+        if (save.slug !== listingNote.slug || save.site !== state.site) continue;
+        kinds.push(save.kind);
+      }
+      if (!kinds.length) return;
+      if (text.length > 280) {
+        listingNote.status.textContent = "Keep the note under 280 characters.";
+        return;
+      }
+      listingNote.status.textContent = "";
+      var buttons = listingNote.panel.querySelectorAll("button");
+      for (var b = 0; b < buttons.length; b++) buttons[b].disabled = true;
+      Promise.all(kinds.map(function (kind) {
+        return putSave({
+          slug: listingNote.slug,
+          name: listingNote.name,
+          area: listingNote.area,
+          kind: kind,
+          saved: true,
+          note: text
+        });
+      })).then(function (results) {
+        for (var n = 0; n < buttons.length; n++) buttons[n].disabled = false;
+        if (results.some(function (result) { return !result; })) return;
+        var failed = null;
+        for (var r = 0; r < results.length; r++) {
+          if (!results[r].ok) failed = results[r];
+        }
+        if (failed) {
+          listingNote.field.value = listingNote.stored;
+          listingNote.status.textContent = (failed.body && failed.body.error) || "That note could not be saved.";
+          return;
+        }
+        var savedNote = results[0].body && typeof results[0].body.note === "string" ? results[0].body.note : text.trim();
+        for (var s = 0; s < state.saves.length; s++) {
+          if (state.saves[s].slug === listingNote.slug && state.saves[s].site === state.site) {
+            state.saves[s].note = savedNote;
+          }
+        }
+        listingNote.stored = savedNote;
+        listingNote.field.value = savedNote;
+        listingNote.status.textContent = clearing || !savedNote ? "Note cleared." : "Note saved.";
+      }).catch(function () {
+        for (var n = 0; n < buttons.length; n++) buttons[n].disabled = false;
+        listingNote.field.value = listingNote.stored;
+        listingNote.status.textContent = "That note could not be saved.";
+      });
+    });
   }
 
   function mountCardSaves(root) {
@@ -164,16 +293,21 @@
     return savesPromise;
   }
 
-  function rememberSave(slug, kind, name, area, saved) {
+  function rememberSave(slug, kind, name, area, saved, note) {
     ensureSaves().then(function (state) {
       if (!state || !state.user) return;
+      var sibling = "";
       var next = [];
       for (var i = 0; i < state.saves.length; i++) {
         var save = state.saves[i];
         if (save.slug === slug && save.kind === kind && save.site === state.site) continue;
+        if (save.slug === slug && save.site === state.site && save.note) sibling = save.note;
         next.push(save);
       }
-      if (saved) next.push({ slug: slug, name: name, area: area, kind: kind, site: state.site });
+      if (saved) {
+        var text = typeof note === "string" ? note : sibling;
+        next.push({ slug: slug, name: name, area: area, kind: kind, site: state.site, note: text || "" });
+      }
       state.saves = next;
     });
   }
@@ -198,6 +332,7 @@
           setPressed(button, on);
         }
       }
+      syncListingNote(state);
     });
   }
 
@@ -216,18 +351,7 @@
         return;
       }
       setPressed(button, next);
-      fetch("/api/account/saves", {
-        method: "PUT",
-        credentials: "same-origin",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ slug: slug, name: name, area: area, kind: kind, saved: next })
-      }).then(function (response) {
-        if (response.status === 401) {
-          location.href = signInHref();
-          return null;
-        }
-        return response.json().then(function (body) { return { ok: response.ok, body: body }; });
-      }).then(function (result) {
+      putSave({ slug: slug, name: name, area: area, kind: kind, saved: next }).then(function (result) {
         if (!result) return;
         if (!result.ok) {
           setPressed(button, !next);
@@ -235,7 +359,8 @@
           return;
         }
         if (note) note.textContent = next ? "Saved." : "Removed.";
-        rememberSave(slug, kind, name, area, next);
+        var copied = next && result.body && typeof result.body.note === "string" ? result.body.note : undefined;
+        rememberSave(slug, kind, name, area, next, copied);
         paintSaves();
       }).catch(function () {
         setPressed(button, !next);
@@ -396,33 +521,138 @@
         area.textContent = save.area;
         article.appendChild(area);
       }
+      var noteWrap = document.createElement("div");
+      noteWrap.className = "place-note";
+      var noteLabel = document.createElement("p");
+      noteLabel.className = "place-note-label";
+      noteLabel.id = "note-label-" + save.site + "-" + save.kind + "-" + save.slug;
+      noteLabel.textContent = "Your note";
+      var view = document.createElement("p");
+      view.className = "place-note-view";
+      var empty = document.createElement("p");
+      empty.className = "place-note-empty";
+      empty.textContent = "Add a personal note...";
+      var editor = document.createElement("textarea");
+      editor.className = "place-note-input";
+      editor.maxLength = 280;
+      editor.rows = 3;
+      editor.placeholder = "Add a personal note...";
+      editor.setAttribute("aria-labelledby", noteLabel.id);
+      var actions = document.createElement("div");
+      actions.className = "note-actions";
+      var editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "button secondary";
+      var saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "button";
+      saveBtn.textContent = "Save note";
+      var cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "button secondary";
+      cancelBtn.textContent = "Cancel";
       var remove = document.createElement("button");
       remove.type = "button";
       remove.className = "button secondary place-remove";
       remove.textContent = "Remove";
+      var editing = false;
+
+      function paint() {
+        var text = save.note || "";
+        var has = text.trim().length > 0;
+        view.textContent = text;
+        view.hidden = editing || !has;
+        empty.hidden = editing || has;
+        editor.hidden = !editing;
+        if (!editing) editor.value = text;
+        editBtn.hidden = editing;
+        editBtn.textContent = has ? "Edit note" : "Add note";
+        saveBtn.hidden = !editing;
+        cancelBtn.hidden = !editing;
+      }
+
+      editBtn.addEventListener("click", function () {
+        editing = true;
+        editor.value = save.note || "";
+        paint();
+        editor.focus();
+      });
+      cancelBtn.addEventListener("click", function () {
+        editing = false;
+        status.textContent = "";
+        paint();
+      });
+      saveBtn.addEventListener("click", function () {
+        var text = editor.value;
+        if (text.length > 280) {
+          status.textContent = "Keep the note under 280 characters.";
+          return;
+        }
+        status.textContent = "";
+        saveBtn.disabled = true;
+        putSave({
+          slug: save.slug,
+          name: save.name,
+          area: save.area,
+          kind: save.kind,
+          site: save.site,
+          note: text
+        }).then(function (result) {
+          saveBtn.disabled = false;
+          if (!result) return;
+          if (!result.ok) {
+            status.textContent = (result.body && result.body.error) || "That note could not be saved.";
+            return;
+          }
+          var nextNote = result.body && typeof result.body.note === "string" ? result.body.note : text.trim();
+          saves.forEach(function (item) {
+            if (item.site === save.site && item.slug === save.slug) item.note = nextNote;
+          });
+          status.textContent = nextNote ? "Note saved." : "Note cleared.";
+          render();
+        }).catch(function () {
+          saveBtn.disabled = false;
+          status.textContent = "That note could not be saved.";
+        });
+      });
       remove.addEventListener("click", function () {
-        fetch("/api/account/saves", {
-          method: "PUT",
-          credentials: "same-origin",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ slug: save.slug, name: save.name, area: save.area, kind: save.kind, site: save.site, saved: false })
-        }).then(function (response) {
-          if (!response.ok) throw new Error("remove");
+        putSave({
+          slug: save.slug,
+          name: save.name,
+          area: save.area,
+          kind: save.kind,
+          site: save.site,
+          saved: false
+        }).then(function (result) {
+          if (!result || !result.ok) throw new Error("remove");
           saves = saves.filter(function (item) {
             return !(item.site === save.site && item.slug === save.slug && item.kind === save.kind);
           });
+          status.textContent = "";
           render();
         }).catch(function () {
           status.textContent = "That place could not be removed.";
         });
       });
-      article.appendChild(remove);
+
+      actions.appendChild(editBtn);
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      actions.appendChild(remove);
+      noteWrap.appendChild(noteLabel);
+      noteWrap.appendChild(view);
+      noteWrap.appendChild(empty);
+      noteWrap.appendChild(editor);
+      noteWrap.appendChild(actions);
+      paint();
+      article.appendChild(noteWrap);
       return article;
     }
 
     root.querySelectorAll("[data-tab]").forEach(function (tab) {
       tab.addEventListener("click", function () {
         kind = tab.getAttribute("data-tab");
+        status.textContent = "";
         root.querySelectorAll("[data-tab]").forEach(function (item) {
           item.setAttribute("aria-selected", item === tab ? "true" : "false");
         });
@@ -432,6 +662,7 @@
     root.querySelectorAll("[data-site-filter]").forEach(function (button) {
       button.addEventListener("click", function () {
         siteFilter = button.getAttribute("data-site-filter");
+        status.textContent = "";
         root.querySelectorAll("[data-site-filter]").forEach(function (item) {
           item.setAttribute("aria-pressed", item === button ? "true" : "false");
         });

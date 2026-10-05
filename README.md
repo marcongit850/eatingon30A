@@ -150,6 +150,37 @@ npx wrangler secret put ACCOUNTS_SHARED_SECRET
 
 Do not set `MAGIC_LINK_PREVIEW` on the deployed accounts Worker. That variable is for local testing only. When it is `1`, the sign-in API includes the link in the JSON response.
 
+### Personal notes
+
+A signed-in visitor can keep a short private note on each saved restaurant (Favorite or Want to try). The note is a `note` column on the shared `saves` table in the `eating-accounts` D1 database. The same account sees it on Eating on 30A and on My places for a Destin save. It is not shown on directory cards, and it is not returned to anyone else. Clearing the note keeps the save. Removing the save deletes that row, note included. About 280 characters.
+
+The accounts Worker adds the column itself if it is missing, the first time it talks to D1. Confirm the column in the dashboard before you rely on it. You do not need a terminal.
+
+1. Open the Cloudflare dashboard for the account that owns the `eating-accounts` Worker.
+2. Go to Storage & databases, then D1. If that menu is not there, open Workers & Pages and find D1 from the account home.
+3. Open the database named `eating-accounts`.
+4. Open the Console tab.
+5. Run:
+
+```sql
+PRAGMA table_info(saves);
+```
+
+6. Look for a column named `note`. If it is there, type `TEXT`, not null, default empty, you are done.
+7. If `note` is missing, run this once:
+
+```sql
+ALTER TABLE saves ADD COLUMN note TEXT NOT NULL DEFAULT '';
+```
+
+8. Run the pragma from step 5 again and confirm `note` is listed.
+
+If the alter says `duplicate column name: note`, the column is already there. Stop. Do not run the alter again.
+
+`accounts/migrations/0002_save_note.sql` is that same alter. Skip `npx wrangler d1 migrations apply` if you already ran the statement in the console, or if the Worker already added the column. Wrangler would try to add it a second time and stop on the duplicate-column error.
+
+Deploy the `eating-accounts` Worker so saves read and write `note`, then deploy `eatingon30a` so My places and the listing page show the field. Eating in Destin uses this same API, but its pages will not show the note field until that repo gets the same `account.js` and style changes.
+
 The sign-in form has two coupon checkboxes. Both are off unless the visitor checks them.
 
 - Email me coupons and updates from Eating on 30A.

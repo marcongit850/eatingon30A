@@ -1666,6 +1666,79 @@ html.js-filter #cards .card { display: none; }
   color: var(--muted);
   font-size: 0.92rem;
 }
+.save-note:empty { min-height: 0; }
+.personal-note {
+  margin-top: 0.85rem;
+  padding: 1rem 1.05rem 0.95rem;
+  max-width: 42rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 0.7rem;
+}
+.personal-note-label { display: block; margin: 0; }
+.personal-note-label span,
+.place-note-label {
+  display: block;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.personal-note textarea,
+.place-note-input {
+  display: block;
+  width: 100%;
+  min-height: 5.2rem;
+  margin-top: 0.45rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0;
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+.place-note-input { margin-top: 0; }
+.personal-note textarea:focus,
+.place-note-input:focus {
+  outline: 2px solid var(--gulf);
+  outline-offset: 1px;
+  border-color: var(--gulf);
+}
+.personal-note-hint,
+.place-privacy {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.place-privacy { margin-top: 1.5rem; }
+.personal-note-status {
+  margin: 0;
+  min-height: 1.2em;
+  color: var(--gulf);
+  font-size: 0.92rem;
+}
+.personal-note-status:empty { min-height: 0; }
+.note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.note-actions .button {
+  padding: 0.62rem 0.9rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+.note-actions .button:disabled { opacity: 0.65; cursor: progress; }
 .save-bar-compact {
   margin: 0;
   gap: 0.35rem;
@@ -1759,9 +1832,33 @@ html.js-filter #cards .card { display: none; }
 .place-list { margin-top: 1.4rem; }
 .place-card {
   display: grid;
-  gap: 0.2rem;
-  padding: 1rem 0;
+  gap: 0.35rem;
+  padding: 1.15rem 0 1.3rem;
   border-top: 1px solid var(--line);
+}
+.place-note {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  max-width: 42rem;
+}
+.place-note-view,
+.place-note-empty {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  color: var(--ink);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.place-note-view {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.place-note-empty {
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed rgba(23, 36, 33, 0.28);
 }
 .place-site {
   margin: 0;
@@ -1777,7 +1874,7 @@ html.js-filter #cards .card { display: none; }
 }
 .place-card h2 a { text-decoration: none; }
 .place-area { margin: 0; color: var(--muted); }
-.place-remove { margin-top: 0.55rem; justify-self: start; }
+.place-remove { justify-self: start; }
 .place-empty { color: var(--muted); }
 .coupon-quiet {
   margin: 2.2rem 0 0;
