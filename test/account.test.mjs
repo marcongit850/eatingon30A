@@ -275,6 +275,10 @@ test("shared magic link, cookies, and labeled saves", async () => {
   assert.equal(central.includes("Domain="), false);
   assert.match(central, /HttpOnly/);
   assert.match(central, /SameSite=Lax/);
+  assert.match(central, /Max-Age=604800/);
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const centralSession = await db.prepare("SELECT expires_at FROM sessions WHERE site = 'central'").first();
+  assert.ok(Math.abs(Number(centralSession.expires_at) - Date.now() - weekMs) < 60_000);
   const finishUrl = verify.headers.get("location");
   assert.match(finishUrl, /^http:\/\/127\.0\.0\.1:8788\/api\/account\/finish\?/);
   assert.match(finishUrl, /code=/);
@@ -289,6 +293,9 @@ test("shared magic link, cookies, and labeled saves", async () => {
   assert.match(session, /^ea_session=/);
   assert.equal(session.includes("Domain="), false);
   assert.equal(session.includes("Secure"), false);
+  assert.match(session, /Max-Age=604800/);
+  const siteSession = await db.prepare("SELECT expires_at FROM sessions WHERE site = '30a'").first();
+  assert.ok(Math.abs(Number(siteSession.expires_at) - Date.now() - weekMs) < 60_000);
   const token = cookieValue(session, "ea_session");
 
   const reused = await handleAccount(new Request(finishUrl), site30);
