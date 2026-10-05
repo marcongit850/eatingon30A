@@ -9,6 +9,13 @@
   "name": "eatingon30a",
   "main": "worker.js",
   "compatibility_date": "2026-09-29",
+  // Shared accounts live on the eating-accounts Worker. Change ACCOUNTS_ORIGIN
+  // if that workers.dev hostname differs. The matching secret is
+  // ACCOUNTS_SHARED_SECRET, set with wrangler secret put, not in this file.
+  "vars": {
+    "ACCOUNT_SITE": "30a",
+    "ACCOUNTS_ORIGIN": "https://eating-accounts.352marc.workers.dev"
+  },
   "assets": {
     "directory": ".",
     "binding": "ASSETS",

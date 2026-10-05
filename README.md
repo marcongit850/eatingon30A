@@ -114,6 +114,42 @@ That publishes the workers.dev preview and does not attach a vanity domain. To k
 
 Homepage meal and town links go to `/restaurants/?meal=Dinner` and `/restaurants/?area=seaside`. The directory reads those query parameters and hides the other cards. The map page honors the same parameters.
 
+## Shared accounts
+
+Eating on 30A and Eating in Destin share one account. The store is a separate Worker, `eating-accounts`, with one D1 database. Favorites and Want to try rows record which guide they came from (`30a` or `destin`). Sign-in is an email magic link. Google sign-in is not in this phase. It needs a Google OAuth client, and the magic link is the required path.
+
+`eatingon30a.com` and `eatingindestin.com` do not share a parent domain. A browser will not send one cookie to both hosts, and a `Domain` attribute cannot bridge them. Do not set `Domain` on these cookies.
+
+The accounts Worker sets `ea_central` on its own host only (HttpOnly, SameSite=Lax, Secure on https, no Domain). That cookie is what makes one sign-in work on both guides. The magic link opens the accounts host, which sets `ea_central`, then redirects back to the guide with a one-time code. The guide's Worker exchanges that code and sets its own `ea_session` cookie on that guide's host only. Opening Sign in or My places on the other guide sends the browser to the accounts host again. If `ea_central` is still valid, the visitor comes back signed in without a second email. Signing out deletes every session for that account, including `ea_central`, so the other guide is signed out on its next request.
+
+`wrangler.jsonc` sets `ACCOUNT_SITE` to `30a` and `ACCOUNTS_ORIGIN` to `https://eating-accounts.352marc.workers.dev`. Change the origin if Cloudflare assigns a different workers.dev host. Do not add a custom domain binding in this repo.
+
+Deploy the accounts Worker before sign-in will work. From `accounts/`:
+
+```bash
+npx wrangler d1 create eating-accounts
+```
+
+Put the returned `database_id` in `accounts/wrangler.jsonc` in place of the placeholder. Then:
+
+```bash
+npx wrangler deploy -c accounts/wrangler.jsonc
+npx wrangler d1 migrations apply eating-accounts --remote
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put SUBSCRIBE_FROM
+npx wrangler secret put ACCOUNTS_SHARED_SECRET
+```
+
+`RESEND_API_KEY` and `SUBSCRIBE_FROM` are the same Resend key and verified sender the site already uses for signup mail. The message goes to the visitor, not to `CONTACT_EMAIL`. `ACCOUNTS_SHARED_SECRET` is a long random string (`openssl rand -hex 32`). Set that same secret on this Worker and on `eatingindestin`:
+
+```bash
+npx wrangler secret put ACCOUNTS_SHARED_SECRET
+```
+
+Do not set `MAGIC_LINK_PREVIEW` on the deployed accounts Worker. That variable is for local testing only. When it is `1`, the sign-in API includes the link in the JSON response.
+
+The marketing checkbox on the sign-in form is off unless the visitor checks it. A new account stores that choice. A later sign-in can turn updates on, and leaving the box unchecked does not turn an existing opt-in off.
+
 ## Pages
 
 - `/` meal and town entry points that filter the directory
@@ -123,4 +159,6 @@ Homepage meal and town links go to `/restaurants/?meal=Dinner` and `/restaurants
 - `/areas/` and `/areas/<slug>/` town notes
 - `/guides/` and one page per guide, built from directory tags: seafood, breakfast, coffee and cafes, kid-friendly, dinner in Seaside, Rosemary Beach, WaterColor, walkable towns (Seaside, Alys Beach, and Rosemary Beach; there is no walkable tag), Lauren’s Favorites, and Nearby restaurants on US 98 (near 30A, not on the beach road)
 - `/about/` and `/contact/`
+- `/account/` email sign-in, shared with Eating in Destin
+- `/my-places/` favorites and want to try, labeled 30A or Destin
 - `sitemap.xml`, `robots.txt`, `llms.txt`

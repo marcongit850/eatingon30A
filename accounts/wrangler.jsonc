@@ -1,0 +1,33 @@
+{
+  // Shared accounts for Eating on 30A and Eating in Destin.
+  // Do not attach a custom domain in this file. The public hostname is the
+  // workers.dev host Cloudflare assigns, unless Marc changes ACCOUNTS_ORIGIN
+  // on the two site Workers after he adds a hostname in the dashboard.
+  //
+  // Before the first deploy, replace database_id:
+  //   npx wrangler d1 create eating-accounts
+  // Then from this directory:
+  //   npx wrangler d1 migrations apply eating-accounts --remote
+  //   npx wrangler secret put RESEND_API_KEY
+  //   npx wrangler secret put SUBSCRIBE_FROM
+  //   npx wrangler secret put ACCOUNTS_SHARED_SECRET
+  // Do not set MAGIC_LINK_PREVIEW in production. It returns the sign-in link
+  // in the API response for local testing only.
+  "name": "eating-accounts",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-05",
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "eating-accounts",
+      "database_id": "00000000-0000-4000-8000-000000000001",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

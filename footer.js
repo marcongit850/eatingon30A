@@ -12,5 +12,8 @@
       var script = document.createElement("script");
       script.src = "/subscribe.js";
       document.body.appendChild(script);
+      var account = document.createElement("script");
+      account.src = "/account.js";
+      document.body.appendChild(account);
     });
 })();
