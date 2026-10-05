@@ -393,7 +393,7 @@ check(".listing-form" in styles and ".listing-status" in styles, "listing form s
 check('href="/list-your-restaurant/">full listing form</a>' in contact, "contact page should link to the full listing form")
 check("For a new restaurant or a complete update" in contact, "contact page should point complete updates at the full form")
 listing_page = (ROOT / "list-your-restaurant" / "index.html").read_text(encoding="utf-8")
-check("<h1 class=\"form-title\">List your restaurant</h1>" in listing_page, "listing form page should use the list heading")
+check("<h1 class=\"form-title\">List or Update your restaurant</h1>" in listing_page, "listing form page should use the list heading")
 check('rel="canonical" href="https://www.eatingon30a.com/list-your-restaurant/"' in listing_page, "listing form page should set a canonical URL")
 check("action=\"/api/list-restaurant\"" in listing_page and "data-list-restaurant" in listing_page, "listing form should post to the full endpoint")
 check('enctype="multipart/form-data"' in listing_page, "listing form should submit image files as multipart")

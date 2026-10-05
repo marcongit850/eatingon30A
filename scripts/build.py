@@ -3774,7 +3774,8 @@ LISTING_AMENITIES = (
     ("music", "Live music*"),
 )
 LISTING_LIVE_MUSIC_NOTE = "Live music is seasonal and subject to change."
-LIST_PAGE_TITLE = "List your restaurant on Eating on 30A"
+LIST_PAGE_HEADING = "List or Update your restaurant"
+LIST_PAGE_TITLE = f"{LIST_PAGE_HEADING} on Eating on 30A"
 LIST_PAGE_DESCRIPTION = (
     "Add a restaurant or send a complete update for the Eating on 30A guide "
     "along Scenic Highway 30A in Walton County, Florida."
@@ -3877,9 +3878,9 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
     body = (
         '<div class="wrap page-intro">'
         '<div class="prose">'
-        '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> List your restaurant</p>'
+        f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> {LIST_PAGE_HEADING}</p>'
         '<p class="kicker">For restaurants</p>'
-        '<h1 class="form-title">List your restaurant</h1>'
+        f'<h1 class="form-title">{LIST_PAGE_HEADING}</h1>'
         "<p>Add a restaurant along Scenic Highway 30A, or send a full update for a place already in the guide. "
         "We read every submission and follow up by email if we need a detail checked.</p>"
         '<p>For a short correction, the <a class="text-link" href="/contact/">contact form</a> is enough.</p>'
@@ -3956,12 +3957,12 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
                 graph(
                     {
                         "@type": "WebPage",
-                        "name": "List your restaurant",
+                        "name": LIST_PAGE_HEADING,
                         "url": ORIGIN + "/list-your-restaurant/",
                         "description": LIST_PAGE_DESCRIPTION,
                         "isPartOf": {"@id": ORIGIN + "/#website"},
                     },
-                    breadcrumbs([("Home", "/"), ("List your restaurant", "/list-your-restaurant/")]),
+                    breadcrumbs([("Home", "/"), (LIST_PAGE_HEADING, "/list-your-restaurant/")]),
                 )
             ),
             include_js=False,
@@ -4140,7 +4141,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         f"- [Guides]({ORIGIN}/guides/): Breakfast, seafood, coffee, towns, and favorites along Scenic Highway 30A.",
         f"- [About]({ORIGIN}/about/): A restaurant guide for Scenic Highway 30A.",
         f"- [Contact]({ORIGIN}/contact/): Send a correction, edit, deletion, or new listing.",
-        f"- [List your restaurant]({ORIGIN}/list-your-restaurant/): Full form for a new restaurant or a complete listing update.",
+        f"- [{LIST_PAGE_HEADING}]({ORIGIN}/list-your-restaurant/): Full form for a new restaurant or a complete listing update.",
         "",
         "## Guides",
         "",
@@ -4201,7 +4202,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
         f"- [Guides]({ORIGIN}/guides/)",
         f"- [About]({ORIGIN}/about/)",
         f"- [Contact]({ORIGIN}/contact/)",
-        f"- [List your restaurant]({ORIGIN}/list-your-restaurant/)",
+        f"- [{LIST_PAGE_HEADING}]({ORIGIN}/list-your-restaurant/)",
         f"- [Short index]({ORIGIN}/llms.txt)",
         f"- [Sitemap]({ORIGIN}/sitemap.xml)",
         "",
