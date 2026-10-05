@@ -495,7 +495,7 @@
     "price": "$$",
     "lat": 30.3232096,
     "lng": -86.1449276,
-    "address": "4 Watercolor Blvd S Unit 101C, Santa Rosa Beach, FL 32459, USA",
+    "address": "4 Watercolor Blvd S Unit 101-C, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 399-4028",
     "search": "beach happy cafe watercolor  watercolor american cafe breakfast lunch cafe coffee smoothies ice cream cafe / coffee beach happy cafe in watercolor is the cafe that serves food. see the current menu, hours, and events. beach happy cafe cafe coffee cafe coffee smoothies ice cream american grab go watercolor $$",
     "outdoor": false,
@@ -510,7 +510,7 @@
   },
   {
     "slug": "beach-happy-cafe-seagrove-beach",
-    "name": "Beach Happy Cafe",
+    "name": "Beach Happy Cafe + Cocktails",
     "area": "Seagrove Beach",
     "areaSlug": "seagrove-beach",
     "meals": [
@@ -528,7 +528,7 @@
     "lng": -86.0902244,
     "address": "5311 E County Hwy 30A Unit 2, Santa Rosa Beach, FL 32459, USA",
     "phone": "(850) 660-5263",
-    "search": "beach happy cafe seagrove beach  seagrove beach cafe drinks coffee smoothies cafe / coffee beach happy cafe in seagrove is for beach happy hour, coffee, and smoothies. see the current menu, hours, and events. beach happy cafe seagrove cafe coffee smoothies happy hour seagrove beach $$",
+    "search": "beach happy cafe + cocktails seagrove beach  seagrove beach cafe drinks coffee smoothies cafe / coffee beach happy cafe in seagrove is for beach happy hour, coffee, and smoothies. see the current menu, hours, and events. beach happy cafe seagrove cafe coffee smoothies happy hour seagrove beach $$",
     "outdoor": false,
     "kids": true,
     "music": false,
