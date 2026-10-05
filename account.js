@@ -596,6 +596,7 @@
           area: save.area,
           kind: save.kind,
           site: save.site,
+          saved: true,
           note: text
         }).then(function (result) {
           saveBtn.disabled = false;

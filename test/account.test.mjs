@@ -182,6 +182,35 @@ test("personal notes stay on the account and off public listing html", () => {
   assert.match(script, /maxlength="280"/);
   assert.match(script, /maxLength = 280/);
   assert.match(script, /view\.textContent = text/);
+  const noteWrites = [];
+  const marker = "putSave({";
+  let index = 0;
+  while ((index = script.indexOf(marker, index)) !== -1) {
+    const start = index + "putSave(".length;
+    let depth = 0;
+    let end = start;
+    for (; end < script.length; end += 1) {
+      if (script[end] === "{") depth += 1;
+      else if (script[end] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          end += 1;
+          break;
+        }
+      }
+    }
+    const body = script.slice(start, end);
+    if (/\bnote\s*:/.test(body)) noteWrites.push(body);
+    index = end;
+  }
+  assert.equal(noteWrites.length, 2);
+  for (const body of noteWrites) {
+    assert.match(body, /saved:\s*true/);
+    assert.equal(/\bsaved:\s*false/.test(body), false);
+  }
+  const placesNote = noteWrites.find((body) => /site:\s*save\.site/.test(body));
+  assert.ok(placesNote);
+  assert.match(placesNote, /note:\s*text/);
   assert.equal(script.includes("—"), false);
   assert.equal(script.includes("card-grid"), false);
   assert.match(css, /\.personal-note \{/);
