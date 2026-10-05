@@ -604,6 +604,11 @@ check("visibilitychange" in site_js and "pagehide" in site_js, "featured auto-ro
 check("prefers-reduced-motion: reduce" in site_js, "featured auto-rotate should respect reduced motion")
 check("mapListCard" in site_js and "map-thumb" in site_js and "openPopup" in site_js, "map list should use compact cards and still open the pin")
 check("#map-list .map-hit" in styles and "#map-list .map-thumb" in styles, "map list cards should stay compact")
+check("save-slot" in site_js and "map-hit-link" in site_js, "map list cards should include a save slot outside the link")
+check(
+    ".card .save-slot" in styles and "align-self: end" in styles and "rgba(16, 40, 37, 0.62)" in styles,
+    "card save controls should sit on the photo with a light dark gradient",
+)
 check(".cover-arrow" in styles and "min-width: 44px" in styles, "featured arrows should stay large enough to tap")
 for slug in featured:
     check(f'/restaurants/{slug}/' in home, f"homepage cover missing {slug}")
