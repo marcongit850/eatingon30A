@@ -39,6 +39,28 @@ GA4_HEAD = (
     "</script>\n"
 )
 
+# Meta Pixel for eatingon30a.com only. layout() puts the base code in every page head
+# and the noscript image immediately after the opening body tag.
+META_PIXEL_ID = "2157446775153374"
+META_PIXEL_HEAD = (
+    "<script>\n"
+    "!function(f,b,e,v,n,t,s)\n"
+    "{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\n"
+    "n.callMethod.apply(n,arguments):n.queue.push(arguments)};\n"
+    "if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\n"
+    "n.queue=[];t=b.createElement(e);t.async=!0;\n"
+    "t.src=v;s=b.getElementsByTagName(e)[0];\n"
+    "s.parentNode.insertBefore(t,s)}(window, document,'script',\n"
+    "'https://connect.facebook.net/en_US/fbevents.js');\n"
+    f"fbq('init', '{META_PIXEL_ID}');\n"
+    "fbq('track', 'PageView');\n"
+    "</script>\n"
+)
+META_PIXEL_NOSCRIPT = (
+    '<noscript><img height="1" width="1" style="display:none" '
+    f'src="https://www.facebook.com/tr?id={META_PIXEL_ID}&ev=PageView&noscript=1"/></noscript>\n'
+)
+
 WEST_TO_EAST = [
     "dune-allen-beach",
     "gulf-place",
@@ -1363,6 +1385,7 @@ def layout(
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         + GA4_HEAD
+        + META_PIXEL_HEAD
         + f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
         f'<link rel="canonical" href="{e(canonical)}">\n'
@@ -1379,6 +1402,7 @@ def layout(
         '<link rel="stylesheet" href="/styles.css">\n'
         + extra_head
         + f"</head>\n<body{body_attr}>\n"
+        + META_PIXEL_NOSCRIPT
         + '<div id="site-header"></div>\n'
         + banner
         + '<main id="main">\n'
