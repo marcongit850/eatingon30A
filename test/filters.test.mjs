@@ -152,6 +152,13 @@ test("map list cards stay compact", () => {
   assert.match(photo, /<strong>Stinky’s Fish Camp<\/strong>/);
   assert.match(photo, /class="map-meta">Dune Allen Beach · \$\$/);
   assert.match(photo, /class="map-address">5960 W County Hwy 30A/);
+  assert.match(photo, /class="map-hit-link"/);
+  assert.match(photo, /class="save-slot"/);
+  assert.match(photo, /data-slug="stinkys-fish-camp-dune-allen-beach"/);
+  assert.match(photo, /data-name="Stinky’s Fish Camp"/);
+  assert.match(photo, /data-area="Dune Allen Beach"/);
+  assert.ok(photo.indexOf("</a>") < photo.indexOf('class="save-slot"'));
+  assert.doesNotMatch(photo, /<button/);
   const okuCard = mapListCard(restaurants.find((item) => item.slug === "o-ku-alys-beach"));
   assert.match(okuCard, /o-ku-alys-beach\/01\.jpg/);
   assert.doesNotMatch(okuCard, /class="map-thumb ph"/);

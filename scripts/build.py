@@ -875,17 +875,18 @@ def listing_mark(restaurant: dict, *, hero: bool = False) -> str:
 
 
 def card(restaurant: dict, heading: str = "h2") -> str:
+    """Directory card. account.js mounts Favorite and Want to try from the save slot."""
     meals = " · ".join(restaurant["meals"])
     cuisines = ", ".join(restaurant["cuisines"])
     bits = [bit for bit in (restaurant["price"], cuisines, meals) if bit]
     area_line = restaurant["area"]
     if restaurant["subarea"]:
         area_line += f" · {restaurant['subarea']}"
+    save_area = restaurant["label"] or restaurant["area"]
     yes_no = lambda flag: "yes" if flag else "no"
     attrs = " ".join(
         [
             f'id="r-{e(restaurant["slug"])}"',
-            f'href="/restaurants/{e(restaurant["slug"])}/"',
             'class="card"',
             f'data-area="{e(restaurant["areaSlug"])}"',
             f'data-meals="{e("|".join(restaurant["meals"]))}"',
@@ -905,11 +906,14 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     note_html = f'<p class="note">{e(note)}</p>' if note else ""
     media_class = "card-media logo-media" if restaurant.get("logo") and not restaurant["cardImage"] else "card-media"
     return (
-        f'<a {attrs}>'
+        f'<article {attrs}>'
+        f'<a class="card-link" href="/restaurants/{e(restaurant["slug"])}/">'
         f'<div class="{media_class}">{listing_mark(restaurant)}</div>'
         f'<div class="card-body"><p class="card-area">{e(area_line)}</p>'
         f'<{heading}>{e(restaurant["name"])}</{heading}>'
         f'<p class="meta">{e(" · ".join(bits))}</p>{note_html}</div></a>'
+        f'<div class="save-slot" data-slug="{e(restaurant["slug"])}" '
+        f'data-name="{e(restaurant["name"])}" data-area="{e(save_area)}"></div></article>'
     )
 
 
@@ -1599,6 +1603,7 @@ def public_record(restaurant: dict) -> dict:
         "address": restaurant["address"],
         "phone": restaurant["phone"],
         "search": restaurant["search"],
+        "label": restaurant["label"],
         "outdoor": restaurant["outdoor"],
         "kids": restaurant["kids"],
         "music": restaurant["music"],
