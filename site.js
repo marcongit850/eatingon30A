@@ -100,16 +100,21 @@ function listTone(item) {
 
 export function mapListCard(item) {
   const href = `/restaurants/${encodeURIComponent(item.slug || "")}/`;
+  const name = item.name || "";
+  const area = item.label || item.area || "";
   const meta = [item.area, item.price].filter(Boolean).join(" · ");
   const media = item.image
-    ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name || "Restaurant")}">`
-    : `<span class="map-thumb ph" data-tone="${escapeHtml(listTone(item))}"><span class="mono" aria-hidden="true">${escapeHtml(monogram(item.name))}</span></span>`;
+    ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(name || "Restaurant")}">`
+    : `<span class="map-thumb ph" data-tone="${escapeHtml(listTone(item))}"><span class="mono" aria-hidden="true">${escapeHtml(monogram(name))}</span></span>`;
   const thumb = item.image ? `<span class="map-thumb">${media}</span>` : media;
   const address = item.address ? `<span class="map-address">${escapeHtml(item.address)}</span>` : "";
   return (
-    `<a class="map-hit" href="${href}">${thumb}<span class="map-copy">` +
-    `<strong>${escapeHtml(item.name || "")}</strong>` +
-    `<span class="map-meta">${escapeHtml(meta)}</span>${address}</span></a>`
+    `<article class="map-hit">` +
+    `<a class="map-hit-link" href="${href}">${thumb}<span class="map-copy">` +
+    `<strong>${escapeHtml(name)}</strong>` +
+    `<span class="map-meta">${escapeHtml(meta)}</span>${address}</span></a>` +
+    `<div class="save-slot" data-slug="${escapeHtml(item.slug || "")}" data-name="${escapeHtml(name)}" data-area="${escapeHtml(area)}"></div>` +
+    `</article>`
   );
 }
 
@@ -353,13 +358,15 @@ function bootMap() {
       if (list) {
         const holder = document.createElement("div");
         holder.innerHTML = mapListCard(item);
-        const link = holder.firstElementChild;
+        const card = holder.firstElementChild;
+        const link = card.querySelector("a") || card;
         const open = () => marker.openPopup();
         link.addEventListener("mouseenter", open);
         link.addEventListener("focus", open);
-        list.append(link);
+        list.append(card);
       }
     }
+    document.dispatchEvent(new CustomEvent("cards-mounted"));
     const label = describeFilters(filters, areaNames, "Along the coast");
     if (title) title.textContent = label;
     if (count) count.textContent = visible.length === 1 ? "1 restaurant on the map" : `${visible.length} restaurants on the map`;

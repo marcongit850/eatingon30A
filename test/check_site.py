@@ -627,6 +627,28 @@ if card:
     tag = card.group(0)
     check('data-area="inlet-beach"' in tag, "Big Bad Breakfast area filter data")
     check("Breakfast" in tag and "Lunch" in tag, "Big Bad Breakfast meal data")
+bbb = directory[directory.find('id="r-big-bad-breakfast-inlet-beach"'):]
+bbb = bbb[: bbb.find("</article>") + len("</article>")]
+check('class="card-link"' in bbb and 'href="/restaurants/big-bad-breakfast-inlet-beach/"' in bbb, "card link should open the profile")
+check('class="save-slot"' in bbb, "directory cards should carry a save slot")
+check('data-slug="big-bad-breakfast-inlet-beach"' in bbb, "save slot should include the slug")
+check('data-name="Big Bad Breakfast"' in bbb, "save slot should include the name")
+check('data-area="Inlet Beach | The Pointe"' in bbb, "save slot area should match the listing label")
+check(bbb.find("</a>") < bbb.find('class="save-slot"'), "save controls should sit outside the card link")
+check(directory.count('class="save-slot"') == len(restaurants), "every directory card should have one save slot")
+check("save-slot" not in (ROOT / "guides" / "index.html").read_text(encoding="utf-8"), "guide teasers are not restaurant cards")
+check("save-slot" not in (ROOT / "about" / "index.html").read_text(encoding="utf-8"), "pages without restaurant cards should not include save slots")
+seaside_area = (ROOT / "areas" / "seaside" / "index.html").read_text(encoding="utf-8")
+check('class="save-slot"' in seaside_area and 'data-slug="bud-and-alleys-seaside"' in seaside_area, "town pages should save from restaurant cards")
+check(
+    'class="save-slot"' in (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8"),
+    "guide restaurant grids should save from the same card",
+)
+account_js = (ROOT / "account.js").read_text(encoding="utf-8")
+check("mountCardSaves" in account_js and ".save-slot" in account_js, "account.js should mount saves on card slots")
+check('"/api/account/saves"' in account_js and "cards-mounted" in account_js, "card saves should use the account API and refresh with the map list")
+check("Want to try" in account_js and "Favorite" in account_js, "save buttons should keep the listing labels")
+check("—" not in account_js and "–" not in account_js, "account copy should not use em or en dashes")
 
 stinkys = (ROOT / "restaurants" / "stinkys-fish-camp-dune-allen-beach" / "index.html").read_text(encoding="utf-8")
 check("/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "Stinky's should use the supplied cover")
