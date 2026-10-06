@@ -6,12 +6,24 @@
 
 export const GALLERY_WINDOW = 4;
 
-export function clampGalleryIndex(index, total, windowSize = GALLERY_WINDOW) {
+export function galleryMaxIndex(total, windowSize = GALLERY_WINDOW) {
   const count = Math.max(0, Number(total) || 0);
   const size = Math.max(1, Number(windowSize) || GALLERY_WINDOW);
-  const max = Math.max(0, count - size);
+  return Math.max(0, count - size);
+}
+
+export function clampGalleryIndex(index, total, windowSize = GALLERY_WINDOW) {
+  const max = galleryMaxIndex(total, windowSize);
   const start = Number.isFinite(index) ? Math.trunc(index) : 0;
   return Math.max(0, Math.min(max, start));
+}
+
+export function galleryAtStart(index, total, windowSize = GALLERY_WINDOW) {
+  return clampGalleryIndex(index, total, windowSize) === 0;
+}
+
+export function galleryAtEnd(index, total, windowSize = GALLERY_WINDOW) {
+  return clampGalleryIndex(index, total, windowSize) >= galleryMaxIndex(total, windowSize);
 }
 
 export function galleryEnd(index, total, windowSize = GALLERY_WINDOW) {
@@ -43,8 +55,8 @@ function renderGallery(root, tiles, index) {
   if (count && count.textContent !== label) count.textContent = label;
   const prev = root.querySelector(".profile-gallery-prev");
   const next = root.querySelector(".profile-gallery-next");
-  if (prev) prev.disabled = index === 0;
-  if (next) next.disabled = index >= clampGalleryIndex(Number.POSITIVE_INFINITY, total);
+  if (prev) prev.disabled = galleryAtStart(index, total);
+  if (next) next.disabled = galleryAtEnd(index, total);
 }
 
 function bootGallery(root) {

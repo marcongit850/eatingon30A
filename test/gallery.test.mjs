@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clampGalleryIndex, galleryEnd, galleryLabel, tileInGalleryWindow } from "../gallery.js";
+import { clampGalleryIndex, galleryAtEnd, galleryAtStart, galleryEnd, galleryLabel, galleryMaxIndex, tileInGalleryWindow } from "../gallery.js";
 
 test("the counter names the last photo in the window", () => {
   assert.equal(galleryLabel(0, 9), "4 of 9 photos");
@@ -20,6 +20,13 @@ test("paging stops at the ends", () => {
   assert.equal(clampGalleryIndex(8, 6), 2);
   assert.equal(galleryEnd(8, 6), 6);
   assert.equal(clampGalleryIndex(1, 3), 0);
+  assert.equal(galleryMaxIndex(6), 2);
+  assert.equal(galleryMaxIndex(5), 1);
+  assert.equal(galleryMaxIndex(4), 0);
+  assert.equal(galleryAtStart(0, 6), true);
+  assert.equal(galleryAtEnd(0, 6), false);
+  assert.equal(galleryAtEnd(2, 6), true);
+  assert.equal(galleryAtStart(2, 6), false);
 });
 
 test("a step of one lets every photo enter the window", () => {
