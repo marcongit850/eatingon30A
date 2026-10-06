@@ -178,10 +178,12 @@ test("personal notes stay on the account and off public listing html", () => {
   assert.match(script, /Add a personal note\.\.\./);
   assert.match(script, /Only you can see this\. It also shows on My places\. About 280 characters\./);
   assert.match(script, /Save note/);
-  assert.match(script, /Edit note/);
+  assert.equal(script.includes("Edit note"), false);
+  assert.equal(script.includes("Add note"), false);
   assert.match(script, /maxlength="280"/);
   assert.match(script, /maxLength = 280/);
-  assert.match(script, /view\.textContent = text/);
+  assert.match(script, /editor\.value = save\.note \|\| ""/);
+  assert.equal(/editor\.hidden/.test(script), false);
   const noteWrites = [];
   const marker = "putSave({";
   let index = 0;
@@ -214,7 +216,7 @@ test("personal notes stay on the account and off public listing html", () => {
   assert.equal(script.includes("—"), false);
   assert.equal(script.includes("card-grid"), false);
   assert.match(css, /\.personal-note \{/);
-  assert.match(css, /\.place-note-empty \{/);
+  assert.match(css, /\.place-note-input \{/);
   assert.equal(page.includes("Only you can see this"), false);
   assert.equal(page.includes("personal-note"), false);
 });
