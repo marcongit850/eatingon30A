@@ -1014,6 +1014,14 @@ check(
 )
 subscribe_js = (ROOT / "subscribe.js").read_text(encoding="utf-8")
 check("30000" in subscribe_js and "localStorage" in subscribe_js, "popup should wait 30s and remember dismiss in localStorage")
+check(
+    "/api/account/me" in subscribe_js
+    and "/api/account/config" in subscribe_js
+    and 'credentials: "same-origin"' in subscribe_js
+    and "data-account-nav" in subscribe_js
+    and "My places" in subscribe_js,
+    "popup should stay closed when the visitor is signed in",
+)
 check("We’ll send coupons or updates to that address." in subscribe_js, "delivered signup should mention coupons or updates")
 check("We’ll send coupons to that address." not in subscribe_js, "success message should not be coupons-only")
 worker_js = (ROOT / "worker.js").read_text(encoding="utf-8")
