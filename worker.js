@@ -437,13 +437,8 @@ export function parseListRestaurant(body) {
   if (price && !PRICE_SET.has(price)) return { error: "Choose a price range." };
   const description = cleanBlock(body.description, 2000);
   if (description.tooLong) return { error: "Keep the description under 2,000 characters." };
-  const hours = [];
-  for (const day of listingOptions.days) {
-    const closed = isYes(scalar(body[day.closed]));
-    const text = cleanLine(body[day.hours], 80);
-    if (text.tooLong) return { error: `Keep ${day.label} hours under 80 characters.` };
-    hours.push({ label: day.label, value: closed ? "Closed" : text.text });
-  }
+  const hours = cleanBlock(body.hours, 1000);
+  if (hours.tooLong) return { error: "Keep the hours under 1,000 characters." };
   const seasonalNote = cleanBlock(body.seasonalNote, 500);
   if (seasonalNote.tooLong) return { error: "Keep the seasonal note under 500 characters." };
   const cuisines = pickList(body.cuisines, CUISINE_SET, "", "Choose cuisine types from the list.");
@@ -482,7 +477,7 @@ export function parseListRestaurant(body) {
       website: website.text,
       price,
       description: description.text,
-      hours,
+      hours: hours.text,
       seasonalNote: seasonalNote.text,
       cuisines: cuisines.items,
       meals: meals.items,
@@ -531,10 +526,10 @@ export function formatListRestaurant(payload) {
     "Short description:",
     payload.description || "Not provided",
     "",
-    "Hours",
+    "Hours:",
+    payload.hours || "Not provided",
+    labeled("Seasonal note", payload.seasonalNote),
   ];
-  for (const day of payload.hours) lines.push(labeled(day.label, day.value));
-  lines.push(labeled("Seasonal note", payload.seasonalNote));
   lines.push(
     "",
     "What they serve",
@@ -613,13 +608,10 @@ function listRestaurantFromForm(form) {
     facebook: form.get("facebook"),
     instagram: form.get("instagram"),
     videoUrl: form.get("videoUrl"),
+    hours: form.get("hours"),
     notes: form.get("notes"),
     authorized: form.get("authorized"),
   };
-  for (const day of listingOptions.days) {
-    body[day.hours] = form.get(day.hours);
-    body[day.closed] = form.get(day.closed);
-  }
   for (const item of listingOptions.amenities) body[item.name] = form.get(item.name);
   return body;
 }

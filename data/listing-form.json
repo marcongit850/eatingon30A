@@ -111,43 +111,6 @@
       "label": "Update an existing listing"
     }
   ],
-  "days": [
-    {
-      "label": "Monday",
-      "hours": "hoursMon",
-      "closed": "hoursMonClosed"
-    },
-    {
-      "label": "Tuesday",
-      "hours": "hoursTue",
-      "closed": "hoursTueClosed"
-    },
-    {
-      "label": "Wednesday",
-      "hours": "hoursWed",
-      "closed": "hoursWedClosed"
-    },
-    {
-      "label": "Thursday",
-      "hours": "hoursThu",
-      "closed": "hoursThuClosed"
-    },
-    {
-      "label": "Friday",
-      "hours": "hoursFri",
-      "closed": "hoursFriClosed"
-    },
-    {
-      "label": "Saturday",
-      "hours": "hoursSat",
-      "closed": "hoursSatClosed"
-    },
-    {
-      "label": "Sunday",
-      "hours": "hoursSun",
-      "closed": "hoursSunClosed"
-    }
-  ],
   "amenities": [
     {
       "name": "outdoor",

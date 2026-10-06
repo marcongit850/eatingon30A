@@ -3,15 +3,6 @@
   var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
   var MAX_IMAGE_TOTAL_BYTES = 8 * 1024 * 1024;
   var MAX_IMAGE_COUNT = 12;
-  var DAYS = [
-    ["Monday", "hoursMon", "hoursMonClosed"],
-    ["Tuesday", "hoursTue", "hoursTueClosed"],
-    ["Wednesday", "hoursWed", "hoursWedClosed"],
-    ["Thursday", "hoursThu", "hoursThuClosed"],
-    ["Friday", "hoursFri", "hoursFriClosed"],
-    ["Saturday", "hoursSat", "hoursSatClosed"],
-    ["Sunday", "hoursSun", "hoursSunClosed"],
-  ];
 
   function status(form, message, isError) {
     var node = form.querySelector(".listing-status");
@@ -42,15 +33,6 @@
     return String(text || "").replace(/\D/g, "");
   }
 
-  function syncHours(form) {
-    DAYS.forEach(function (day) {
-      var closed = field(form, day[2]);
-      var hours = field(form, day[1]);
-      if (!closed || !hours) return;
-      hours.disabled = closed.checked;
-    });
-  }
-
   function payload(form) {
     var body = {
       eo30a_hp: value(form, "eo30a_hp"),
@@ -68,6 +50,7 @@
       website: value(form, "website"),
       price: (form.querySelector('input[name="price"]:checked') || {}).value || "",
       description: value(form, "description"),
+      hours: value(form, "hours"),
       seasonalNote: value(form, "seasonalNote"),
       cuisines: checkedValues(form, "cuisines"),
       meals: checkedValues(form, "meals"),
@@ -78,11 +61,6 @@
       notes: value(form, "notes"),
       authorized: Boolean(field(form, "authorized") && field(form, "authorized").checked),
     };
-    DAYS.forEach(function (day) {
-      var closed = field(form, day[2]);
-      body[day[1]] = value(form, day[1]);
-      body[day[2]] = Boolean(closed && closed.checked);
-    });
     ["outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"].forEach(function (name) {
       var node = field(form, name);
       body[name] = Boolean(node && node.checked);
@@ -116,12 +94,7 @@
       return { message: "Choose a price range.", field: "price" };
     }
     if (body.description.length > 2000) return { message: "Keep the description under 2,000 characters.", field: "description" };
-    var dayProblem = null;
-    DAYS.forEach(function (day) {
-      if (dayProblem) return;
-      if (body[day[1]] && body[day[1]].length > 80) dayProblem = { message: "Keep " + day[0] + " hours under 80 characters.", field: day[1] };
-    });
-    if (dayProblem) return dayProblem;
+    if (body.hours.length > 1000) return { message: "Keep the hours under 1,000 characters.", field: "hours" };
     if (body.seasonalNote.length > 500) return { message: "Keep the seasonal note under 500 characters.", field: "seasonalNote" };
     if (badLink(body.facebook)) return { message: "Check the Facebook link.", field: "facebook" };
     if (badLink(body.instagram)) return { message: "Check the Instagram link.", field: "instagram" };
@@ -329,13 +302,7 @@
 
   function bind(form) {
     fillFromQuery(form);
-    syncHours(form);
     bindImages(form);
-    form.addEventListener("change", function (event) {
-      var target = event.target;
-      if (!target || !target.name) return;
-      if (/Closed$/.test(target.name)) syncHours(form);
-    });
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       var pending = form._listingPending || Promise.resolve();
@@ -386,7 +353,6 @@
         }
         form.reset();
         setImageFiles(form, []);
-        syncHours(form);
         status(form, "Thanks!  We will review and get back to you shortly.", false);
       })
       .catch(function () {

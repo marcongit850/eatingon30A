@@ -520,7 +520,15 @@ check("Choose at least one." not in listing_page, "listing form should not requi
 check("Required when you are updating" not in listing_page, "listing form should not require the current listing")
 check("—" not in listing_page and "–" not in listing_page, "listing form page should not use em or en dashes")
 check('src="/list-restaurant.js"' in listing_page, "listing form page should load its script")
-for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "videoUrl", "photos", "notes", "authorized"):
+check(
+    '<textarea name="hours" maxlength="1000" rows="4" placeholder="Mon-Sun 11am-9pm, or check website for hours"></textarea>' in listing_page,
+    "listing form should use one freeform hours box",
+)
+check(
+    "hoursMon" not in listing_page and "hours-day" not in listing_page and "Closed <span" not in listing_page,
+    "listing form should not ask for each day of the week",
+)
+for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "hours", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "videoUrl", "photos", "notes", "authorized"):
     check(f'name="{field}"' in listing_page, f"listing form missing {field}")
 for amenity in ("outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"):
     check(f'name="{amenity}"' in listing_page, f"listing form missing amenity {amenity}")
@@ -543,6 +551,10 @@ check("Keep them under 8 MB altogether." in list_js, "listing form script should
 check("—" not in list_js and "–" not in list_js, "listing form script should not use em or en dashes")
 check(".required" not in list_js, "listing form script should not mark fields required in the browser")
 check("Enter your name." in list_js and "Enter a valid email." in list_js, "listing form script should still require a name and email")
+check(
+    'hours: value(form, "hours")' in list_js and "hoursMon" not in list_js and "Keep the hours under 1,000 characters." in list_js,
+    "listing form script should send one hours value",
+)
 check("Confirm you are authorized" not in list_js, "listing form script should not require the authorization checkbox")
 check("Thanks!  We will review and get back to you shortly." in list_js, "listing form script should thank the restaurant")
 check(f"{build.ORIGIN}/list-your-restaurant/" in sitemap, "sitemap missing the listing form")
