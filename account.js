@@ -49,6 +49,19 @@
         link.textContent = "Sign in";
         link.setAttribute("href", "/account/");
       }
+      var nav = link.parentElement;
+      var admin = nav && nav.querySelector("[data-admin-nav]");
+      if (payload && payload.user && payload.user.isAdmin) {
+        if (!admin && nav) {
+          admin = document.createElement("a");
+          admin.setAttribute("data-admin-nav", "");
+          admin.setAttribute("href", "/admin/");
+          admin.textContent = "Admin";
+          nav.appendChild(admin);
+        }
+      } else if (admin) {
+        admin.remove();
+      }
       var path = location.pathname;
       if (path.length > 1 && path.endsWith("/")) path = path;
       else if (path !== "/") path = path + "/";

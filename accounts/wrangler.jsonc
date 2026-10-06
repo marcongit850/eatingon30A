@@ -29,5 +29,13 @@
       "database_id": "00000000-0000-4000-8000-000000000001",
       "migrations_dir": "migrations"
     }
+  ],
+  // Listing photos uploaded in the admin. Create the bucket once before deploy:
+  //   npx wrangler r2 bucket create eating-listings
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "eating-listings"
+    }
   ]
 }
