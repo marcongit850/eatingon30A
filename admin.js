@@ -8,6 +8,8 @@
     options: null,
     site: "30a",
     query: "",
+    sortKey: "name",
+    sortDir: "asc",
     listings: [],
     listing: null,
     mode: "gate",
@@ -136,12 +138,40 @@
     );
   }
 
+  function compareName(a, b) {
+    return String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" });
+  }
+
+  function compareListings(a, b) {
+    var result = 0;
+    if (state.sortKey === "photos") {
+      result = (Number(a.photoCount) || 0) - (Number(b.photoCount) || 0);
+    } else if (state.sortKey === "status") {
+      var rank = function (listing) { return listing.status === "draft" ? 0 : 1; };
+      result = rank(a) - rank(b);
+    } else if (state.sortKey === "area") {
+      result = String(a.area || "").localeCompare(String(b.area || ""), undefined, { sensitivity: "base" });
+    } else {
+      result = compareName(a, b);
+    }
+    if (state.sortKey === "name") return result * (state.sortDir === "desc" ? -1 : 1);
+    if (result === 0) return compareName(a, b);
+    return result * (state.sortDir === "desc" ? -1 : 1);
+  }
+
+  function sortHeader(key, label) {
+    var active = state.sortKey === key;
+    var aria = active ? (state.sortDir === "desc" ? "descending" : "ascending") : "none";
+    var mark = active ? '<span class="sort-mark" aria-hidden="true">' + (state.sortDir === "desc" ? "↓" : "↑") + "</span>" : "";
+    return '<th scope="col" aria-sort="' + aria + '"><button type="button" class="sort-btn" data-sort="' + key + '">' + label + mark + "</button></th>";
+  }
+
   function renderList() {
     var q = state.query.trim().toLowerCase();
     var rows = state.listings.filter(function (listing) {
       if (!q) return true;
       return (listing.name + " " + listing.area + " " + listing.slug).toLowerCase().indexOf(q) !== -1;
-    });
+    }).slice().sort(compareListings);
     var body = rows.map(function (listing) {
       var badge = listing.status === "draft" ? "badge badge-draft" : "badge";
       var label = listing.status === "draft" ? "Draft" : "Live";
@@ -158,7 +188,9 @@
       '<button type="button" class="button" data-new>New listing</button></div>' +
       '<label class="field"><span>Search</span><input id="admin-search" type="search" value="' + escapeHtml(state.query) + '" placeholder="Name or town"></label>' +
       '<p class="admin-message" data-error="' + (state.error ? "true" : "false") + '">' + escapeHtml(state.message) + "</p>" +
-      '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Restaurant</th><th>Area</th><th>Status</th><th>Photos</th></tr></thead><tbody>' + body + "</tbody></table></div>"
+      '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>' +
+      sortHeader("name", "Restaurant") + sortHeader("area", "Area") + sortHeader("status", "Status") + sortHeader("photos", "Photos") +
+      "</tr></thead><tbody>" + body + "</tbody></table></div>"
     );
   }
 
@@ -231,8 +263,10 @@
   }
 
   function render() {
-    var focus = document.activeElement && document.activeElement.id === "admin-search";
-    var selectionStart = focus ? document.activeElement.selectionStart : 0;
+    var active = document.activeElement;
+    var focus = active && active.id === "admin-search";
+    var selectionStart = focus ? active.selectionStart : 0;
+    var sortFocus = active && active.getAttribute ? active.getAttribute("data-sort") : "";
     if (state.mode === "gate") root.innerHTML = renderGate();
     else if (state.mode === "edit") root.innerHTML = renderEditor();
     else root.innerHTML = renderList();
@@ -242,6 +276,9 @@
         input.focus();
         if (input.setSelectionRange) input.setSelectionRange(selectionStart, selectionStart);
       }
+    } else if (sortFocus === "name" || sortFocus === "area" || sortFocus === "status" || sortFocus === "photos") {
+      var button = root.querySelector('button[data-sort="' + sortFocus + '"]');
+      if (button) button.focus();
     }
   }
 
@@ -464,6 +501,18 @@
   });
 
   root.addEventListener("click", function (event) {
+    var sortButton = event.target.closest("[data-sort]");
+    if (sortButton) {
+      var key = sortButton.getAttribute("data-sort");
+      if (key !== "name" && key !== "area" && key !== "status" && key !== "photos") return;
+      if (state.sortKey === key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+      else {
+        state.sortKey = key;
+        state.sortDir = "asc";
+      }
+      render();
+      return;
+    }
     var edit = event.target.closest("[data-edit]");
     if (edit) {
       event.preventDefault();

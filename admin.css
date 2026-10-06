@@ -28,6 +28,47 @@
   color: var(--muted);
   font-weight: 500;
 }
+.admin-table th .sort-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+.admin-table th .sort-btn:hover,
+.admin-table th .sort-btn:focus-visible {
+  background: transparent;
+  color: var(--ink);
+}
+.admin-table th[aria-sort="ascending"] .sort-btn,
+.admin-table th[aria-sort="descending"] .sort-btn {
+  color: var(--ink);
+}
+.admin-table .sort-mark {
+  letter-spacing: 0;
+  font-size: 0.85em;
+}
+.admin-table th[aria-sort="none"] .sort-btn::after {
+  content: "↕";
+  letter-spacing: 0;
+  opacity: 0;
+  font-size: 0.85em;
+}
+.admin-table th[aria-sort="none"] .sort-btn:hover::after,
+.admin-table th[aria-sort="none"] .sort-btn:focus-visible::after {
+  opacity: 0.55;
+}
 .admin-table a { text-decoration: none; border-bottom: 1px solid transparent; }
 .admin-table a:hover { border-bottom-color: currentColor; }
 .badge {
