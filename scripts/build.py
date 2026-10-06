@@ -1664,6 +1664,45 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def catalog_record(restaurant: dict) -> dict:
+    """Fields the admin can edit. SEO stays generated and is not stored here."""
+    return {
+        "slug": restaurant["slug"],
+        "name": restaurant["name"],
+        "area": restaurant["area"],
+        "areaSlug": restaurant["areaSlug"],
+        "subarea": restaurant["subarea"],
+        "label": restaurant["label"],
+        "address": restaurant["address"],
+        "lat": restaurant["lat"],
+        "lng": restaurant["lng"],
+        "phone": restaurant["phone"],
+        "website": restaurant["website"],
+        "price": restaurant["price"],
+        "notes": restaurant["notes"],
+        "hours": restaurant["hours"],
+        "cuisines": restaurant["cuisines"],
+        "meals": restaurant["meals"],
+        "foods": restaurant["foods"],
+        "vibes": restaurant["vibes"],
+        "category": restaurant["category"],
+        "outdoor": restaurant["outdoor"],
+        "kids": restaurant["kids"],
+        "music": restaurant["music"],
+        "laurensFavorite": restaurant["laurensFavorite"],
+        "happyDrinks": restaurant["happyDrinks"],
+        "happyFood": restaurant["happyFood"],
+        "reservations": restaurant["reservations"],
+        "groups": restaurant["groups"],
+        "facebook": restaurant["facebook"],
+        "instagram": restaurant["instagram"],
+        "photos": [{"id": None, "src": src} for src in restaurant["photos"]]
+        or ([{"id": None, "src": restaurant["cardImage"]}] if restaurant.get("cardImage") else []),
+        "logo": restaurant["logo"],
+        "search": restaurant["search"],
+    }
+
+
 def public_record(restaurant: dict) -> dict:
     return {
         "slug": restaurant["slug"],
@@ -4445,6 +4484,7 @@ def main() -> None:
     shutil.rmtree(ROOT / "areas", ignore_errors=True)
     shutil.rmtree(ROOT / "guides", ignore_errors=True)
     write(DATA / "restaurants.json", json.dumps([public_record(item) for item in restaurants], indent=2) + "\n")
+    write(DATA / "catalog.json", json.dumps([catalog_record(item) for item in restaurants], indent=2) + "\n")
     write(
         DATA / "locations.json",
         json.dumps(

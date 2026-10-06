@@ -1,7 +1,8 @@
 // Shared account store for Eating on 30A and Eating in Destin.
 // accounts/migrations/0001_init.sql must stay identical to SCHEMA_SQL.
 // accounts/migrations/0002_save_note.sql adds saves.note for private notes.
-// ensureSchema applies that alter when an existing database is missing it.
+// accounts/migrations/0003_listings.sql must stay identical to LISTINGS_SQL.
+// ensureSchema applies later changes when an existing database is missing them.
 
 export const SAVE_NOTE_SQL = "ALTER TABLE saves ADD COLUMN note TEXT NOT NULL DEFAULT ''";
 
@@ -54,4 +55,29 @@ CREATE TABLE IF NOT EXISTS saves (
 );
 
 CREATE INDEX IF NOT EXISTS saves_user ON saves (user_id, kind);
+`.trim();
+
+export const LISTINGS_SQL = `
+CREATE TABLE IF NOT EXISTS listings (
+  site TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  status TEXT NOT NULL,
+  deleted INTEGER NOT NULL DEFAULT 0,
+  payload TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  updated_by TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (site, slug)
+);
+
+CREATE INDEX IF NOT EXISTS listings_site ON listings (site, deleted);
+
+CREATE TABLE IF NOT EXISTS listing_photos (
+  id TEXT PRIMARY KEY,
+  site TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  content_type TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS listing_photos_listing ON listing_photos (site, slug);
 `.trim();

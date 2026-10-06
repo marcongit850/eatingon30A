@@ -31,6 +31,8 @@
 
 import listingOptions from "./data/listing-form.json" with { type: "json" };
 import { handleAccount } from "./account-api.js";
+import { handleAdmin } from "./admin-api.js";
+import { servePublic } from "./public-site.js";
 import { subscribeZoho } from "./zoho.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -692,7 +694,9 @@ export function robotsTagForHost(hostname) {
 }
 
 function withPreviewRobots(url, response) {
-  const tag = robotsTagForHost(url.hostname);
+  const preview = robotsTagForHost(url.hostname);
+  const admin = url.pathname === "/admin" || url.pathname.startsWith("/admin/");
+  const tag = preview || (admin ? "noindex" : "");
   if (!tag) return response;
   const headers = new Headers(response.headers);
   if (!headers.has("x-robots-tag")) headers.set("x-robots-tag", tag);
@@ -792,6 +796,9 @@ export default {
     if (url.pathname === "/api/listing") return handleListing(request, env);
     if (url.pathname === "/api/list-restaurant") return handleListRestaurant(request, env);
     if (url.pathname.startsWith("/api/account/")) return handleAccount(request, env);
-    return withPreviewRobots(url, await env.ASSETS.fetch(request));
+    if (url.pathname.startsWith("/api/admin/") || url.pathname.startsWith("/media/photos/")) {
+      return handleAdmin(request, env);
+    }
+    return withPreviewRobots(url, await servePublic(request, await env.ASSETS.fetch(request), env));
   },
 };

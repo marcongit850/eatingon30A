@@ -233,6 +233,40 @@ npx wrangler secret put ZOHO_LIST_KEY_DESTIN
 
 `ZOHO_LIST_KEY_30A` is the Eating on 30A list. `ZOHO_LIST_KEY_DESTIN` is the Eating in Destin list. Guest signup on this site uses only the 30A key. A missing Destin list key skips that list and still subscribes 30A when the 30A key and the client secrets are set.
 
+## Restaurant admin
+
+`/admin/` is the shared editor for Eating on 30A and Eating in Destin. Sign-in is the same magic link as a visitor. Only `marc@whpinc.com` can open the editor. That allowlist lives in the accounts Worker (`listing-model.js`). Set `ADMIN_EMAILS` on `eating-accounts` only if the list should replace that default. Do not put the list in this repo's `wrangler.jsonc`.
+
+The CSV build is still the baseline. A save writes one row in the shared `eating-accounts` D1 database, keyed by guide (`30a` or `destin`). Live is the default and is public. Draft removes the listing from the directory, town pages, guides, map, search, sitemap, and `llms.txt`. Delete does the same and removes uploaded photos. Visitor favorites, want-to-try, and notes are a different table and are not changed.
+
+Photos are stored in the R2 bucket `eating-listings`, bound on the accounts Worker as `PHOTOS`. The guide serves them at `/media/photos/<id>`. A draft listing's photos are not public.
+
+Deploy the accounts Worker first, from the repo root:
+
+```bash
+npx wrangler r2 bucket create eating-listings
+npx wrangler deploy -c accounts/wrangler.jsonc
+npx wrangler d1 migrations apply eating-accounts --remote -c accounts/wrangler.jsonc
+```
+
+The accounts Worker also creates the listing tables on boot if they are missing. The migration is still the record of the schema. Then deploy this guide:
+
+```bash
+npx wrangler deploy
+```
+
+No new secret is required on `eatingon30a`. It already has `ACCOUNTS_SHARED_SECRET` and `ACCOUNTS_ORIGIN`. Photo upload fails with a clear error until the R2 bucket and binding exist.
+
+Eating in Destin is a separate repo. Copy these files and keep them in step with this one:
+
+- `account-api.js` (unchanged in this change; it already forwards `/api/account/me`, which now includes `isAdmin`)
+- `admin-api.js`, `admin.js`, `admin.css`, `admin/index.html`
+- `listing-model.js`, `catalog.js`, `catalog-store.js`, `shared-accounts.js`, `public-html.js`, `public-site.js`
+- the admin routes in `worker.js`
+- `listing-model.js` is also imported by `accounts/worker.js`, which both guides already share
+
+Point Destin's `data/catalog.json` at its own build (the same `catalog_record()` shape). Until that Worker reads the overlay, Destin listings saved from this admin are stored and waiting, and they do not change the Destin public site. Give the Destin area list to `areasFor()` in `admin-api.js` (an empty list is a free-text town field). Set `ACCOUNT_SITE` to `destin` in that repo. Do not give Destin a second accounts database or a second photo bucket.
+
 ## Pages
 
 - `/` meal and town entry points that filter the directory

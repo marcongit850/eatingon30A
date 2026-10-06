@@ -1,0 +1,69 @@
+.admin-wrap { padding: 2.5rem 0 4rem; }
+.admin-wrap h1 { font-size: clamp(2.6rem, 6vw, 4.2rem); margin-bottom: 0.4rem; }
+.admin-lead { max-width: 38rem; color: var(--muted); }
+.admin-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: end;
+  justify-content: space-between;
+  margin: 1.5rem 0;
+}
+.admin-sites { display: flex; gap: 0.4rem; }
+.admin-sites button[aria-pressed="true"] { background: var(--gulf-deep); color: var(--paper); }
+.admin-message { min-height: 1.4rem; }
+.admin-message[data-error="true"] { color: var(--coral-deep); }
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th, .admin-table td {
+  text-align: left;
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.admin-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+.admin-table a { text-decoration: none; border-bottom: 1px solid transparent; }
+.admin-table a:hover { border-bottom-color: currentColor; }
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(28, 71, 66, 0.1);
+}
+.badge-draft { background: rgba(196, 120, 98, 0.18); }
+.admin-editor { display: grid; gap: 1.25rem; margin-top: 1rem; }
+.admin-section {
+  display: grid;
+  gap: 0.9rem;
+  padding-top: 0.4rem;
+}
+.admin-section h2 { font-size: 2rem; }
+.admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem 1rem; }
+.admin-grid .wide { grid-column: 1 / -1; }
+.checks.admin-checks { display: flex; flex-wrap: wrap; gap: 0.45rem 0.9rem; }
+.photo-list { display: grid; gap: 0.7rem; }
+.photo-row {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.photo-row img, .photo-row .ph { width: 92px; height: 68px; object-fit: cover; }
+.photo-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+@media (max-width: 720px) {
+  .admin-grid { grid-template-columns: 1fr; }
+  .photo-row { grid-template-columns: 72px 1fr; }
+  .photo-actions { grid-column: 1 / -1; }
+}

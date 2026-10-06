@@ -13,7 +13,9 @@
  * unset in production.
  */
 
-import { SAVE_NOTE_SQL, SCHEMA_SQL } from "./schema.js";
+import { handleAdminApi, listCatalog, readPhoto } from "./listings.js";
+import { SAVE_NOTE_SQL, SCHEMA_SQL, LISTINGS_SQL } from "./schema.js";
+import { isAdminEmail } from "../listing-model.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -46,12 +48,17 @@ export async function ensureSchema(db) {
     await db.prepare(statement).run();
   }
   const names = columnNames(await db.prepare("PRAGMA table_info(saves)").all());
-  if (names.includes("note")) return;
-  try {
-    await db.prepare(SAVE_NOTE_SQL).run();
-  } catch (error) {
-    const message = String((error && error.message) || error);
-    if (!/duplicate column/i.test(message)) throw error;
+  if (!names.includes("note")) {
+    try {
+      await db.prepare(SAVE_NOTE_SQL).run();
+    } catch (error) {
+      const message = String((error && error.message) || error);
+      if (!/duplicate column/i.test(message)) throw error;
+    }
+  }
+  const listings = LISTINGS_SQL.split(";").map((part) => part.trim()).filter(Boolean);
+  for (const statement of listings) {
+    await db.prepare(statement).run();
   }
 }
 
@@ -239,8 +246,12 @@ async function userBySession(db, token, site) {
   return row || null;
 }
 
-function userPayload(row) {
-  return { email: row.email, marketingOptIn: Number(row.marketing_opt_in) === 1 };
+function userPayload(row, env) {
+  return {
+    email: row.email,
+    marketingOptIn: Number(row.marketing_opt_in) === 1,
+    isAdmin: isAdminEmail(row.email, env),
+  };
 }
 
 async function sendMagicLink(env, email, verifyUrl, fetchImpl) {
@@ -403,7 +414,7 @@ async function exchange(request, env) {
   const user = await env.DB.prepare(
     "SELECT email, marketing_opt_in FROM users WHERE id = ?",
   ).bind(row.user_id).first();
-  return json({ ok: true, token, user: userPayload(user) });
+  return json({ ok: true, token, user: userPayload(user, env) });
 }
 
 async function me(request, env) {
@@ -411,7 +422,7 @@ async function me(request, env) {
   const site = request.headers.get("x-account-site") || "";
   const row = await userBySession(env.DB, request.headers.get("x-session") || "", site);
   if (!row) return json({ ok: true, user: null });
-  return json({ ok: true, user: userPayload(row) });
+  return json({ ok: true, user: userPayload(row, env) });
 }
 
 async function logout(request, env) {
@@ -534,7 +545,26 @@ export async function handleAccounts(request, env, fetchImpl = fetch) {
   if (request.method === "POST" && url.pathname === "/v1/logout") return logout(request, env);
   if (request.method === "GET" && url.pathname === "/v1/saves") return listSaves(request, env);
   if (request.method === "PUT" && url.pathname === "/v1/saves") return putSave(request, env);
+  if (request.method === "GET" && url.pathname === "/v1/catalog") {
+    if (!(await authorized(request, env))) return json({ ok: false, error: "Unauthorized." }, 401);
+    return listCatalog(env.DB, url.searchParams.get("site") || request.headers.get("x-account-site"));
+  }
+  const photo = url.pathname.match(/^\/v1\/photos\/([a-f0-9-]+)$/);
+  if (photo && request.method === "GET") {
+    if (!(await authorized(request, env))) return json({ ok: false, error: "Unauthorized." }, 401);
+    return readPhoto(env, photo[1]);
+  }
+  if (url.pathname.startsWith("/v1/admin/")) return adminRoute(request, env);
   return json({ ok: false, error: "Not found." }, 404);
+}
+
+async function adminRoute(request, env) {
+  if (!(await authorized(request, env))) return json({ ok: false, error: "Unauthorized." }, 401);
+  const site = request.headers.get("x-account-site") || "";
+  const row = await userBySession(env.DB, request.headers.get("x-session") || "", site);
+  if (!row) return json({ ok: false, error: "Sign in to edit listings." }, 401);
+  if (!isAdminEmail(row.email, env)) return json({ ok: false, error: "This account cannot edit listings." }, 403);
+  return handleAdminApi(request, env, row);
 }
 
 export default {
