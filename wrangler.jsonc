@@ -32,6 +32,9 @@
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
+    // true so the apex host hits canonicalRedirect before static HTML.
+    // A route list of only /api/* serves apex pages whose form POSTs 308 to
+    // www, and Chrome then fails the CORS preflight.
+    "run_worker_first": true
   }
 }
