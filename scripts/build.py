@@ -340,7 +340,7 @@ def local_listing_photo(slug: str) -> str | None:
 
 
 def listing_photos(slug: str) -> list[str]:
-    """Photos for one listing. 01 is the cover; later frames are extras on the profile."""
+    """Photos for one listing. 01 is the cover; later frames follow it in the profile gallery."""
     folder = PHOTO_DIR / slug
     found: list[str] = []
     if folder.is_dir():
@@ -828,15 +828,91 @@ def placeholder(tone: str, label: str, name: str = "", hidden: bool = False) -> 
     )
 
 
-def filmstrip(restaurant: dict) -> str:
-    extras = (restaurant.get("photos") or [])[1:]
-    if not extras:
-        return ""
-    frames = "".join(
-        f'<img src="{e(src)}" alt="{e(photo_alt(restaurant))}" loading="lazy">'
-        for src in extras
+GALLERY_WINDOW = 4
+CHEVRON_LEFT = (
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    '<path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" '
+    'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+)
+CHEVRON_RIGHT = (
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    '<path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" '
+    'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+)
+
+
+def gallery_label(total: int, index: int = 0, window: int = GALLERY_WINDOW) -> str:
+    """Counter for the photos currently in the 2×2 window. The number is the last photo shown."""
+    count = max(0, int(total))
+    size = max(1, int(window))
+    if count == 0:
+        return "0 of 0 photos"
+    max_index = max(0, count - size)
+    try:
+        start = int(index)
+    except (TypeError, ValueError):
+        start = 0
+    start = min(max(0, start), max_index)
+    end = min(start + size, count)
+    noun = "photo" if count == 1 else "photos"
+    return f"{end} of {count} {noun}"
+
+
+def gallery_arrow(step: int, label: str, disabled: bool = False) -> str:
+    icon = CHEVRON_LEFT if step < 0 else CHEVRON_RIGHT
+    side = "prev" if step < 0 else "next"
+    disabled_attr = " disabled" if disabled else ""
+    return (
+        f'<button type="button" class="profile-gallery-arrow profile-gallery-{side}" '
+        f'data-gallery-step="{step}" aria-label="{e(label)}"{disabled_attr}>{icon}</button>'
     )
-    return f'<div class="profile-film" data-count="{len(extras)}">{frames}</div>'
+
+
+def gallery_tile(restaurant: dict, src: str, index: int) -> str:
+    """One photo. Frames past the first window stay in the page, hidden until the visitor pages."""
+    loading = "eager" if index < GALLERY_WINDOW else "lazy"
+    hidden = " hidden" if index >= GALLERY_WINDOW else ""
+    onerror = ""
+    fallback = ""
+    if index == 0:
+        onerror = (
+            ' onerror="var p=this.parentElement;this.remove();'
+            "var f=p&&p.querySelector('.ph');if(f)f.hidden=false\""
+        )
+        fallback = placeholder(
+            restaurant["tone"],
+            shot_label(restaurant),
+            restaurant["name"],
+            hidden=True,
+        )
+    return (
+        f'<figure class="profile-gallery-tile"{hidden}>'
+        f'<img src="{e(src)}" alt="{e(photo_alt(restaurant))}" loading="{loading}"{onerror}>'
+        f"{fallback}</figure>"
+    )
+
+
+def profile_gallery(restaurant: dict) -> str:
+    """2×2 photo window. Listings with no photograph keep the hero monogram or logo."""
+    photos = restaurant.get("photos") or []
+    if not photos:
+        return f'<div class="profile-hero">{listing_mark(restaurant, hero=True)}</div>'
+    total = len(photos)
+    tiles = "".join(gallery_tile(restaurant, src, index) for index, src in enumerate(photos))
+    arrows = ""
+    if total > GALLERY_WINDOW:
+        arrows = gallery_arrow(-1, "Previous photos", disabled=True) + gallery_arrow(1, "Next photos")
+    return (
+        f'<div class="profile-gallery" data-total="{total}">'
+        '<div class="profile-gallery-stage">'
+        f"{arrows}"
+        f'<div class="profile-gallery-grid">{tiles}</div>'
+        "</div>"
+        f'<p class="profile-gallery-count" aria-live="polite">{e(gallery_label(total))}</p>'
+        f"{photo_credit_markup(restaurant)}"
+        '<hr class="profile-gallery-rule">'
+        "</div>"
+    )
 
 
 def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool = False, name: str = "") -> str:
@@ -2003,11 +2079,12 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             f'<section class="wrap more"><p><a class="text-link" href="{e(area_href)}">{e(restaurant["area"])} in the guide</a></p>'
             f"{claim}</section>"
         )
+    gallery_script = ""
+    if len(restaurant.get("photos") or []) > GALLERY_WINDOW:
+        gallery_script = '<script type="module" src="/gallery.js"></script>\n'
     body = (
         '<article class="profile">'
-        f'<div class="profile-hero">{listing_mark(restaurant, hero=True)}</div>'
-        f"{filmstrip(restaurant)}"
-        f"{photo_credit_markup(restaurant)}"
+        f"{profile_gallery(restaurant)}"
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
@@ -2104,6 +2181,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             extra,
             image=restaurant["heroImage"],
             image_alt=photo_alt(restaurant) if restaurant["heroImage"] else SHARE_ALT,
+            extra_scripts=gallery_script,
         ),
     )
 

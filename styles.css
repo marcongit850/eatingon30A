@@ -877,20 +877,102 @@ a.card:hover h2, a.card:hover h3, .card-link:hover h2, .card-link:hover h3 { col
   border: 1px solid rgba(251, 247, 241, 0.28);
   pointer-events: none;
 }
-.profile-film {
+.profile-gallery {
+  --gallery-gap: 0.65rem;
+  --gallery-gutter: 3.75rem;
+  --gallery-solo: 32rem;
+  width: var(--wrap);
+  margin: 1.6rem auto 0;
+}
+.profile-gallery-stage {
+  position: relative;
+  width: 100%;
+  margin-inline: auto;
+}
+.profile-gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.35rem;
-  padding: 0.35rem;
+  gap: var(--gallery-gap);
+  align-items: start;
+}
+.profile-gallery-tile {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 0.75rem;
   background: var(--gulf-deep);
 }
-.profile-film[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
-.profile-film img {
+.profile-gallery-tile img {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
+.profile-gallery-tile .ph { position: absolute; inset: 0; }
+.profile-gallery[data-total="1"] .profile-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+.profile-gallery-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(16, 40, 37, 0.14);
+  background: var(--paper);
+  color: var(--gulf-deep);
+  box-shadow: 0 1px 8px rgba(16, 40, 37, 0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.profile-gallery-arrow svg { width: 1.15rem; height: 1.15rem; display: block; }
+.profile-gallery-prev { left: 0.45rem; transform: translateY(-50%); }
+.profile-gallery-next { right: 0.45rem; transform: translateY(-50%); }
+.profile-gallery-arrow:hover,
+.profile-gallery-arrow:focus-visible {
+  background: var(--gulf-deep);
+  color: var(--paper);
+  border-color: var(--gulf-deep);
+}
+.profile-gallery-arrow:disabled,
+.profile-gallery-arrow:disabled:hover,
+.profile-gallery-arrow:disabled:focus-visible {
+  background: var(--paper);
+  color: var(--gulf-deep);
+  border-color: rgba(16, 40, 37, 0.14);
+  opacity: 0.4;
+  cursor: default;
+}
+.profile-gallery-count {
+  margin: 0.85rem 0 0;
+  text-align: center;
+  color: var(--coral);
+  font-size: 1.02rem;
+  font-weight: 400;
+}
+.profile-gallery .photo-credit {
+  width: 100%;
+  margin: 0.35rem auto 0;
+  padding: 0;
+}
+.profile-gallery-rule {
+  width: 100%;
+  margin: 0.95rem auto 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  height: 0;
+}
+.profile-gallery[data-total="1"] .profile-gallery-stage,
+.profile-gallery[data-total="1"] .photo-credit,
+.profile-gallery[data-total="1"] .profile-gallery-rule {
+  width: min(100%, var(--gallery-solo));
+}
+.profile-gallery + .profile-head { padding-top: 1.35rem; }
 .photo-credit {
   margin: 0;
   padding: 0.55rem 1.25rem 0;
@@ -1207,12 +1289,25 @@ html.js-filter #cards .card { display: none; }
   .cover { grid-template-columns: 1.15fr 0.85fr; }
   .cover-controls { width: calc((100% - 3.2rem) * 0.575); }
   .essay-grid { grid-template-columns: 0.9fr 1.1fr; }
-  .profile-film[data-count="1"] { grid-template-columns: minmax(0, 50%); }
   .profile-grid { grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.72fr); gap: 3.5rem; align-items: start; }
   .profile-grid aside { position: sticky; top: 6.9rem; }
   #map { height: min(68vh, 640px); }
   .map-layout { grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.75fr); align-items: start; }
   #map-list { max-height: min(68vh, 640px); overflow-y: auto; }
+}
+@media (min-width: 1100px) {
+  .profile-gallery-stage,
+  .profile-gallery .photo-credit,
+  .profile-gallery-rule {
+    width: calc(100% - (var(--gallery-gutter) * 2));
+  }
+  .profile-gallery[data-total="1"] .profile-gallery-stage,
+  .profile-gallery[data-total="1"] .photo-credit,
+  .profile-gallery[data-total="1"] .profile-gallery-rule {
+    width: min(100%, var(--gallery-solo));
+  }
+  .profile-gallery-prev { left: -0.35rem; transform: translate(-100%, -50%); }
+  .profile-gallery-next { right: -0.35rem; transform: translate(100%, -50%); }
 }
 @media (min-width: 980px) {
   .meal-index { grid-template-columns: repeat(5, 1fr); }
