@@ -125,12 +125,46 @@
     remember();
   });
 
+  var configPromise = null;
+  var mePromise = null;
+
+  function config() {
+    if (!configPromise) {
+      configPromise = fetch("/api/account/config", { credentials: "same-origin" })
+        .then(function (response) { return response.json(); })
+        .catch(function () { return { ok: false, site: "", accountsOrigin: "" }; });
+    }
+    return configPromise;
+  }
+
+  function me() {
+    if (!mePromise) {
+      mePromise = fetch("/api/account/me", { credentials: "same-origin" })
+        .then(function (response) { return response.json(); })
+        .catch(function () { return { user: null }; });
+    }
+    return mePromise;
+  }
+
+  function navShowsPlaces() {
+    var link = document.querySelector("[data-account-nav]");
+    if (!link) return false;
+    return (link.textContent || "").replace(/\s+/g, " ").trim() === "My places";
+  }
+
   if (dismissed()) return;
   var path = location.pathname;
   if (path === "/my-places" || path === "/my-places/") return;
+  if (navShowsPlaces()) return;
+  var session = Promise.all([me(), config()]);
   var wait = Math.max(0, DELAY - (Date.now() - visitStart()));
   window.setTimeout(function () {
-    if (dismissed() || dialog.open) return;
-    dialog.showModal();
+    if (dismissed() || dialog.open || navShowsPlaces()) return;
+    session.then(function (parts) {
+      if (dismissed() || dialog.open || navShowsPlaces()) return;
+      var payload = parts[0];
+      if (payload && payload.user) return;
+      dialog.showModal();
+    });
   }, wait);
 })();

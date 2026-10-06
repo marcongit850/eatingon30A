@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
+import vm from "node:vm";
 import { deliverSubscribe, handleSubscribe, parseSubscribe } from "../worker.js";
 
 const signup = { email: "guest@example.com", audience: "local", coupons: true };
@@ -267,4 +269,213 @@ test("a form post still thanks the visitor when Sheets is down and Resend succee
   assert.equal(sheetBody.audience, "visitor");
   assert.equal(sheetBody.coupons, true);
   assert.equal(sheetBody.site, "30A");
+});
+
+const subscribeSource = readFileSync(new URL("../subscribe.js", import.meta.url), "utf8");
+const POPUP_NOW = 1_700_000_000_000;
+
+function memoryStorage(seed = {}) {
+  const data = new Map(Object.entries(seed));
+  return {
+    getItem(key) {
+      return data.has(key) ? data.get(key) : null;
+    },
+    setItem(key, value) {
+      data.set(key, String(value));
+    },
+  };
+}
+
+function loadPopup(options = {}) {
+  const fetches = [];
+  const timers = [];
+  const pending = [];
+  const nav = {
+    textContent: options.navText ?? "Sign in",
+    getAttribute(name) {
+      if (name === "href") return options.navHref ?? "/account/";
+      return null;
+    },
+  };
+  const dialog = {
+    open: false,
+    shown: 0,
+    showModal() {
+      this.open = true;
+      this.shown += 1;
+    },
+    close() {
+      this.open = false;
+    },
+    querySelectorAll() {
+      return [];
+    },
+    addEventListener() {},
+  };
+  const document = {
+    getElementById(id) {
+      return id === "subscribe-popup" ? dialog : null;
+    },
+    querySelector(selector) {
+      if (selector === "[data-account-nav]") return options.nav === false ? null : nav;
+      return null;
+    },
+    querySelectorAll() {
+      return [];
+    },
+  };
+  const meBody = options.me === undefined ? { ok: true, user: null } : options.me;
+  const configBody = options.config === undefined
+    ? { ok: true, site: "30a", accountsOrigin: "https://accounts.example" }
+    : options.config;
+  function fetch(url, init) {
+    fetches.push({ url, init });
+    const hang = options.hang === true || options.hang === url;
+    if (hang) {
+      return new Promise((resolve, reject) => {
+        pending.push({ url, resolve, reject });
+      });
+    }
+    if (options.failMe && url === "/api/account/me") return Promise.reject(new Error("offline"));
+    const body = url === "/api/account/me" ? meBody : configBody;
+    return Promise.resolve({
+      json() {
+        return Promise.resolve(body);
+      },
+    });
+  }
+  const now = options.now ?? POPUP_NOW;
+  const sandbox = {
+    document,
+    location: { pathname: options.path || "/" },
+    fetch,
+    sessionStorage: memoryStorage(options.session),
+    localStorage: memoryStorage(options.local),
+    setTimeout(fn, ms) {
+      timers.push({ fn, ms });
+      return timers.length;
+    },
+    Date: { now() { return now; } },
+    Promise,
+  };
+  sandbox.window = sandbox;
+  vm.runInNewContext(subscribeSource, sandbox, { filename: "subscribe.js" });
+  return { dialog, timers, fetches, nav, pending };
+}
+
+function flush() {
+  return new Promise((resolve) => {
+    setImmediate(resolve);
+  });
+}
+
+async function openAfterDelay(popup) {
+  assert.equal(popup.dialog.shown, 0);
+  assert.equal(popup.timers.length, 1);
+  popup.timers[0].fn();
+  await flush();
+}
+
+test("a signed-in account never opens the coupon dialog", async () => {
+  const popup = loadPopup({ me: { ok: true, user: { email: "guest@example.com" } } });
+  assert.equal(popup.timers[0].ms, 30000);
+  assert.deepEqual(popup.fetches.map((call) => call.url), ["/api/account/me", "/api/account/config"]);
+  for (const call of popup.fetches) assert.equal(call.init.credentials, "same-origin");
+  await openAfterDelay(popup);
+  assert.equal(popup.dialog.shown, 0);
+  assert.equal(popup.dialog.open, false);
+});
+
+test("My places in the account nav blocks the coupon dialog", async () => {
+  const ready = loadPopup({ navText: " My places ", me: { ok: true, user: null } });
+  assert.equal(ready.timers.length, 0);
+  assert.equal(ready.fetches.length, 0);
+  assert.equal(ready.dialog.shown, 0);
+
+  const later = loadPopup({ me: { ok: true, user: null } });
+  later.nav.textContent = "My places";
+  await openAfterDelay(later);
+  assert.equal(later.dialog.shown, 0);
+});
+
+test("a signed-out visitor still gets the coupon dialog after the delay", async () => {
+  const popup = loadPopup({
+    me: { ok: true, user: null },
+    session: { "eo30a-visit-start": String(POPUP_NOW - 12000) },
+  });
+  assert.equal(popup.dialog.shown, 0);
+  assert.equal(popup.timers[0].ms, 18000);
+  popup.timers[0].fn();
+  await flush();
+  assert.equal(popup.dialog.shown, 1);
+  assert.equal(popup.dialog.open, true);
+});
+
+test("a late account response still decides the coupon dialog", async () => {
+  const signedIn = loadPopup({ hang: "/api/account/me", me: { ok: true, user: { email: "guest@example.com" } } });
+  signedIn.timers[0].fn();
+  await flush();
+  assert.equal(signedIn.dialog.shown, 0);
+  signedIn.pending[0].resolve({
+    json() {
+      return Promise.resolve({ ok: true, user: { email: "guest@example.com" } });
+    },
+  });
+  await flush();
+  assert.equal(signedIn.dialog.shown, 0);
+
+  const signedOut = loadPopup({ hang: true });
+  assert.equal(signedOut.dialog.shown, 0);
+  signedOut.timers[0].fn();
+  await flush();
+  assert.equal(signedOut.dialog.shown, 0);
+  for (const entry of signedOut.pending) {
+    const body = entry.url === "/api/account/me"
+      ? { ok: true, user: null }
+      : { ok: true, site: "30a", accountsOrigin: "" };
+    entry.resolve({
+      json() {
+        return Promise.resolve(body);
+      },
+    });
+  }
+  await flush();
+  assert.equal(signedOut.dialog.shown, 1);
+});
+
+test("a failed account check still shows the popup unless My places is already visible", async () => {
+  const offline = loadPopup({ failMe: true });
+  await openAfterDelay(offline);
+  assert.equal(offline.dialog.shown, 1);
+
+  const places = loadPopup({ failMe: true, navText: "My places" });
+  assert.equal(places.timers.length, 0);
+  assert.equal(places.dialog.shown, 0);
+});
+
+test("my places and a dismissed coupon stay closed without an account check", () => {
+  for (const path of ["/my-places", "/my-places/"]) {
+    const popup = loadPopup({ path, me: { ok: true, user: null } });
+    assert.equal(popup.timers.length, 0);
+    assert.equal(popup.fetches.length, 0);
+    assert.equal(popup.dialog.shown, 0);
+  }
+  const dismissed = loadPopup({
+    me: { ok: true, user: null },
+    session: { "eo30a-sid": "visit-1" },
+    local: { "eo30a-coupon-popup": "visit-1" },
+  });
+  assert.equal(dismissed.timers.length, 0);
+  assert.equal(dismissed.fetches.length, 0);
+  assert.equal(dismissed.dialog.shown, 0);
+});
+
+test("the delay is skipped when this visit already waited 30 seconds", async () => {
+  const popup = loadPopup({
+    me: { ok: true, user: { email: "guest@example.com" } },
+    session: { "eo30a-visit-start": String(POPUP_NOW - 60000) },
+  });
+  assert.equal(popup.timers[0].ms, 0);
+  await openAfterDelay(popup);
+  assert.equal(popup.dialog.shown, 0);
 });
