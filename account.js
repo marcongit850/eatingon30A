@@ -523,65 +523,29 @@
       }
       var noteWrap = document.createElement("div");
       noteWrap.className = "place-note";
-      var noteLabel = document.createElement("p");
+      var editorId = "note-" + save.site + "-" + save.kind + "-" + save.slug;
+      var noteLabel = document.createElement("label");
       noteLabel.className = "place-note-label";
-      noteLabel.id = "note-label-" + save.site + "-" + save.kind + "-" + save.slug;
+      noteLabel.htmlFor = editorId;
       noteLabel.textContent = "Your note";
-      var view = document.createElement("p");
-      view.className = "place-note-view";
-      var empty = document.createElement("p");
-      empty.className = "place-note-empty";
-      empty.textContent = "Add a personal note...";
       var editor = document.createElement("textarea");
       editor.className = "place-note-input";
+      editor.id = editorId;
       editor.maxLength = 280;
       editor.rows = 3;
       editor.placeholder = "Add a personal note...";
-      editor.setAttribute("aria-labelledby", noteLabel.id);
+      editor.value = save.note || "";
       var actions = document.createElement("div");
       actions.className = "note-actions";
-      var editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "button secondary";
       var saveBtn = document.createElement("button");
       saveBtn.type = "button";
       saveBtn.className = "button";
       saveBtn.textContent = "Save note";
-      var cancelBtn = document.createElement("button");
-      cancelBtn.type = "button";
-      cancelBtn.className = "button secondary";
-      cancelBtn.textContent = "Cancel";
       var remove = document.createElement("button");
       remove.type = "button";
       remove.className = "button secondary place-remove";
       remove.textContent = "Remove";
-      var editing = false;
 
-      function paint() {
-        var text = save.note || "";
-        var has = text.trim().length > 0;
-        view.textContent = text;
-        view.hidden = editing || !has;
-        empty.hidden = editing || has;
-        editor.hidden = !editing;
-        if (!editing) editor.value = text;
-        editBtn.hidden = editing;
-        editBtn.textContent = has ? "Edit note" : "Add note";
-        saveBtn.hidden = !editing;
-        cancelBtn.hidden = !editing;
-      }
-
-      editBtn.addEventListener("click", function () {
-        editing = true;
-        editor.value = save.note || "";
-        paint();
-        editor.focus();
-      });
-      cancelBtn.addEventListener("click", function () {
-        editing = false;
-        status.textContent = "";
-        paint();
-      });
       saveBtn.addEventListener("click", function () {
         var text = editor.value;
         if (text.length > 280) {
@@ -636,16 +600,11 @@
         });
       });
 
-      actions.appendChild(editBtn);
       actions.appendChild(saveBtn);
-      actions.appendChild(cancelBtn);
       actions.appendChild(remove);
       noteWrap.appendChild(noteLabel);
-      noteWrap.appendChild(view);
-      noteWrap.appendChild(empty);
       noteWrap.appendChild(editor);
       noteWrap.appendChild(actions);
-      paint();
       article.appendChild(noteWrap);
       return article;
     }

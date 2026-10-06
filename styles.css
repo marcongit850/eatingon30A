@@ -1842,24 +1842,6 @@ html.js-filter #cards .card { display: none; }
   margin-top: 0.75rem;
   max-width: 42rem;
 }
-.place-note-view,
-.place-note-empty {
-  margin: 0;
-  padding: 0.75rem 0.85rem;
-  color: var(--ink);
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-.place-note-view {
-  background: #fff;
-  border: 1px solid var(--line);
-}
-.place-note-empty {
-  color: var(--muted);
-  background: transparent;
-  border: 1px dashed rgba(23, 36, 33, 0.28);
-}
 .place-site {
   margin: 0;
   color: var(--coral-deep);
