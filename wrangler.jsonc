@@ -9,6 +9,10 @@
   // Signed-in My places opt-in uses those same tokens and does not send the coupon email.
   // Missing Sheets secrets skip the webhook (recorded: false) and do not change the Resend delivered flag.
   // recorded is true only when the webhook body is JSON with ok: true. HTTP 200 alone is not enough.
+  // Zoho Campaigns listsubscribe runs when ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET,
+  // ZOHO_REFRESH_TOKEN, and the list key are set. Guest signup uses ZOHO_LIST_KEY_30A.
+  // Account Destin opt-in uses ZOHO_LIST_KEY_DESTIN. Set them with wrangler secret put.
+  // Missing Zoho secrets skip the list call and do not change delivered or recorded.
   "name": "eatingon30a",
   "main": "worker.js",
   "compatibility_date": "2026-09-29",

@@ -9,6 +9,7 @@ package.json
 wrangler.jsonc
 worker.js
 account-api.js
+zoho.js
 accounts
 site.config.json
 data/*.csv

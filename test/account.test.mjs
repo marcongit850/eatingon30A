@@ -487,6 +487,56 @@ function sheetRows(calls) {
     .map((call) => JSON.parse(call.init.body));
 }
 
+const ZOHO_TOKEN_URL = "https://accounts.zoho.com/oauth/v2/token";
+const ZOHO_LIST_URL = "https://campaigns.zoho.com/api/v1.1/json/listsubscribe";
+const zohoSecrets = {
+  ZOHO_CLIENT_ID: "zoho-client",
+  ZOHO_CLIENT_SECRET: "zoho-secret",
+  ZOHO_REFRESH_TOKEN: "zoho-refresh",
+  ZOHO_LIST_KEY_30A: "list-30a",
+  ZOHO_LIST_KEY_DESTIN: "list-destin",
+};
+
+function zohoCapture(listStatus = 200) {
+  const calls = [];
+  const fetchImpl = (url, init) => {
+    calls.push({ url, init });
+    if (url === ZOHO_TOKEN_URL) {
+      return Promise.resolve(new Response(JSON.stringify({ access_token: "zoho-access" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }));
+    }
+    if (url === ZOHO_LIST_URL) {
+      return Promise.resolve(new Response(JSON.stringify({ status: listStatus === 200 ? "success" : "error" }), {
+        status: listStatus,
+        headers: { "content-type": "application/json" },
+      }));
+    }
+    return Promise.resolve(new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+  };
+  return { calls, fetchImpl };
+}
+
+function zohoLists(calls) {
+  return calls
+    .filter((call) => call.url === ZOHO_LIST_URL)
+    .map((call) => {
+      const params = new URLSearchParams(call.init.body);
+      return {
+        listkey: params.get("listkey"),
+        source: params.get("source"),
+        resfmt: params.get("resfmt"),
+        contact: JSON.parse(params.get("contactinfo")),
+        authorization: call.init.headers.authorization,
+        method: call.init.method,
+      };
+    });
+}
+
 async function sessionFor(db, email) {
   const site = siteEnv(db, "30a");
   const response = await requestSignIn(site, { email, next: "/my-places/" });
@@ -527,6 +577,7 @@ test("checked coupon boxes append one sheet row per site and skip the coupon ema
   assert.equal(payload.ok, true);
   assert.match(payload.previewUrl, /\/v1\/verify\?/);
   assert.equal(calls.some((call) => call.url === "https://api.resend.com/emails"), false);
+  assert.equal(calls.some((call) => String(call.url).includes("zoho.com")), false);
   const rows = sheetRows(calls);
   assert.equal(rows.length, 2);
   const row30 = rows.find((row) => row.site === "30A");
@@ -549,6 +600,138 @@ test("checked coupon boxes append one sheet row per site and skip the coupon ema
   assert.equal(Object.hasOwn(rowDestin, "audience"), false);
   const user = await db.prepare("SELECT marketing_opt_in FROM users WHERE email = ?").bind("both@example.com").first();
   assert.equal(user.marketing_opt_in, 1);
+});
+
+test("checked coupon boxes subscribe the matching Zoho lists and still write both sheet rows", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await requestSignIn(sheetEnv(db, zohoSecrets), {
+    email: "both-zoho@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
+  assert.equal(calls.some((call) => call.url === "https://api.resend.com/emails"), false);
+  const rows = sheetRows(calls);
+  assert.deepEqual(rows.find((row) => row.site === "30A"), {
+    token: "token-30a",
+    site: "30A",
+    email: "both-zoho@example.com",
+    coupons: true,
+    sourcePage: ACCOUNT_SOURCE,
+  });
+  assert.deepEqual(rows.find((row) => row.site === "Destin"), {
+    token: "token-destin",
+    site: "Destin",
+    email: "both-zoho@example.com",
+    coupons: true,
+    sourcePage: ACCOUNT_SOURCE,
+  });
+  const lists = zohoLists(calls);
+  assert.equal(lists.length, 2);
+  assert.deepEqual(lists.find((item) => item.listkey === "list-30a"), {
+    listkey: "list-30a",
+    source: "eatingon30a-account",
+    resfmt: "JSON",
+    contact: { "Contact Email": "both-zoho@example.com" },
+    authorization: "Zoho-oauthtoken zoho-access",
+    method: "POST",
+  });
+  assert.deepEqual(lists.find((item) => item.listkey === "list-destin"), {
+    listkey: "list-destin",
+    source: "eatingon30a-account",
+    resfmt: "JSON",
+    contact: { "Contact Email": "both-zoho@example.com" },
+    authorization: "Zoho-oauthtoken zoho-access",
+    method: "POST",
+  });
+  const tokenCall = calls.find((call) => call.url === ZOHO_TOKEN_URL);
+  const tokenBody = new URLSearchParams(tokenCall.init.body);
+  assert.equal(tokenBody.get("grant_type"), "refresh_token");
+  assert.equal(tokenBody.get("client_id"), "zoho-client");
+  assert.equal(tokenBody.get("client_secret"), "zoho-secret");
+  assert.equal(tokenBody.get("refresh_token"), "zoho-refresh");
+});
+
+test("a missing sheet webhook still subscribes both Zoho lists", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await requestSignIn(sheetEnv(db, { ...zohoSecrets, GOOGLE_SHEETS_WEBHOOK_URL: "" }), {
+    email: "zoho-only@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
+  assert.equal(sheetRows(calls).length, 0);
+  assert.deepEqual(zohoLists(calls).map((item) => item.listkey).sort(), ["list-30a", "list-destin"]);
+});
+
+test("a Destin-only coupon box uses the Destin Zoho list", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await requestSignIn(sheetEnv(db, zohoSecrets), {
+    email: "destin-zoho@example.com",
+    coupons30a: false,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(calls).map((row) => row.site), ["Destin"]);
+  assert.deepEqual(zohoLists(calls).map((item) => item.listkey), ["list-destin"]);
+});
+
+test("a missing Destin Zoho list key skips that list and still subscribes 30A", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await requestSignIn(sheetEnv(db, { ...zohoSecrets, ZOHO_LIST_KEY_DESTIN: "" }), {
+    email: "no-destin-list@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.deepEqual(sheetRows(calls).map((row) => row.site).sort(), ["30A", "Destin"]);
+  assert.deepEqual(zohoLists(calls).map((item) => item.listkey), ["list-30a"]);
+});
+
+test("a Zoho list error does not fail an accepted magic link", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture(500);
+  const response = await requestSignIn(sheetEnv(db, zohoSecrets), {
+    email: "zoho-down@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+    next: "/my-places/",
+  }, fetchImpl);
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.match(payload.previewUrl, /\/v1\/verify\?/);
+  assert.equal(sheetRows(calls).length, 2);
+  assert.equal(zohoLists(calls).length, 2);
+});
+
+test("unchecked coupon boxes do not call Zoho", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await requestSignIn(sheetEnv(db, zohoSecrets), {
+    email: "quiet-zoho@example.com",
+    coupons30a: false,
+    couponsDestin: false,
+    next: "/my-places/",
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 0);
 });
 
 test("one checked coupon box appends only that sheet row", async () => {
@@ -631,6 +814,7 @@ test("a sheet failure does not fail an accepted magic link", async () => {
 test("a rejected magic link does not write the coupon sheet", async () => {
   const calls = [];
   const env = sheetEnv(memoryDb(), {
+    ...zohoSecrets,
     ACCOUNTS: {
       fetch() {
         return new Response(JSON.stringify({ ok: false, error: "Please wait a while and try again." }), {
@@ -868,6 +1052,7 @@ test("my places opt-in appends sheet rows for the session email and skips Resend
   assert.equal(response.status, 200);
   assert.equal((await response.json()).ok, true);
   assert.equal(calls.some((call) => String(call.url).includes("resend.com")), false);
+  assert.equal(calls.some((call) => String(call.url).includes("zoho.com")), false);
   const rows = sheetRows(calls);
   assert.equal(rows.length, 2);
   assert.deepEqual(rows.find((row) => row.site === "30A"), {
@@ -885,6 +1070,47 @@ test("my places opt-in appends sheet rows for the session email and skips Resend
     sourcePage: PLACES_SOURCE,
   });
   assert.equal(rows.some((row) => row.email === "someone-else@example.com"), false);
+});
+
+test("my places opt-in subscribes both Zoho lists for the session email", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "places-zoho@example.com");
+  const { calls, fetchImpl } = zohoCapture();
+  const response = await postCoupons(sheetEnv(db, zohoSecrets), token, {
+    email: "someone-else@example.com",
+    coupons30a: true,
+    couponsDestin: true,
+  }, fetchImpl);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
+  assert.equal(calls.some((call) => String(call.url).includes("resend.com")), false);
+  assert.equal(sheetRows(calls).length, 2);
+  const lists = zohoLists(calls);
+  assert.deepEqual(lists.map((item) => item.listkey).sort(), ["list-30a", "list-destin"]);
+  for (const item of lists) {
+    assert.equal(item.source, "eatingon30a-account");
+    assert.deepEqual(item.contact, { "Contact Email": "places-zoho@example.com" });
+  }
+  assert.equal(lists.some((item) => item.contact["Contact Email"] === "someone-else@example.com"), false);
+});
+
+test("a Zoho failure does not fail a signed-in coupon opt-in", async () => {
+  resetLimits();
+  const db = memoryDb();
+  const token = await sessionFor(db, "places-zoho-down@example.com");
+  const response = await postCoupons(sheetEnv(db, zohoSecrets), token, {
+    coupons30a: true,
+    couponsDestin: true,
+  }, (url) => {
+    if (url === ZOHO_TOKEN_URL || url === ZOHO_LIST_URL) return Promise.reject(new Error("zoho down"));
+    return Promise.resolve(new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).ok, true);
 });
 
 test("my places opt-in appends only the checked sheet row", async () => {
@@ -936,7 +1162,7 @@ test("my places opt-in without a box does not call the sheet", async () => {
   const db = memoryDb();
   const token = await sessionFor(db, "none@example.com");
   const { calls, fetchImpl } = captureFetch();
-  const response = await postCoupons(sheetEnv(db), token, {
+  const response = await postCoupons(sheetEnv(db, zohoSecrets), token, {
     email: "none@example.com",
     coupons30a: false,
     couponsDestin: false,
@@ -948,7 +1174,7 @@ test("my places opt-in without a box does not call the sheet", async () => {
 
 test("my places opt-in without a session does not call the sheet", async () => {
   const { calls, fetchImpl } = captureFetch();
-  const response = await postCoupons(sheetEnv(memoryDb()), "", {
+  const response = await postCoupons(sheetEnv(memoryDb(), zohoSecrets), "", {
     email: "guest@example.com",
     coupons30a: true,
     couponsDestin: true,
