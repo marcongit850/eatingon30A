@@ -14,17 +14,24 @@
  * JSON with ok: true. An HTTP 200 HTML error page, any other non-JSON body,
  * and {ok:false} stay recorded: false. A Sheets miss does not fail the signup
  * when Resend accepted it.
+ * The same signup is added to the Zoho Campaigns 30A list when ZOHO_CLIENT_ID,
+ * ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN, and ZOHO_LIST_KEY_30A are set. That
+ * call runs beside Resend and Sheets. Missing Zoho secrets skip it. A Zoho
+ * error does not change ok, delivered, or recorded.
  * sourcePage is the live homepage. site.config.json origin stays the workers.dev preview.
  * Account sign-in coupon boxes are recorded in account-api.js with the same webhook.
  * Those rows do not send the coupon signup email. A Destin row needs
  * GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN. A missing token or a sheet error does not
  * fail the magic link. My places uses POST /api/account/coupons for a signed-in
  * visitor. That route uses the session email and the same sheet tokens, and it
- * does not send the coupon signup email.
+ * does not send the coupon signup email. Checked account boxes also subscribe
+ * the matching Zoho list (ZOHO_LIST_KEY_30A or ZOHO_LIST_KEY_DESTIN) when those
+ * secrets are set. A Zoho miss does not fail the magic link or the opt-in.
  */
 
 import listingOptions from "./data/listing-form.json" with { type: "json" };
 import { handleAccount } from "./account-api.js";
+import { subscribeZoho } from "./zoho.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIST_WINDOW_MS = 10 * 60 * 1000;
@@ -152,6 +159,11 @@ export async function deliverSubscribe(payload, env, fetchImpl = fetch) {
       "The signup could not be sent.",
     ),
     recordSubscribe(payload, env, fetchImpl),
+    subscribeZoho(env, {
+      email: payload.email,
+      site: SHEETS_SITE,
+      source: "eatingon30a-subscribe",
+    }, fetchImpl),
   ]);
   return { ...mail, recorded: sheet.recorded };
 }

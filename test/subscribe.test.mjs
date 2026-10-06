@@ -21,6 +21,15 @@ const sheetsEnv = {
   GOOGLE_SHEETS_WEBHOOK_URL: "https://script.google.com/macros/s/test-webhook/exec",
   GOOGLE_SHEETS_WEBHOOK_TOKEN: "sheets-token",
 };
+const ZOHO_TOKEN_URL = "https://accounts.zoho.com/oauth/v2/token";
+const ZOHO_LIST_URL = "https://campaigns.zoho.com/api/v1.1/json/listsubscribe";
+const zohoEnv = {
+  ZOHO_CLIENT_ID: "zoho-client",
+  ZOHO_CLIENT_SECRET: "zoho-secret",
+  ZOHO_REFRESH_TOKEN: "zoho-refresh",
+  ZOHO_LIST_KEY_30A: "list-30a",
+  ZOHO_LIST_KEY_DESTIN: "list-destin",
+};
 const SOURCE_PAGE = "https://www.eatingon30a.com/";
 
 function callsFor(handler) {
@@ -89,6 +98,143 @@ test("Resend and Sheets are posted independently", async () => {
     coupons: true,
     sourcePage: SOURCE_PAGE,
   });
+  assert.equal(calls.some((call) => String(call.url).includes("zoho.com")), false);
+});
+
+function zohoRoutes(url, listStatus = 200) {
+  if (url === ZOHO_TOKEN_URL) {
+    return new Response(JSON.stringify({ access_token: "zoho-access", expires_in: 3600 }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (url === ZOHO_LIST_URL) {
+    return new Response(JSON.stringify({ status: listStatus === 200 ? "success" : "error" }), {
+      status: listStatus,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  if (url === "https://api.resend.com/emails") return new Response("{}", { status: 200 });
+  if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return sheetJson({ ok: true });
+  return new Response("no", { status: 500 });
+}
+
+test("Resend, Sheets, and Zoho 30A are posted independently", async () => {
+  const { calls, fetchImpl } = callsFor((url) => zohoRoutes(url));
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv, ...zohoEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: true });
+  const resend = calls.find((call) => call.url === "https://api.resend.com/emails");
+  const sheets = calls.find((call) => call.url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL);
+  const token = calls.find((call) => call.url === ZOHO_TOKEN_URL);
+  const lists = calls.filter((call) => call.url === ZOHO_LIST_URL);
+  assert.ok(resend);
+  assert.equal(sheets.init.method, "POST");
+  assert.deepEqual(JSON.parse(sheets.init.body), {
+    token: "sheets-token",
+    site: "30A",
+    email: "guest@example.com",
+    audience: "local",
+    coupons: true,
+    sourcePage: SOURCE_PAGE,
+  });
+  assert.equal(lists.length, 1);
+  assert.equal(token.init.method, "POST");
+  assert.equal(token.init.headers["content-type"], "application/x-www-form-urlencoded");
+  const tokenBody = new URLSearchParams(token.init.body);
+  assert.equal(tokenBody.get("grant_type"), "refresh_token");
+  assert.equal(tokenBody.get("client_id"), "zoho-client");
+  assert.equal(tokenBody.get("client_secret"), "zoho-secret");
+  assert.equal(tokenBody.get("refresh_token"), "zoho-refresh");
+  assert.equal(lists[0].init.method, "POST");
+  assert.equal(lists[0].init.headers.authorization, "Zoho-oauthtoken zoho-access");
+  assert.equal(lists[0].init.headers["content-type"], "application/x-www-form-urlencoded");
+  const listBody = new URLSearchParams(lists[0].init.body);
+  assert.equal(listBody.get("resfmt"), "JSON");
+  assert.equal(listBody.get("listkey"), "list-30a");
+  assert.equal(listBody.get("source"), "eatingon30a-subscribe");
+  assert.deepEqual(JSON.parse(listBody.get("contactinfo")), { "Contact Email": "guest@example.com" });
+});
+
+test("Zoho still subscribes when Sheets secrets are missing", async () => {
+  const { calls, fetchImpl } = callsFor((url) => zohoRoutes(url));
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...zohoEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: false });
+  assert.equal(calls.some((call) => call.url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL), false);
+  assert.equal(calls.filter((call) => call.url === ZOHO_LIST_URL).length, 1);
+  assert.equal(new URLSearchParams(calls.find((call) => call.url === ZOHO_LIST_URL).init.body).get("listkey"), "list-30a");
+});
+
+test("guest signup ignores the Destin list key", async () => {
+  const { calls, fetchImpl } = callsFor((url) => zohoRoutes(url));
+  const env = { ...zohoEnv, ZOHO_LIST_KEY_30A: "" };
+  const result = await deliverSubscribe(signup, env, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: false, recorded: false });
+  assert.equal(calls.length, 0);
+});
+
+test("one Zoho secret is not enough to call listsubscribe", async () => {
+  for (const env of [
+    { ZOHO_CLIENT_ID: zohoEnv.ZOHO_CLIENT_ID },
+    { ZOHO_LIST_KEY_30A: zohoEnv.ZOHO_LIST_KEY_30A },
+    {
+      ZOHO_CLIENT_ID: zohoEnv.ZOHO_CLIENT_ID,
+      ZOHO_CLIENT_SECRET: zohoEnv.ZOHO_CLIENT_SECRET,
+      ZOHO_REFRESH_TOKEN: zohoEnv.ZOHO_REFRESH_TOKEN,
+    },
+  ]) {
+    let called = false;
+    const result = await deliverSubscribe(signup, env, () => {
+      called = true;
+      return Promise.resolve(new Response("{}"));
+    });
+    assert.equal(called, false);
+    assert.deepEqual(result, { ok: true, delivered: false, recorded: false });
+  }
+});
+
+test("a Zoho outage still counts as delivered and recorded when Resend and Sheets succeeded", async () => {
+  const { calls, fetchImpl } = callsFor((url) => {
+    if (url === ZOHO_TOKEN_URL) return new Response("no", { status: 500 });
+    return zohoRoutes(url);
+  });
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv, ...zohoEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: true });
+  assert.equal(calls.some((call) => call.url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL), true);
+  assert.equal(calls.some((call) => call.url === "https://api.resend.com/emails"), true);
+  assert.equal(calls.some((call) => call.url === ZOHO_LIST_URL), false);
+});
+
+test("a Zoho list error does not change delivered or recorded", async () => {
+  const { calls, fetchImpl } = callsFor((url) => zohoRoutes(url, 502));
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv, ...zohoEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: true });
+  assert.equal(calls.filter((call) => call.url === ZOHO_LIST_URL).length, 1);
+  const sheets = calls.find((call) => call.url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL);
+  assert.equal(JSON.parse(sheets.init.body).email, "guest@example.com");
+});
+
+test("a Zoho network error still counts as delivered and recorded", async () => {
+  const fetchImpl = (url) => {
+    if (url === ZOHO_TOKEN_URL || url === ZOHO_LIST_URL) return Promise.reject(new Error("zoho down"));
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return Promise.resolve(sheetJson({ ok: true }));
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv, ...zohoEnv }, fetchImpl);
+  assert.deepEqual(result, { ok: true, delivered: true, recorded: true });
+});
+
+test("a Resend failure stays failed when Zoho subscribed the list", async () => {
+  const fetchImpl = (url) => {
+    if (url === ZOHO_TOKEN_URL) return Promise.resolve(zohoRoutes(url));
+    if (url === ZOHO_LIST_URL) return Promise.resolve(zohoRoutes(url));
+    if (url === sheetsEnv.GOOGLE_SHEETS_WEBHOOK_URL) return Promise.resolve(sheetJson({ ok: true }));
+    return Promise.resolve(new Response("no", { status: 422 }));
+  };
+  const result = await deliverSubscribe(signup, { ...resendEnv, ...sheetsEnv, ...zohoEnv }, fetchImpl);
+  assert.equal(result.ok, false);
+  assert.equal(result.delivered, false);
+  assert.equal(result.recorded, true);
+  assert.equal(result.error, "The signup could not be sent.");
 });
 
 test("a blank audience is omitted from the Sheets row", async () => {

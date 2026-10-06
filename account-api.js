@@ -17,11 +17,21 @@
  * email. A missing Destin token, a missing webhook, or a sheet error does not
  * change the magic-link response.
  *
- * POST /api/account/coupons is the same sheet write for someone who is already
- * signed in. The email comes from the session. An email in the body is ignored.
- * sourcePage is the My places page. This route does not send a Resend coupon
- * email and does not send a magic link.
+ * The same checked boxes subscribe that email on Zoho Campaigns when
+ * ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, and ZOHO_REFRESH_TOKEN are set. 30A uses
+ * ZOHO_LIST_KEY_30A. Destin uses ZOHO_LIST_KEY_DESTIN. The source is
+ * eatingon30a-account. A missing list key skips that list. A Zoho error does
+ * not change the magic-link response. These calls do not send the Resend
+ * coupon signup email.
+ *
+ * POST /api/account/coupons is the same sheet write, and the same Zoho lists,
+ * for someone who is already signed in. The email comes from the session. An
+ * email in the body is ignored. sourcePage is the My places page. This route
+ * does not send a Resend coupon email and does not send a magic link. A Zoho
+ * error does not change its success response.
  */
+
+import { subscribeZoho } from "./zoho.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SESSION = "ea_session";
@@ -160,13 +170,19 @@ async function recordAccountCoupons(env, email, choice, fetchImpl, sourcePage) {
   for (const item of COUPON_SHEETS) {
     if (!choice[item.flag]) continue;
     const token = env && env[item.tokenKey];
-    if (!url || !token) continue;
-    jobs.push(postCouponSheet(url, {
-      token,
-      site: item.site,
+    if (url && token) {
+      jobs.push(postCouponSheet(url, {
+        token,
+        site: item.site,
+        email,
+        coupons: true,
+        sourcePage: page,
+      }, fetchImpl));
+    }
+    jobs.push(subscribeZoho(env, {
       email,
-      coupons: true,
-      sourcePage: page,
+      site: item.site,
+      source: "eatingon30a-account",
     }, fetchImpl));
   }
   await Promise.all(jobs);

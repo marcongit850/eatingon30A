@@ -100,7 +100,16 @@ Coupon signups (`POST /api/subscribe`) are also posted to a Google Sheets Apps S
 
 The webhook body includes `site` (`30A`), the email, coupons, an optional `audience` of `local` or `visitor`, and `sourcePage` set to the live homepage `https://www.eatingon30a.com/`. Preview canonical links stay on the workers.dev origin in `site.config.json`. The JSON response reports `recorded` separately from `delivered`. `recorded` is `true` only when the webhook body is JSON and `ok` is `true`. An HTTP 200 HTML page such as “Script function not found: doPost”, any other non-JSON body, or `{ok:false}` leaves `recorded` as `false`. If either Sheets secret is missing, the webhook is skipped and `recorded` is `false`. A Sheets error still returns success when Resend accepted the signup, so the browser does not retry and send a second email. Listing mail does not call the webhook.
 
-The account sign-in form can append the same kind of coupon row. A checked Eating on 30A box uses `GOOGLE_SHEETS_WEBHOOK_TOKEN` and `site` `30A`. A checked Eating in Destin box uses a separate secret, `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`, and `site` `Destin`. See Shared accounts for the dashboard steps. `POST /api/subscribe` does not use the Destin token.
+`POST /api/subscribe` also adds that email to a Zoho Campaigns list when all four of these secrets are set on the `eatingon30a` Worker:
+
+- `ZOHO_CLIENT_ID`
+- `ZOHO_CLIENT_SECRET`
+- `ZOHO_REFRESH_TOKEN`
+- `ZOHO_LIST_KEY_30A`
+
+The Worker refreshes an access token with `POST https://accounts.zoho.com/oauth/v2/token` (`grant_type=refresh_token`) and then calls `https://campaigns.zoho.com/api/v1.1/json/listsubscribe` with `Authorization: Zoho-oauthtoken`, `resfmt=JSON`, that list key, and contact info `{"Contact Email":"..."}`. The source is `eatingon30a-subscribe`. This runs beside the Resend email and the Sheets webhook. If any of those four secrets is missing, Zoho is skipped. A Zoho error does not change `ok`, `delivered`, or `recorded`. `POST /api/subscribe` does not use `ZOHO_LIST_KEY_DESTIN`. Do not put these values in `wrangler.jsonc` or in the repo.
+
+The account sign-in form can append the same kind of coupon row. A checked Eating on 30A box uses `GOOGLE_SHEETS_WEBHOOK_TOKEN` and `site` `30A`. A checked Eating in Destin box uses a separate secret, `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`, and `site` `Destin`. See Shared accounts for the dashboard steps. `POST /api/subscribe` does not use the Destin token. A checked 30A box also subscribes `ZOHO_LIST_KEY_30A`. A checked Destin box subscribes `ZOHO_LIST_KEY_DESTIN` when that secret is set. The account source is `eatingon30a-account`.
 
 ```bash
 npx wrangler deploy
@@ -190,7 +199,9 @@ Leave both unchecked to receive only the sign-in link. Checking either box store
 
 A checked box also appends one coupon row through the same Google Sheets webhook as `POST /api/subscribe`. The 30A box posts `site` `30A` with `GOOGLE_SHEETS_WEBHOOK_TOKEN`. The Destin box posts `site` `Destin` with `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN`. Both checked means two posts. Each post sets `coupons` to true, omits `audience`, and sets `sourcePage` to `https://www.eatingon30a.com/account/`. These rows do not send the Resend coupon signup email. The magic-link email is unchanged. If a sheet post fails, the magic link still succeeds when the accounts Worker accepted it.
 
-My places has the same two checkboxes for someone who is already signed in. The block stays hidden until `/api/account/me` returns a user. It is a disclosure on the page, not a popup, and the coupon popup does not open on `/my-places/`. Submit posts to `POST /api/account/coupons`. The Worker uses the session email and ignores any email in the body. A checked box appends a row through the same webhook and token as sign-in. `sourcePage` is `https://www.eatingon30a.com/my-places/`. These rows do not send the Resend coupon signup email. A missing token or a sheet error still returns success. Neither box checked returns an error and does not call the webhook.
+The same checked box adds the email to Zoho Campaigns when the Zoho client secrets are set. The 30A box uses `ZOHO_LIST_KEY_30A`. The Destin box uses `ZOHO_LIST_KEY_DESTIN`. Both checked means two list subscriptions. The source is `eatingon30a-account`. A missing list key skips that list. A Zoho error does not fail the magic link. These calls do not send the Resend coupon signup email.
+
+My places has the same two checkboxes for someone who is already signed in. The block stays hidden until `/api/account/me` returns a user. It is a disclosure on the page, not a popup, and the coupon popup does not open on `/my-places/`. Submit posts to `POST /api/account/coupons`. The Worker uses the session email and ignores any email in the body. A checked box appends a row through the same webhook and token as sign-in, and subscribes the same Zoho list. `sourcePage` is `https://www.eatingon30a.com/my-places/`. These rows do not send the Resend coupon signup email. A missing token, a sheet error, or a Zoho error still returns success. Neither box checked returns an error and does not call the webhook or Zoho.
 
 `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN` is optional. If it is missing, the Destin row is skipped and sign-in still succeeds. The 30A row still posts when that box is checked and the existing URL and 30A token are set. Set the Destin token on the `eatingon30a` Worker. Do not put it in `wrangler.jsonc`.
 
@@ -209,6 +220,18 @@ npx wrangler secret put GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN
 ```
 
 Wrangler prompts for the Destin token and publishes it on `eatingon30a`.
+
+Zoho Campaigns uses the same Worker. Set the client secrets and both list keys there. Leave the values out of this repo.
+
+```bash
+npx wrangler secret put ZOHO_CLIENT_ID
+npx wrangler secret put ZOHO_CLIENT_SECRET
+npx wrangler secret put ZOHO_REFRESH_TOKEN
+npx wrangler secret put ZOHO_LIST_KEY_30A
+npx wrangler secret put ZOHO_LIST_KEY_DESTIN
+```
+
+`ZOHO_LIST_KEY_30A` is the Eating on 30A list. `ZOHO_LIST_KEY_DESTIN` is the Eating in Destin list. Guest signup on this site uses only the 30A key. A missing Destin list key skips that list and still subscribes 30A when the 30A key and the client secrets are set.
 
 ## Pages
 
