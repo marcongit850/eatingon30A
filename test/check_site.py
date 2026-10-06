@@ -1030,6 +1030,7 @@ check(
     "form thanks pages should include the Meta pixel head code and noscript image",
 )
 check("run_worker_first" in wrangler and '"main": "worker.js"' in wrangler, "api subscribe should be served by the worker")
+check('"run_worker_first": true' in wrangler, "apex pages should hit the worker before static HTML")
 html_pages = [
     path
     for path in ROOT.rglob("*.html")

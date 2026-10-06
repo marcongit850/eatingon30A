@@ -662,10 +662,13 @@ const CANONICAL_HOST = "www.eatingon30a.com";
 export function canonicalRedirect(url, method = "GET") {
   const host = String(url.hostname || "").toLowerCase();
   if (host !== "eatingon30a.com") return null;
+  const verb = String(method || "GET").toUpperCase();
+  // A cached apex page can still POST or PUT to /api/. Redirecting those
+  // verbs with 308 sends the browser to www and the CORS preflight fails.
+  if ((verb === "POST" || verb === "PUT") && String(url.pathname || "").startsWith("/api/")) return null;
   const target = new URL(url.toString());
   target.protocol = "https:";
   target.hostname = CANONICAL_HOST;
-  const verb = String(method || "GET").toUpperCase();
   const status = verb === "GET" || verb === "HEAD" ? 301 : 308;
   return new Response(null, { status, headers: { location: target.toString() } });
 }
