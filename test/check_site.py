@@ -225,7 +225,30 @@ for restaurant in restaurants:
                 check(place.get("servesCuisine") == restaurant["cuisines"], f"schema cuisine {restaurant['slug']}")
             if restaurant.get("image"):
                 check(str(place.get("image", "")).startswith("https://"), f"schema image {restaurant['slug']}")
-    check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page left the shared profile template {restaurant['slug']}")
+    photo_list = full.get("photos") or []
+    if photo_list:
+        gallery = page.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+        check('class="profile"' in page and 'class="profile-gallery"' in page, f"detail page should use the photo gallery {restaurant['slug']}")
+        check('class="profile-hero"' not in page and 'class="profile-film"' not in page, f"detail photo layout should replace the hero and film strip {restaurant['slug']}")
+        check(f'data-total="{len(photo_list)}"' in gallery, f"gallery should count photos {restaurant['slug']}")
+        check(build.gallery_label(len(photo_list)) in gallery, f"gallery counter {restaurant['slug']}")
+        check(f'alt="{build.e(build.photo_alt(full))}"' in gallery, f"gallery should keep the photo alt text {restaurant['slug']}")
+        flags = re.findall(r'<figure class="profile-gallery-tile"( hidden)?>', gallery)
+        check(len(flags) == len(photo_list), f"gallery should include every photo {restaurant['slug']}")
+        for index, src in enumerate(photo_list):
+            check(src in gallery, f"gallery missing {src}")
+            check((flags[index] == " hidden") == (index >= 4), f"gallery window for {src}")
+        if len(photo_list) > 4:
+            check("profile-gallery-prev" in gallery and "profile-gallery-next" in gallery, f"gallery arrows {restaurant['slug']}")
+            prev_btn = gallery.split('class="profile-gallery-arrow profile-gallery-prev"', 1)[1].split("</button>", 1)[0]
+            next_btn = gallery.split('class="profile-gallery-arrow profile-gallery-next"', 1)[1].split("</button>", 1)[0]
+            check("disabled" in prev_btn and "disabled" not in next_btn, f"gallery should start on the first photos {restaurant['slug']}")
+            check('src="/gallery.js"' in page, f"gallery script {restaurant['slug']}")
+        else:
+            check("profile-gallery-arrow" not in gallery and 'src="/gallery.js"' not in page, f"short gallery should not page {restaurant['slug']}")
+    else:
+        check('class="profile"' in page and 'class="profile-hero"' in page, f"detail page without a photo should keep the hero {restaurant['slug']}")
+        check('class="profile-gallery"' not in page and 'class="profile-film"' not in page, f"monogram or logo should not use the photo gallery {restaurant['slug']}")
     claim_href = build.e(build.claim_listing_href(restaurant["name"], restaurant["slug"]))
     check(
         'class="listing-claim"' in page
@@ -275,6 +298,12 @@ expected_monograms = [
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
 check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+check(build.gallery_label(9) == "4 of 9 photos", "a full first window should read 4 of 9 photos")
+check(build.gallery_label(9, 1) == "5 of 9 photos", "stepping one photo should advance the counter")
+check(build.gallery_label(9, 20) == "9 of 9 photos", "the counter should stop on the last photo")
+check(build.gallery_label(6, 2) == "6 of 6 photos", "six photos should end on 6 of 6")
+check(build.gallery_label(1) == "1 of 1 photo", "one photo should stay singular")
+check(build.gallery_label(3) == "3 of 3 photos", "three photos should fill only three cells")
 check(
     build.listing_photos("pecan-jacks-grayton-beach")
     == [f"/images/restaurants/pecan-jacks-grayton-beach/0{n}.jpg" for n in range(1, 5)],
@@ -296,11 +325,12 @@ check(
     "closed Gulf Place Pecan Jacks should stay off the site",
 )
 grayton_page = (ROOT / "restaurants" / "pecan-jacks-grayton-beach" / "index.html").read_text(encoding="utf-8")
-grayton_hero = grayton_page.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
+grayton_gallery = grayton_page.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
 check(
-    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_hero and "hero-logo" not in grayton_hero,
-    "Grayton Pecan Jacks hero should be the landscape cover",
+    "/images/restaurants/pecan-jacks-grayton-beach/01.jpg" in grayton_gallery and "hero-logo" not in grayton_gallery,
+    "Grayton Pecan Jacks gallery should open on the landscape cover",
 )
+check("4 of 4 photos" in grayton_gallery and "profile-gallery-arrow" not in grayton_gallery, "four photos should fill the grid without arrows")
 for frame in ("02.jpg", "03.jpg", "04.jpg"):
     check(
         f"/images/restaurants/pecan-jacks-grayton-beach/{frame}" in grayton_page,
@@ -739,27 +769,28 @@ for slug in nearby_media:
     check(cover.is_file() and cover.stat().st_size < 500_000, f"{slug} should have a cover photo")
     page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
     check(f"/images/restaurants/{slug}-logo.png" in page and 'class="logo"' in page, f"{slug} listing should show the logo")
-    hero = page.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
-    check(f"/images/restaurants/{slug}/01.jpg" in hero, f"{slug} hero should use the cover photo")
+    gallery = page.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+    check(f"/images/restaurants/{slug}/01.jpg" in gallery, f"{slug} gallery should use the cover photo")
     card = directory[directory.find(f'id="r-{slug}"') :][:2200]
     check(f"/images/restaurants/{slug}/01.jpg" in card, f"{slug} card should use the cover photo")
 check("static.wixstatic.com" not in stinkys, "Stinky's profile should not hotlink Wix for its photos")
 oku = (ROOT / "restaurants" / "o-ku-alys-beach" / "index.html").read_text(encoding="utf-8")
-oku_hero = oku.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
-check("/images/restaurants/o-ku-alys-beach/01.jpg" in oku_hero, "O-Ku hero should be the supplied cover")
-check('class="profile-film"' in oku and "/images/restaurants/o-ku-alys-beach/02.jpg" in oku, "O-Ku profile should show the extra photos")
+oku_gallery = oku.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check("/images/restaurants/o-ku-alys-beach/01.jpg" in oku_gallery, "O-Ku gallery should open on the supplied cover")
+check('class="profile-gallery"' in oku and "/images/restaurants/o-ku-alys-beach/02.jpg" in oku, "O-Ku profile should show the extra photos")
 steam = (ROOT / "restaurants" / "steamboat-grill-30a-seagrove-beach" / "index.html").read_text(encoding="utf-8")
-steam_hero = steam.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
-check("/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg" in steam_hero, "Steamboat hero should be the supplied cover")
+steam_gallery = steam.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check("/images/restaurants/steamboat-grill-30a-seagrove-beach/01.jpg" in steam_gallery, "Steamboat gallery should open on the supplied cover")
 check(
-    'class="profile-film"' in steam
+    'class="profile-gallery"' in steam
     and "/images/restaurants/steamboat-grill-30a-seagrove-beach/02.webp" in steam
-    and "/images/restaurants/steamboat-grill-30a-seagrove-beach/03.jpg" in steam,
+    and "/images/restaurants/steamboat-grill-30a-seagrove-beach/03.jpg" in steam
+    and "3 of 3 photos" in steam_gallery,
     "Steamboat profile should show the extra photos",
 )
 happy = (ROOT / "restaurants" / "beach-happy-cafe-seagrove-beach" / "index.html").read_text(encoding="utf-8")
-happy_hero = happy.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
-check("/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg" in happy_hero, "Beach Happy Seagrove hero should be the supplied cover")
+happy_gallery = happy.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check("/images/restaurants/beach-happy-cafe-seagrove-beach/01.jpg" in happy_gallery, "Beach Happy Seagrove gallery should open on the supplied cover")
 check(
     "/images/restaurants/beach-happy-cafe-seagrove-beach/02.jpg" in happy
     and "/images/restaurants/beach-happy-cafe-seagrove-beach/03.jpg" in happy
@@ -776,8 +807,16 @@ check(
 )
 check("Shannon" not in happy and "Chris" not in happy, "Beach Happy Seagrove should not name Shannon or Chris")
 watercolor = (ROOT / "restaurants" / "beach-happy-cafe-watercolor" / "index.html").read_text(encoding="utf-8")
-watercolor_hero = watercolor.split('class="profile-hero"', 1)[1].split('class="profile-film"', 1)[0]
-check("/images/restaurants/beach-happy-cafe-watercolor/01.jpg" in watercolor_hero, "WaterColor hero should be the storefront")
+watercolor_gallery = watercolor.split('class="profile-gallery"', 1)[1].split('class="wrap profile-head"', 1)[0]
+check("/images/restaurants/beach-happy-cafe-watercolor/01.jpg" in watercolor_gallery, "WaterColor gallery should open on the storefront")
+check(
+    '<figure class="profile-gallery-tile"><img src="/images/restaurants/beach-happy-cafe-watercolor/01.jpg"' in watercolor
+    and '<figure class="profile-gallery-tile" hidden><img src="/images/restaurants/beach-happy-cafe-watercolor/05.jpg"' in watercolor
+    and '<figure class="profile-gallery-tile" hidden><img src="/images/restaurants/beach-happy-cafe-watercolor/06.jpg"' in watercolor
+    and "4 of 6 photos" in watercolor_gallery
+    and 'src="/gallery.js"' in watercolor,
+    "WaterColor gallery should page past the first four photos",
+)
 check("/images/restaurants/beach-happy-cafe-watercolor/06.jpg" in watercolor, "WaterColor gallery should include the sixth frame")
 check("/images/restaurants/beach-happy-cafe-watercolor/07.jpg" not in watercolor, "WaterColor gallery should not include a seventh frame")
 check("Shannon" not in watercolor and "Chris" not in watercolor, "Beach Happy WaterColor should not name Shannon or Chris")
@@ -831,9 +870,25 @@ check(seagrove_row["foods"] == ["Coffee", "Smoothies"], f"Seagrove foods should 
 plain = (ROOT / "restaurants" / "nigels-bananas-seaside" / "index.html").read_text(encoding="utf-8")
 plain_hero = plain.split('class="profile-hero"', 1)[1].split('class="wrap profile-head"', 1)[0]
 check('class="ph"' in plain_hero and 'class="mono"' in plain_hero, "a listing without a photo should keep the monogram")
-check("<img" not in plain_hero and 'class="profile-film"' not in plain, "Nigel's should stay a monogram")
+check("<img" not in plain_hero and 'class="profile-film"' not in plain and 'class="profile-gallery"' not in plain, "Nigel's should stay a monogram")
 check("Black%20Heart" not in directory and "/images/restaurants/stinkys-fish-camp-dune-allen-beach/01.jpg" in stinkys, "heart placeholder should not be the photo")
 check("static.wixstatic.com" in home, "town photos should use the working Wix image URLs")
+check('class="profile-gallery"' not in home and 'class="cover-arrow"' in home, "homepage featured cover should keep its own arrows")
+check('class="profile-gallery"' not in directory, "directory cards should not use the listing gallery")
+map_page = (ROOT / "map" / "index.html").read_text(encoding="utf-8")
+check('class="profile-gallery"' not in map_page, "map should not use the listing gallery")
+for area_page in (ROOT / "areas").glob("*/index.html"):
+    area_html = area_page.read_text(encoding="utf-8")
+    check(
+        'class="profile-hero"' in area_html and 'class="profile-gallery"' not in area_html,
+        f"town page should keep its hero {area_page.parent.name}",
+    )
+for guide_page in (ROOT / "guides").glob("*/index.html"):
+    guide_html = guide_page.read_text(encoding="utf-8")
+    check(
+        'class="profile-hero"' in guide_html and 'class="profile-gallery"' not in guide_html,
+        f"guide page should keep its hero {guide_page.parent.name}",
+    )
 for town_slug, town_alt in (
     ("watersound", "Watersound on Scenic Highway 30A"),
     ("watersound-origins", "Watersound Origins on Scenic Highway 30A"),
