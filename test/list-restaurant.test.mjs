@@ -36,6 +36,7 @@ function base(overrides = {}) {
     website: "https://example.com",
     price: "$$",
     description: "A casual porch spot for grilled fish and a cold drink. Families sit outside when the weather is kind.",
+    hours: "Mon-Sun 11am-9pm",
     seasonalNote: "Winter hours start after Thanksgiving.",
     cuisines: [listingOptions.cuisines[0]],
     meals: ["Dinner", "Late night"],
@@ -46,10 +47,6 @@ function base(overrides = {}) {
     notes: "Please call before you visit.",
     authorized: true,
   };
-  for (const day of listingOptions.days) {
-    body[day.hours] = day.label === "Monday" ? "11am to 9pm" : "";
-    body[day.closed] = day.label !== "Monday";
-  }
   for (const item of listingOptions.amenities) body[item.name] = item.name === "music" || item.name === "outdoor";
   return { ...body, ...overrides };
 }
@@ -73,7 +70,8 @@ test("parseListRestaurant requires a name and email and lets every other field b
   assert.equal(parseListRestaurant(base({ description: "  " })).error, undefined);
   assert.equal(parseListRestaurant(base({ restaurant: "" })).error, undefined);
   assert.equal(parseListRestaurant(base({ address: "" })).error, undefined);
-  assert.equal(parseListRestaurant(base({ hoursMon: "", hoursMonClosed: false })).error, undefined);
+  assert.equal(parseListRestaurant(base({ hours: "" })).error, undefined);
+  assert.equal(parseListRestaurant(base({ hours: "x".repeat(1001) })).error, "Keep the hours under 1,000 characters.");
   assert.equal(parseListRestaurant(base({ cuisines: [] })).error, undefined);
   assert.equal(parseListRestaurant(base({ cuisines: ["Not a cuisine"] })).error, "Choose cuisine types from the list.");
   assert.equal(parseListRestaurant(base({ meals: [] })).error, undefined);
@@ -87,8 +85,9 @@ test("parseListRestaurant requires a name and email and lets every other field b
   assert.equal(parsed.error, undefined);
   assert.equal(parsed.value.roleLabel, "Owner");
   assert.equal(parsed.value.intentLabel, "New listing");
-  assert.equal(parsed.value.hours[0].value, "11am to 9pm");
-  assert.equal(parsed.value.hours[1].value, "Closed");
+  assert.equal(parsed.value.hours, "Mon-Sun 11am-9pm");
+  const lined = parseListRestaurant(base({ hours: "Mon-Fri 11am-9pm\nSat-Sun 10am-10pm" }));
+  assert.equal(lined.value.hours, "Mon-Fri 11am-9pm\nSat-Sun 10am-10pm");
   assert.equal(parsed.value.amenities.find((item) => item.label === "Live music").value, "Yes");
   assert.equal(parsed.value.amenities.find((item) => item.label === "Reservations").value, "No");
 });
@@ -97,7 +96,7 @@ test("a name and email are enough to send the listing email", async () => {
   const parsed = parseListRestaurant({ name: "Jamie Cook", email: "jamie@example.com" });
   assert.equal(parsed.error, undefined);
   assert.equal(parsed.value.authorized, false);
-  assert.equal(parsed.value.hours.every((day) => day.value === ""), true);
+  assert.equal(parsed.value.hours, "");
   const text = formatListRestaurant(parsed.value);
   for (const label of [
     "Your name: Jamie Cook",
@@ -108,7 +107,7 @@ test("a name and email are enough to send the listing email", async () => {
     "Area: Not provided",
     "Street address: Not provided",
     "Price range: Not provided",
-    "Monday: Not provided",
+    "Hours:\nNot provided",
     "Cuisine types: Not provided",
     "Meals: Not provided",
     "Authorized to submit: No",
@@ -162,8 +161,7 @@ test("the listing email labels every field", async () => {
     "Restaurant name: Jamie's Porch",
     "Street address: 1 County Road 30A, Santa Rosa Beach, FL 32459",
     "Price range: $$",
-    "Monday: 11am to 9pm",
-    "Tuesday: Closed",
+    "Hours:\nMon-Sun 11am-9pm",
     "Seasonal note: Winter hours start after Thanksgiving.",
     "Meals: Dinner, Late night",
     "Outdoor dining: Yes",
@@ -205,6 +203,25 @@ test("the listing email labels every field", async () => {
   assert.equal(mail.attachments, undefined);
   assert.match(mail.text, /Short description:\nA casual porch spot/);
   assert.match(mail.text, /Notes:\nPlease call before you visit\./);
+});
+
+test("freeform hours from the form are emailed as written", async () => {
+  resetListRestaurantLimits();
+  const hours = "Mon-Fri 11am-9pm\nSat-Sun 10am-10pm";
+  let init = null;
+  const response = await handleListRestaurant(
+    formRequest([], "203.0.113.61", { hours }),
+    mailEnv,
+    (_url, nextInit) => {
+      init = nextInit;
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    },
+  );
+  assert.equal(response.status, 200);
+  const mail = JSON.parse(init.body);
+  assert.deepEqual(mail.to, ["marc@example.com"]);
+  assert.equal(mail.text.includes(`Hours:\n${hours}\nSeasonal note:`), true);
+  assert.equal(mail.text.includes("Monday:"), false);
 });
 
 test("old photo URL fields are ignored and not published", () => {

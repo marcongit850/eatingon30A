@@ -1660,12 +1660,6 @@ html.js-filter #cards .card { display: none; }
   font-weight: 300;
   line-height: 1.45;
 }
-.hours-list { display: grid; gap: 0.85rem; }
-.hours-day {
-  display: grid;
-  gap: 0.15rem 1rem;
-  align-items: end;
-}
 .hp-field {
   position: absolute;
   left: -10000px;
@@ -1675,7 +1669,6 @@ html.js-filter #cards .card { display: none; }
 }
 @media (min-width: 640px) {
   .listing-form fieldset.choice-grid { grid-template-columns: 1fr 1fr; }
-  .hours-day { grid-template-columns: minmax(0, 1fr) auto; }
 }
 .listing-form button[type="submit"] {
   width: fit-content;

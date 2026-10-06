@@ -3877,15 +3877,6 @@ LISTING_INTENTS = (
     ("new", "New listing"),
     ("update", "Update an existing listing"),
 )
-LISTING_DAYS = (
-    ("Monday", "hoursMon", "hoursMonClosed"),
-    ("Tuesday", "hoursTue", "hoursTueClosed"),
-    ("Wednesday", "hoursWed", "hoursWedClosed"),
-    ("Thursday", "hoursThu", "hoursThuClosed"),
-    ("Friday", "hoursFri", "hoursFriClosed"),
-    ("Saturday", "hoursSat", "hoursSatClosed"),
-    ("Sunday", "hoursSun", "hoursSunClosed"),
-)
 LISTING_AMENITIES = (
     ("outdoor", "Outdoor dining"),
     ("happyDrinks", "Happy hour (drinks)"),
@@ -3913,9 +3904,6 @@ def listing_form_options(restaurants: list[dict], areas: list[dict]) -> dict:
         "prices": list(LISTING_PRICES),
         "roles": [{"value": value, "label": label} for value, label in LISTING_ROLES],
         "intents": [{"value": value, "label": label} for value, label in LISTING_INTENTS],
-        "days": [
-            {"label": label, "hours": hours, "closed": closed} for label, hours, closed in LISTING_DAYS
-        ],
         "amenities": [{"name": name, "label": label} for name, label in LISTING_AMENITIES],
     }
 
@@ -3965,16 +3953,6 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
     area_options = ['<option value="">Select a town</option>']
     for area in options["areas"]:
         area_options.append(f'<option value="{e(area)}">{e(area)}</option>')
-    hours = []
-    for day in options["days"]:
-        hours.append(
-            '<div class="hours-day">'
-            f'<label><span>{e(day["label"])}</span>'
-            f'<input name="{e(day["hours"])}" type="text" maxlength="80" autocomplete="off"></label>'
-            f'<label class="listing-choice"><input type="checkbox" name="{e(day["closed"])}" value="yes"> '
-            f'<span>Closed <span class="sr-only">{e(day["label"])}</span></span></label>'
-            "</div>"
-        )
     cuisine_checks = listing_checks(
         "cuisines",
         "Cuisine types",
@@ -4037,7 +4015,8 @@ def build_list_restaurant(restaurants: list[dict], areas: list[dict]) -> None:
         '<textarea name="description" maxlength="2000" rows="5"></textarea></label>'
         '<p class="field-note">Two to four sentences on the room, the food, and who it is for.</p>'
         + "<h2>Hours</h2>"
-        + f'<div class="hours-list">{"".join(hours)}</div>'
+        + "<label><span>Hours</span>"
+        + '<textarea name="hours" maxlength="1000" rows="4" placeholder="Mon-Sun 11am-9pm, or check website for hours"></textarea></label>'
         + "<label><span>Seasonal note</span>"
         '<textarea name="seasonalNote" class="compact" maxlength="500" rows="2"></textarea></label>'
         + "<h2>What they serve</h2>"
