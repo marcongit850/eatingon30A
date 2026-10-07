@@ -665,6 +665,66 @@ export async function handleListRestaurant(request, env, fetchImpl = fetch) {
 
 const CANONICAL_HOST = "www.eatingon30a.com";
 
+// Old Wix paths kept a literal "&" in the slug. Live restaurants already use
+// the renamed slug below. A missing key is a deleted restaurant and stays 404.
+export const AMPERSAND_REDIRECTS = {
+  "raw-&-juicy": "/restaurants/raw-and-juicy-alys-beach/",
+  "seagrove-coffee-&-donuts": "/restaurants/seagrove-coffee-and-donuts-seagrove-beach/",
+  "beach-&-brew-on-30a": "/restaurants/beach-and-brew-on-30a-seacrest/",
+  "havana-beach-bar-&-grill": "/restaurants/havana-beach-bar-and-grill-rosemary-beach/",
+  "la-crema-tapas-&-chocolate": "/restaurants/la-crema-tapas-and-chocolate-rosemary-beach/",
+  "shades-bar-&-grill": "/restaurants/shades-bar-and-grill-inlet-beach/",
+  "the-daytrader-tiki-bar-&-restaurant": "/restaurants/the-daytrader-tiki-bar-and-restaurant-seaside/",
+  "neat-bottle-shop-&-tasting-room": "/restaurants/neat-bottle-shop-and-tasting-room-alys-beach/",
+  "pescado-seafood-grill-&-rooftop-bar": "/restaurants/pescado-seafood-grill-and-rooftop-bar-rosemary-beach/",
+  "heavenly’s-shortcakes-&-ice-cream": "/restaurants/heavenlys-shortcakes-and-ice-cream-seaside/",
+  "edward’s-fine-food-&-wine": "/restaurants/edwards-fine-food-and-wine-rosemary-beach/",
+  "local-catch-bar-&-grill": "/restaurants/local-catch-bar-and-grill-dune-allen-beach/",
+  "fonville-press-market-&-café": "/restaurants/fonville-press-market-and-cafe-alys-beach/",
+};
+
+function decodedRestaurantSlug(pathname) {
+  const match = String(pathname || "").match(/^\/restaurants\/([^/]+?)(?:\/index\.html|\/)?$/);
+  if (!match || match[1] === "index") return "";
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
+export function legacyAmpersandRedirect(url, method = "GET") {
+  const verb = String(method || "GET").toUpperCase();
+  if (verb !== "GET" && verb !== "HEAD") return null;
+  const slug = decodedRestaurantSlug(url.pathname);
+  if (!slug.includes("&")) return null;
+  const path = AMPERSAND_REDIRECTS[slug];
+  if (!path) return null;
+  const target = new URL(url.toString());
+  target.pathname = path;
+  target.hash = "";
+  return new Response(null, { status: 301, headers: { location: target.toString() } });
+}
+
+export function stripFalseCanonical(html) {
+  return String(html)
+    .replace(/\s*<link rel="canonical" href="[^"]*\/404\.html">/gi, "")
+    .replace(/\s*<meta property="og:url" content="[^"]*\/404\.html">/gi, "")
+    .replace(/"url": "https:\/\/www\.eatingon30a\.com\/404\.html",?\s*/g, "");
+}
+
+export async function markNotFound(response) {
+  if (!response || response.status !== 404) return response;
+  const headers = new Headers(response.headers);
+  if (!headers.has("x-robots-tag")) headers.set("x-robots-tag", "noindex");
+  const type = headers.get("content-type") || "";
+  if (!type.includes("text/html")) {
+    return new Response(response.body, { status: 404, statusText: response.statusText, headers });
+  }
+  const html = stripFalseCanonical(await response.text());
+  return new Response(html, { status: 404, statusText: response.statusText, headers });
+}
+
 export function canonicalRedirect(url, method = "GET") {
   const host = String(url.hostname || "").toLowerCase();
   if (host !== "eatingon30a.com") return null;
@@ -784,6 +844,8 @@ export default {
     const url = new URL(request.url);
     const redirect = canonicalRedirect(url, request.method);
     if (redirect) return redirect;
+    const legacy = legacyAmpersandRedirect(url, request.method);
+    if (legacy) return legacy;
     if (url.pathname === "/api/subscribe") return handleSubscribe(request, env);
     if (url.pathname === "/api/listing") return handleListing(request, env);
     if (url.pathname === "/api/list-restaurant") return handleListRestaurant(request, env);
@@ -791,6 +853,6 @@ export default {
     if (url.pathname.startsWith("/api/admin/") || url.pathname.startsWith("/media/photos/")) {
       return handleAdmin(request, env);
     }
-    return withPreviewRobots(url, await servePublic(request, await env.ASSETS.fetch(request), env));
+    return withPreviewRobots(url, await markNotFound(await servePublic(request, await env.ASSETS.fetch(request), env)));
   },
 };

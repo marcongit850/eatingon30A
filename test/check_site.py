@@ -3,10 +3,12 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -278,6 +280,29 @@ for spec in guide_specs:
 
 check(f"Sitemap: {build.ORIGIN}/sitemap.xml" in robots, "robots missing sitemap")
 check("User-agent: *" in robots and "Allow: /" in robots, "robots should allow crawlers")
+check("%26" not in sitemap and "&amp;" not in sitemap, "sitemap should not list ampersand slugs")
+worker_src = (ROOT / "worker.js").read_text(encoding="utf-8")
+not_found_page = (ROOT / "404.html").read_text(encoding="utf-8")
+check('name="robots" content="noindex"' in not_found_page, "404 should be noindex")
+check('rel="canonical"' not in not_found_page and "/404.html" not in not_found_page, "404 should not canonical to /404.html")
+for dead in ("vue-on-30a", "brozinni-pizzeria", "pecan-jacks-gulf-place"):
+    check(f"/restaurants/{dead}/" not in sitemap, f"sitemap should drop deleted slug {dead}")
+with (ROOT / "data" / "restaurants.csv").open(encoding="utf-8", newline="") as handle:
+    for row in csv.DictReader(handle):
+        status = (row.get("Status") or "").strip()
+        slug = (row.get("slug") or "").strip()
+        item = (row.get("Restaurants (Item)") or "").strip()
+        tail = unquote(item.rstrip("/").split("/")[-1]) if item else ""
+        if status != "PUBLISHED":
+            check(f"/restaurants/{slug}/" not in sitemap, f"sitemap should drop unpublished {slug}")
+            if tail:
+                check(tail not in sitemap, f"sitemap should drop unpublished path {tail}")
+            continue
+        if "&" not in tail:
+            continue
+        check(tail not in sitemap, f"sitemap should use the renamed slug for {tail}")
+        check(f'"{tail}": "/restaurants/{slug}/"' in worker_src, f"live ampersand slug should 301 {tail}")
+check('"/restaurants/closed-&-cafe/"' not in worker_src, "deleted ampersand slugs should stay 404")
 missing_coords = [item["slug"] for item in restaurants if not isinstance(item.get("lat"), (int, float)) or not isinstance(item.get("lng"), (int, float)) or not item.get("address")]
 check(not missing_coords, f"listings missing address or coordinates: {missing_coords}")
 photos = [item for item in restaurants if item.get("image")]

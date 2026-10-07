@@ -289,6 +289,11 @@ export function patchHtml(html, pathname, { hidden = [], placed = [] } = {}) {
   return next;
 }
 
+function liveSitemapListing(listing) {
+  const slug = String(listing.slug || "");
+  return slug && !slug.includes("&") && !slug.includes("%26");
+}
+
 export function patchSitemap(xml, { hidden = [], placed = [] } = {}) {
   const refresh = new Set([...hidden, ...placed].map((listing) => listing.slug));
   let next = xml;
@@ -296,8 +301,13 @@ export function patchSitemap(xml, { hidden = [], placed = [] } = {}) {
     const loc = `${ORIGIN}/restaurants/${slug}/`;
     next = next.replace(new RegExp(`\\s*<url>\\s*<loc>${loc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}</loc>[\\s\\S]*?</url>`, "g"), "");
   }
-  const urls = placed.map((listing) => `  <url>\n    <loc>${escapeHtml(`${ORIGIN}/restaurants/${listing.slug}/`)}</loc>\n  </url>`).join("\n");
+  const urls = placed.filter(liveSitemapListing).map((listing) => `  <url>\n    <loc>${escapeHtml(`${ORIGIN}/restaurants/${listing.slug}/`)}</loc>\n  </url>`).join("\n");
   if (urls) next = next.replace("</urlset>", `${urls}\n</urlset>`);
+  next = next.replace(/\s*<url>[\s\S]*?<\/url>/g, (block) => {
+    const loc = (block.match(/<loc>([^<]*)<\/loc>/) || [])[1] || "";
+    if (loc.includes("%26") || loc.includes("&")) return "";
+    return block;
+  });
   return next;
 }
 

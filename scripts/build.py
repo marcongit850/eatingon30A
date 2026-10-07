@@ -1396,16 +1396,28 @@ def image_facts(url: str | None) -> dict:
     return facts
 
 
-def social_tags(title: str, description: str, canonical: str, image: str | None, image_alt: str) -> str:
+def social_tags(
+    title: str,
+    description: str,
+    canonical: str,
+    image: str | None,
+    image_alt: str,
+    include_url: bool = True,
+) -> str:
     facts = image_facts(image)
     alt = image_alt or SHARE_ALT
     tags = [
         f'<meta property="og:title" content="{e(title)}">',
         f'<meta property="og:description" content="{e(description)}">',
-        f'<meta property="og:url" content="{e(canonical)}">',
-        f'<meta property="og:image" content="{e(facts["url"])}">',
-        f'<meta property="og:image:alt" content="{e(alt)}">',
     ]
+    if include_url:
+        tags.append(f'<meta property="og:url" content="{e(canonical)}">')
+    tags.extend(
+        [
+            f'<meta property="og:image" content="{e(facts["url"])}">',
+            f'<meta property="og:image:alt" content="{e(alt)}">',
+        ]
+    )
     if "width" in facts:
         tags.append(f'<meta property="og:image:width" content="{facts["width"]}">')
         tags.append(f'<meta property="og:image:height" content="{facts["height"]}">')
@@ -1451,6 +1463,7 @@ def layout(
     image_alt: str = "",
     noindex: bool = False,
     extra_scripts: str = "",
+    include_canonical: bool = True,
 ) -> str:
     canonical = ORIGIN + path
     scripts = '<script src="/header.js"></script>\n<script src="/footer.js"></script>\n'
@@ -1468,9 +1481,9 @@ def layout(
         + META_PIXEL_HEAD
         + f"<title>{e(title)}</title>\n"
         f'<meta name="description" content="{e(description)}">\n'
-        f'<link rel="canonical" href="{e(canonical)}">\n'
+        + (f'<link rel="canonical" href="{e(canonical)}">\n' if include_canonical else "")
         + robots
-        + social_tags(title, description, canonical, image, image_alt)
+        + social_tags(title, description, canonical, image, image_alt, include_url=include_canonical)
         + '<meta name="theme-color" content="#102825">\n'
         '<link rel="icon" href="/favicon.ico" sizes="any">\n'
         '<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">\n'
@@ -4271,12 +4284,12 @@ def build_404() -> None:
                     "@context": "https://schema.org",
                     "@type": "WebPage",
                     "name": "Page not found",
-                    "url": ORIGIN + "/404.html",
                     "isPartOf": {"@id": ORIGIN + "/#website"},
                 }
             ),
             include_js=False,
             noindex=True,
+            include_canonical=False,
         ),
     )
 
@@ -4309,6 +4322,9 @@ def build_sitemap(restaurants: list[dict], areas: list[dict], guides: list[dict]
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
     for path, updated in urls:
+        # Unpublished restaurants and old "&" slugs are not live pages.
+        if "&" in path or "%26" in path.lower() or path == "/404.html":
+            continue
         lines.append("  <url>")
         lines.append(f"    <loc>{e(ORIGIN + path)}</loc>")
         if updated:

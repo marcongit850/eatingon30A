@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { canonicalRedirect, robotsTagForHost } from "../worker.js";
+import worker, { canonicalRedirect, legacyAmpersandRedirect, markNotFound, robotsTagForHost, stripFalseCanonical } from "../worker.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const config = JSON.parse(readFileSync(join(root, "site.config.json"), "utf8"));
@@ -68,6 +68,18 @@ for (const path of htmlPages) {
   assert.ok(description.length >= 110 && description.length <= 165, rel + " description length " + description.length);
   assert.match(description, /30A/);
   assert.match(description, /Walton County/);
+  if (path.endsWith("404.html")) {
+    assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.equal(html.includes('rel="canonical"'), false, "404 must not declare a canonical");
+    assert.equal(html.includes("/404.html"), false, "404 must not point Google at /404.html");
+    assert.equal(html.includes('property="og:url"'), false);
+    const data = jsonLd(html);
+    assert.equal(data["@context"], "https://schema.org");
+    assert.equal(data.url, undefined);
+    const h1s = html.match(/<h1[\s>]/g) || [];
+    assert.equal(h1s.length, 1, rel + " h1 count");
+    continue;
+  }
   const canonical = attr(html, /<link rel="canonical" href="([^"]+)">/);
   assert.ok(canonical.startsWith(ORIGIN), rel + " canonical " + canonical);
   assert.equal(new URL(canonical).hostname, "www.eatingon30a.com", rel);
@@ -199,7 +211,10 @@ assert.match(seasideHtml, /href="\/areas\/seagrove-beach\/"/);
 
 const missing = read("404.html");
 assert.match(missing, /noindex/);
+assert.equal(missing.includes('rel="canonical"'), false);
+assert.equal(missing.includes("/404.html"), false);
 assert.equal(read("index.html").includes("noindex"), false);
+assert.match(read("restaurants/index.html"), /<link rel="canonical" href="https:\/\/www\.eatingon30a\.com\/restaurants\/">/);
 
 const robots = read("robots.txt");
 assert.match(robots, /User-agent: \*\nAllow: \/\n/);
@@ -231,6 +246,10 @@ assert.equal(locs.includes(`${ORIGIN}/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
 assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
+assert.equal(locs.some((url) => url.includes("%26") || url.includes("&")), false);
+for (const dead of ["vue-on-30a", "brozinni-pizzeria", "pecan-jacks-gulf-place", "raw-&-juicy", "raw-%26-juicy"]) {
+  assert.equal(locs.some((url) => url.includes(dead)), false, dead);
+}
 assert.equal(locs.includes(`${ORIGIN}/guides/`), true);
 for (const slug of [
   "best-seafood-30a",
@@ -272,6 +291,42 @@ assert.equal(canonicalRedirect(new URL("https://www.eatingon30a.com/api/listing"
 assert.equal(canonicalRedirect(new URL("https://eatingon30a.352marc.workers.dev/restaurants/")), null);
 assert.equal(robotsTagForHost("eatingon30a.352marc.workers.dev"), "noindex");
 assert.equal(robotsTagForHost("www.eatingon30a.com"), "");
+assert.equal(canonicalRedirect(new URL("https://www.eatingon30a.com/restaurants/?meal=Dinner")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/?meal=Dinner")), null);
+
+const encodedAmp = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"));
+assert.equal(encodedAmp.status, 301);
+assert.equal(encodedAmp.headers.get("location"), "https://www.eatingon30a.com/restaurants/raw-and-juicy-alys-beach/");
+const literalAmp = legacyAmpersandRedirect(new URL("https://eatingon30a.com/restaurants/beach-&-brew-on-30a"));
+assert.equal(literalAmp.status, 301);
+assert.equal(literalAmp.headers.get("location"), "https://eatingon30a.com/restaurants/beach-and-brew-on-30a-seacrest/");
+assert.equal(canonicalRedirect(new URL("https://eatingon30a.com/restaurants/raw-%26-juicy/")).headers.get("location"), "https://www.eatingon30a.com/restaurants/raw-%26-juicy/");
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/closed-%26-cafe/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/vue-on-30a/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
+
+const stale404 = `<!DOCTYPE html><head><link rel="canonical" href="https://www.eatingon30a.com/404.html"><meta property="og:url" content="https://www.eatingon30a.com/404.html"><script type="application/ld+json">{"@type": "WebPage", "url": "https://www.eatingon30a.com/404.html", "name": "Page not found"}</script></head>`;
+const cleaned = stripFalseCanonical(stale404);
+assert.equal(cleaned.includes("/404.html"), false);
+assert.equal(cleaned.includes('rel="canonical"'), false);
+const notFound = await markNotFound(new Response(stale404, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } }));
+assert.equal(notFound.status, 404);
+assert.equal(notFound.headers.get("x-robots-tag"), "noindex");
+assert.equal((await notFound.text()).includes("/404.html"), false);
+const kept = await markNotFound(new Response("<link rel=\"canonical\" href=\"https://www.eatingon30a.com/restaurants/\">", { status: 200, headers: { "content-type": "text/html" } }));
+assert.equal(kept.status, 200);
+assert.equal(kept.headers.get("x-robots-tag"), null);
+
+const missingPage = await worker.fetch(new Request("https://www.eatingon30a.com/restaurants/vue-on-30a/"), {
+  ASSETS: {
+    async fetch() {
+      return new Response(stale404, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+    },
+  },
+});
+assert.equal(missingPage.status, 404);
+assert.equal(missingPage.headers.get("x-robots-tag"), "noindex");
+assert.equal((await missingPage.text()).includes('rel="canonical"'), false);
 
 const llms = read("llms.txt");
 const llmsFull = read("llms-full.txt");
@@ -292,6 +347,8 @@ for (const path of walk(root)) {
     if (tag.includes("https://www.facebook.com/tr?") && tag.includes("noscript=1")) continue;
     const alt = tag.match(/\salt="([^"]*)"/);
     assert.ok(alt, "missing alt " + path);
+    // The 360 thumbnail is decorative. The link text next to it is the accessible name.
+    if (tag.includes("/images/30a-360.webp") && alt[1] === "") continue;
     assert.ok(alt[1].trim().length > 0, "empty alt " + path);
   }
 }
