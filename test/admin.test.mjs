@@ -187,6 +187,12 @@ describe("restaurant admin", { concurrency: 1 }, () => {
       { hidden: draft, placed: [] },
     );
     assert.equal(sitemap.includes("pier-test"), false);
+    const ampSitemap = patchSitemap(
+      `<urlset><url><loc>https://www.eatingon30a.com/restaurants/raw-%26-juicy/</loc></url><url><loc>https://www.eatingon30a.com/restaurants/raw-and-juicy-alys-beach/</loc></url></urlset>`,
+      { hidden: [], placed: [] },
+    );
+    assert.equal(ampSitemap.includes("%26"), false);
+    assert.equal(ampSitemap.includes("raw-and-juicy-alys-beach"), true);
     const llms = patchLlms("- [Pier Test](https://www.eatingon30a.com/restaurants/pier-test/): test.\n\n## Towns\n", {
       hidden: draft,
       placed: [],
