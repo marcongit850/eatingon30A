@@ -305,6 +305,12 @@ assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restau
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/vue-on-30a/")), null);
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
 
+for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-garage-30a/"]) {
+  const growler = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(growler.status, 301);
+  assert.equal(growler.headers.get("location"), "https://www.eatingon30a.com/restaurants/growler-garage-30a-dune-allen-beach/");
+}
+
 const stale404 = `<!DOCTYPE html><head><link rel="canonical" href="https://www.eatingon30a.com/404.html"><meta property="og:url" content="https://www.eatingon30a.com/404.html"><script type="application/ld+json">{"@type": "WebPage", "url": "https://www.eatingon30a.com/404.html", "name": "Page not found"}</script></head>`;
 const cleaned = stripFalseCanonical(stale404);
 assert.equal(cleaned.includes("/404.html"), false);
