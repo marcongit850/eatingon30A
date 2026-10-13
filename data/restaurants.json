@@ -131,34 +131,37 @@
   },
   {
     "slug": "aja-30a-inlet-beach",
-    "name": "Aja 30A",
+    "name": "AJA",
     "area": "Inlet Beach",
     "areaSlug": "inlet-beach",
     "meals": [
-      "Lunch",
-      "Dinner"
+      "Dinner",
+      "Late night"
     ],
     "cuisines": [
       "Asian",
-      "Japanese"
+      "Japanese",
+      "Sushi"
     ],
     "foods": [
-      "Sushi"
+      "Steak",
+      "Sushi",
+      "Wine"
     ],
     "price": "$$$",
     "lat": 30.27989839999999,
     "lng": -86.0092701,
     "address": "12805 US-98 Suite T101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 493-6437",
-    "search": "aja 30a inlet beach 30avenue inlet beach | 30avenue asian japanese lunch dinner sushi restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$",
+    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$",
     "label": "Inlet Beach | 30Avenue",
-    "outdoor": false,
+    "outdoor": true,
     "kids": false,
-    "music": false,
-    "reservations": false,
+    "music": true,
+    "reservations": true,
     "groups": false,
     "happyFood": false,
-    "happyDrinks": false,
+    "happyDrinks": true,
     "laurensFavorite": false,
     "image": "/images/restaurants/aja-30a-inlet-beach/01.jpg"
   },
