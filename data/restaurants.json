@@ -153,7 +153,7 @@
     "lng": -86.0092701,
     "address": "12805 US-98 Suite T101, Inlet Beach, FL 32461, USA",
     "phone": "(850) 493-6437",
-    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$",
+    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja embodies a luxurious, festive, and welcoming atmosphere that inspires guests to dress up and celebrate every occasion. from the moment they arrive, patrons are immersed in an elevated dining experience offering asian fusion dishes and high quality steaks, where intimate lighting creates a warm, inviting ambiance while enhancing the restaurant's upscale character. on weekends during season, live djs transform aja into one of 30a's premier nightlife destinations, creating an energetic yet refined social scene where guests gather to dine, celebrate, and connect. the carefully curated music complements the culinary experience, making every evening feel like a special occasion. our outdoor seating embraces the beauty of florida's coastal lifestyle, allowing guests to enjoy the fresh sea breeze and vibrant community atmosphere. the lively terrace creates a seamless connection between the restaurant and the streetscape, inviting passersby to witness the energy, hospitality, and memorable experiences unfolding within. this openness reflects the spirit of aja, a place where exceptional cuisine, meaningful connections, and unforgettable moments come together. aja 30a restaurant steak sushi wine asian japanese fine dining inlet beach $$$",
     "label": "Inlet Beach | 30Avenue",
     "outdoor": true,
     "kids": false,
@@ -2724,6 +2724,7 @@
     "area": "Seacrest",
     "areaSlug": "seacrest",
     "meals": [
+      "Brunch",
       "Lunch",
       "Dinner"
     ],
@@ -2731,14 +2732,16 @@
       "Italian"
     ],
     "foods": [
-      "Pasta"
+      "Pasta",
+      "Pizza",
+      "Steak"
     ],
     "price": "$$$",
     "lat": 30.2816635,
     "lng": -86.0196426,
-    "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
-    "phone": "(850) 588-2299",
-    "search": "lola coastal italian seacrest  seacrest beach italian lunch dinner pasta restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta italian upscale seacrest $$$",
+    "address": "10343 E County Hwy 30A, Unit C127, Inlet Beach, FL 32461, USA",
+    "phone": "(850) 299-4030",
+    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner pasta pizza steak restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta pizza steak italian upscale seacrest $$$",
     "label": "Seacrest Beach",
     "outdoor": false,
     "kids": false,

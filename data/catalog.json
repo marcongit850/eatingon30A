@@ -217,7 +217,7 @@
     "phone": "(850) 493-6437",
     "website": "https://aja30a.com/",
     "price": "$$$",
-    "notes": "Aja 30A serves elevated Asian dishes and sushi at 30Avenue in Inlet Beach. It is a dinner restaurant.",
+    "notes": "AJA embodies a luxurious, festive, and welcoming atmosphere that inspires guests to dress up and celebrate every occasion. From the moment they arrive, patrons are immersed in an elevated dining experience offering Asian fusion dishes and high quality steaks, where intimate lighting creates a warm, inviting ambiance while enhancing the restaurant's upscale character. On weekends during season, live DJs transform AJA into one of 30A's premier nightlife destinations, creating an energetic yet refined social scene where guests gather to dine, celebrate, and connect. The carefully curated music complements the culinary experience, making every evening feel like a special occasion. Our outdoor seating embraces the beauty of Florida's coastal lifestyle, allowing guests to enjoy the fresh sea breeze and vibrant community atmosphere. The lively terrace creates a seamless connection between the restaurant and the streetscape, inviting passersby to witness the energy, hospitality, and memorable experiences unfolding within. This openness reflects the spirit of AJA, a place where exceptional cuisine, meaningful connections, and unforgettable moments come together.",
     "hours": "Mon-Sun 4:30pm-9pm",
     "cuisines": [
       "Asian",
@@ -234,7 +234,7 @@
       "Wine"
     ],
     "vibes": [
-      "Grab & Go"
+      "Fine Dining"
     ],
     "category": "Restaurant",
     "outdoor": true,
@@ -259,10 +259,26 @@
       {
         "id": null,
         "src": "/images/restaurants/aja-30a-inlet-beach/03.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/aja-30a-inlet-beach/04.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/aja-30a-inlet-beach/05.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/aja-30a-inlet-beach/06.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/aja-30a-inlet-beach/07.jpg"
       }
     ],
     "logo": "/images/restaurants/aja-30a-inlet-beach-logo.png",
-    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$"
+    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja embodies a luxurious, festive, and welcoming atmosphere that inspires guests to dress up and celebrate every occasion. from the moment they arrive, patrons are immersed in an elevated dining experience offering asian fusion dishes and high quality steaks, where intimate lighting creates a warm, inviting ambiance while enhancing the restaurant's upscale character. on weekends during season, live djs transform aja into one of 30a's premier nightlife destinations, creating an energetic yet refined social scene where guests gather to dine, celebrate, and connect. the carefully curated music complements the culinary experience, making every evening feel like a special occasion. our outdoor seating embraces the beauty of florida's coastal lifestyle, allowing guests to enjoy the fresh sea breeze and vibrant community atmosphere. the lively terrace creates a seamless connection between the restaurant and the streetscape, inviting passersby to witness the energy, hospitality, and memorable experiences unfolding within. this openness reflects the spirit of aja, a place where exceptional cuisine, meaningful connections, and unforgettable moments come together. aja 30a restaurant steak sushi wine asian japanese fine dining inlet beach $$$"
   },
   {
     "slug": "ajs-grayton-beach-grayton-beach",
@@ -4567,11 +4583,11 @@
     "areaSlug": "seacrest",
     "subarea": "",
     "label": "Seacrest Beach",
-    "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
+    "address": "10343 E County Hwy 30A, Unit C127, Inlet Beach, FL 32461, USA",
     "lat": 30.2816635,
     "lng": -86.0196426,
-    "phone": "(850) 588-2299",
-    "website": "https://lolacoastalitalian.com/",
+    "phone": "(850) 299-4030",
+    "website": "https://lolacoastalitalian.com",
     "price": "$$$",
     "notes": "Lola Coastal Italian blends Italian flavors with a coastal touch in an upscale setting. Ideal for dinner.",
     "hours": "",
@@ -4579,11 +4595,14 @@
       "Italian"
     ],
     "meals": [
+      "Brunch",
       "Lunch",
       "Dinner"
     ],
     "foods": [
-      "Pasta"
+      "Pasta",
+      "Pizza",
+      "Steak"
     ],
     "vibes": [
       "Upscale"
@@ -4614,7 +4633,7 @@
       }
     ],
     "logo": null,
-    "search": "lola coastal italian seacrest  seacrest beach italian lunch dinner pasta restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta italian upscale seacrest $$$"
+    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner pasta pizza steak restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta pizza steak italian upscale seacrest $$$"
   },
   {
     "slug": "los-rancheros",
