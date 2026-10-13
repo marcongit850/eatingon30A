@@ -206,7 +206,7 @@
   },
   {
     "slug": "aja-30a-inlet-beach",
-    "name": "Aja 30A",
+    "name": "AJA",
     "area": "Inlet Beach",
     "areaSlug": "inlet-beach",
     "subarea": "30Avenue",
@@ -218,29 +218,32 @@
     "website": "https://aja30a.com/",
     "price": "$$$",
     "notes": "Aja 30A serves elevated Asian dishes and sushi at 30Avenue in Inlet Beach. It is a dinner restaurant.",
-    "hours": "Mon-Thu 5pm-9:30pm, Fri 5pm-12am Sat 5pm-12am, Sun 5pm-9:30pm",
+    "hours": "Mon-Sun 4:30pm-9pm",
     "cuisines": [
       "Asian",
-      "Japanese"
+      "Japanese",
+      "Sushi"
     ],
     "meals": [
-      "Lunch",
-      "Dinner"
+      "Dinner",
+      "Late night"
     ],
     "foods": [
-      "Sushi"
+      "Steak",
+      "Sushi",
+      "Wine"
     ],
     "vibes": [
       "Grab & Go"
     ],
     "category": "Restaurant",
-    "outdoor": false,
+    "outdoor": true,
     "kids": false,
-    "music": false,
+    "music": true,
     "laurensFavorite": false,
-    "happyDrinks": false,
+    "happyDrinks": true,
     "happyFood": false,
-    "reservations": false,
+    "reservations": true,
     "groups": false,
     "facebook": "https://www.facebook.com/aja30a",
     "instagram": "https://www.instagram.com/aja30a/",
@@ -258,8 +261,8 @@
         "src": "/images/restaurants/aja-30a-inlet-beach/03.jpg"
       }
     ],
-    "logo": null,
-    "search": "aja 30a inlet beach 30avenue inlet beach | 30avenue asian japanese lunch dinner sushi restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$"
+    "logo": "/images/restaurants/aja-30a-inlet-beach-logo.png",
+    "search": "aja inlet beach 30avenue inlet beach | 30avenue asian japanese sushi dinner late night steak sushi wine restaurant aja 30a serves elevated asian dishes and sushi at 30avenue in inlet beach. it is a dinner restaurant. aja 30a restaurant sushi asian japanese grab go inlet beach $$$"
   },
   {
     "slug": "ajs-grayton-beach-grayton-beach",
