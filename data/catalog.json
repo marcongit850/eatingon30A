@@ -3131,12 +3131,13 @@
     "phone": "(850) 534-5050",
     "website": "https://www.dinefish30a.com/",
     "price": "$$$",
-    "notes": "Fish Out of Water provides elevated seafood dishes with stunning waterfront views. A top choice for fine dining on 30A.",
-    "hours": "Mon-Fri: 11am-10pm Sat & Sun: 11am-10pm",
+    "notes": "Fish Out of Water provides elevated seafood dishes with stunning waterfront views. Upscale casual: casual elegance and approachable coastal dining. Monday to Thursday dinner is 3 PM to 9 PM, with happy hour 3 PM to 4 PM. Friday to Sunday weekend brunch is 11 AM to 2 PM, lunch is 2 PM to 4 PM, and dinner is 4 PM to 9 PM, with happy hour 2 PM to 4 PM.",
+    "hours": "Mon-Thu 3pm-9pm, Fri-Sun 11am-9pm",
     "cuisines": [
       "Seafood"
     ],
     "meals": [
+      "Brunch",
       "Lunch",
       "Dinner"
     ],
@@ -3144,7 +3145,7 @@
       "Raw Bar"
     ],
     "vibes": [
-      "Fine Dining",
+      "Upscale",
       "Waterfront"
     ],
     "category": "Restaurant",
@@ -3173,7 +3174,7 @@
       }
     ],
     "logo": null,
-    "search": "fish out of water watercolor watercolor inn watercolor | watercolor inn seafood lunch dinner raw bar restaurant fish out of water provides elevated seafood dishes with stunning waterfront views. a top choice for fine dining on 30a. fish out of water restaurant raw bar seafood fine dining waterfront watercolor $$$"
+    "search": "fish out of water watercolor watercolor inn watercolor | watercolor inn seafood brunch lunch dinner raw bar restaurant fish out of water provides elevated seafood dishes with stunning waterfront views. upscale casual: casual elegance and approachable coastal dining. monday to thursday dinner is 3 pm to 9 pm, with happy hour 3 pm to 4 pm. friday to sunday weekend brunch is 11 am to 2 pm, lunch is 2 pm to 4 pm, and dinner is 4 pm to 9 pm, with happy hour 2 pm to 4 pm. fish out of water restaurant raw bar seafood upscale waterfront watercolor $$$"
   },
   {
     "slug": "fonville-press-market-and-cafe-alys-beach",
