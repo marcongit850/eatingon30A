@@ -2727,30 +2727,38 @@
     "meals": [
       "Brunch",
       "Lunch",
-      "Dinner"
+      "Dinner",
+      "Late night"
     ],
     "cuisines": [
       "Italian"
     ],
     "foods": [
+      "Breakfast Spot",
+      "Coffee",
+      "Dessert",
       "Pasta",
       "Pizza",
-      "Steak"
+      "Sandwiches",
+      "Shrimp",
+      "Steak",
+      "Tapas",
+      "Wine"
     ],
-    "price": "$$$",
+    "price": "$$",
     "lat": 30.2816635,
     "lng": -86.0196426,
-    "address": "10343 E County Hwy 30A, Unit C127, Inlet Beach, FL 32461, USA",
+    "address": "10343 E County Highway 30A, Unit C127, Inlet Beach, FL 32461",
     "phone": "(850) 299-4030",
-    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner pasta pizza steak restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta pizza steak italian upscale seacrest $$$",
+    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner late night breakfast spot coffee dessert pasta pizza sandwiches shrimp steak tapas wine restaurant lola brings the charm of the italian coast to a relaxed, elevated dining experience. inspired by the warmth of the mediterranean, the restaurant blends coastal elegance with effortless sophistication, creating an inviting atmosphere for everything from leisurely brunches to intimate dinners. with fresh flavors, italian-inspired cuisine, thoughtfully crafted cocktails, and a vibrant yet laid-back ambiance, lola captures the essence of la dolce vita, where good food, beautiful surroundings, and memorable moments come together. lola coastal italian lola restaurant pasta pizza steak italian brunch lunch dinner coastal italian seacrest tapas wine coffee $$",
     "label": "Seacrest Beach",
-    "outdoor": false,
-    "kids": false,
-    "music": false,
+    "outdoor": true,
+    "kids": true,
+    "music": true,
     "reservations": true,
-    "groups": false,
-    "happyFood": false,
-    "happyDrinks": false,
+    "groups": true,
+    "happyFood": true,
+    "happyDrinks": true,
     "laurensFavorite": false,
     "image": "/images/restaurants/lola-coastal-italian-seacrest/01.jpg"
   },

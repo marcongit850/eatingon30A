@@ -101,7 +101,13 @@ local-cantina,Happy Hour (food),"[""Yes""]",https://www.localcantina.com/greenwa
 local-cantina,Live Music,"[""Yes""]",https://www.localcantina.com/greenway-station — live music every Thursday starting at 6 PM
 local-cantina,Outdoor Dining,"[""Yes""]",https://www.localcantina.com/greenway-station — patio seating at Greenway Station
 local-cantina,Reservations,"[""No""]","https://www.localcantina.com/greenway-station — first come, first served and does not take reservations"
-lola-coastal-italian-seacrest,Reservations,"[""Yes""]",https://lolacoastalitalian.com/reservations — reserve your table for brunch at the Seacrest address
+lola-coastal-italian-seacrest,Outdoor Dining,"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Happy Hour (drinks),"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Happy Hour (food),"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Reservations,"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Kid Friendly,"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Groups of 12,"[""Yes""]",owner-submitted 2026-10-17
+lola-coastal-italian-seacrest,Live Music,"[""Yes""]",owner-submitted 2026-10-17, seasonal live music with different artists
 mimmos-30a-blue-mountain-beach,Happy Hour (drinks),"[""Yes""]","https://mimmos.com/bar-menu/ — Happy Hour Monday–Friday lists wine, cocktails, and “2 DOLLARS OFF ALL BEER”"
 mimmos-30a-blue-mountain-beach,Happy Hour (food),"[""Yes""]","https://mimmos.com/bar-menu/ — Happy Hour Monday–Friday lists snacks including garlic rolls, ham & cheese roll, and 10-inch pizzas"
 mimmos-30a-blue-mountain-beach,Reservations,"[""Yes""]","https://mimmos.com/contact-us/ — “Book ahead to reserve your table” via Resy, with a 30A Reservations link for 2700 W. County Hwy 30A"
