@@ -4584,41 +4584,49 @@
     "areaSlug": "seacrest",
     "subarea": "",
     "label": "Seacrest Beach",
-    "address": "10343 E County Hwy 30A, Unit C127, Inlet Beach, FL 32461, USA",
+    "address": "10343 E County Highway 30A, Unit C127, Inlet Beach, FL 32461",
     "lat": 30.2816635,
     "lng": -86.0196426,
     "phone": "(850) 299-4030",
-    "website": "https://lolacoastalitalian.com",
-    "price": "$$$",
-    "notes": "Lola Coastal Italian blends Italian flavors with a coastal touch in an upscale setting. Ideal for dinner.",
-    "hours": "",
+    "website": "https://lolacoastalitalian.com/",
+    "price": "$$",
+    "notes": "LOLA brings the charm of the Italian coast to a relaxed, elevated dining experience. Inspired by the warmth of the Mediterranean, the restaurant blends coastal elegance with effortless sophistication, creating an inviting atmosphere for everything from leisurely brunches to intimate dinners. With fresh flavors, Italian-inspired cuisine, thoughtfully crafted cocktails, and a vibrant yet laid-back ambiance, LOLA captures the essence of la dolce vita, where good food, beautiful surroundings, and memorable moments come together.",
+    "hours": "Daily 4pm to 9:30pm. Seasonal: brunch 11am to 2pm, happy hour 2pm to 4pm, dinner 4pm to 9:30pm.",
     "cuisines": [
       "Italian"
     ],
     "meals": [
       "Brunch",
       "Lunch",
-      "Dinner"
+      "Dinner",
+      "Late night"
     ],
     "foods": [
+      "Breakfast Spot",
+      "Coffee",
+      "Dessert",
       "Pasta",
       "Pizza",
-      "Steak"
+      "Sandwiches",
+      "Shrimp",
+      "Steak",
+      "Tapas",
+      "Wine"
     ],
     "vibes": [
       "Upscale"
     ],
     "category": "Restaurant",
-    "outdoor": false,
-    "kids": false,
-    "music": false,
+    "outdoor": true,
+    "kids": true,
+    "music": true,
     "laurensFavorite": false,
-    "happyDrinks": false,
-    "happyFood": false,
+    "happyDrinks": true,
+    "happyFood": true,
     "reservations": true,
-    "groups": false,
-    "facebook": "https://www.facebook.com/lolacoastalitalian",
-    "instagram": "https://www.instagram.com/lolacoastalitalian/",
+    "groups": true,
+    "facebook": "https://www.facebook.com/profile.php?id=61584686771894",
+    "instagram": "https://www.instagram.com/lolabycheftom",
     "photos": [
       {
         "id": null,
@@ -4633,8 +4641,8 @@
         "src": "/images/restaurants/lola-coastal-italian-seacrest/03.jpg"
       }
     ],
-    "logo": null,
-    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner pasta pizza steak restaurant lola coastal italian blends italian flavors with a coastal touch in an upscale setting. ideal for dinner. lola coastal italian restaurant pasta pizza steak italian upscale seacrest $$$"
+    "logo": "/images/restaurants/lola-coastal-italian-seacrest-logo.jpg",
+    "search": "lola coastal italian seacrest  seacrest beach italian brunch lunch dinner late night breakfast spot coffee dessert pasta pizza sandwiches shrimp steak tapas wine restaurant lola brings the charm of the italian coast to a relaxed, elevated dining experience. inspired by the warmth of the mediterranean, the restaurant blends coastal elegance with effortless sophistication, creating an inviting atmosphere for everything from leisurely brunches to intimate dinners. with fresh flavors, italian-inspired cuisine, thoughtfully crafted cocktails, and a vibrant yet laid-back ambiance, lola captures the essence of la dolce vita, where good food, beautiful surroundings, and memorable moments come together. lola coastal italian lola restaurant pasta pizza steak italian brunch lunch dinner coastal italian seacrest tapas wine coffee $$"
   },
   {
     "slug": "los-rancheros",
