@@ -118,6 +118,22 @@ PHOTO_DIR = ROOT / "images" / "restaurants"
 AREA_PHOTO_DIR = ROOT / "images" / "areas"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
+# Hand-tuned title and description for specific pages. layout() and social_tags() use these.
+PAGE_SEO: dict[str, dict[str, str]] = {
+    "/": {
+        "title": "Best Restaurants on 30A (2026) | Maps, Menus, Neighborhoods",
+        "description": (
+            "Local picks from Rosemary Beach to Grayton. Maps, menus, and every 30A neighborhood on Eating on 30A."
+        ),
+    },
+    "tahona-tacos-and-tequileria-rosemary-beach": {
+        "title": "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
+        "description": (
+            "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A."
+        ),
+    },
+}
+
 ABOUT = (
     "Eating on 30A is a restaurant guide for Scenic Highway 30A in South Walton. "
     "Find breakfast, lunch, and dinner from Dune Allen to Inlet Beach, "
@@ -1134,6 +1150,9 @@ def meta_ok(text: str) -> bool:
 
 def listing_description(restaurant: dict) -> str:
     """Unique meta description from the listing. No invented hours, ratings, or counts."""
+    override = PAGE_SEO.get(restaurant["slug"])
+    if override and "description" in override:
+        return override["description"]
     identity = listing_identity(restaurant)
     cuisine = lead_cuisine(restaurant["cuisines"])
     note = first_sentence(restaurant["notes"])
@@ -1171,6 +1190,9 @@ def listing_description(restaurant: dict) -> str:
 
 
 def listing_title(restaurant: dict) -> str:
+    override = PAGE_SEO.get(restaurant["slug"])
+    if override and "title" in override:
+        return override["title"]
     name = restaurant["name"]
     area = restaurant["area"]
     cuisine = lead_cuisine(restaurant["cuisines"])
@@ -1890,10 +1912,9 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<a class="text-link" href="/guides/">All guides</a></p></div>'
         "</div></section>"
     )
-    description = (
-        "Find restaurants and food along Scenic Highway 30A in Walton County, Florida, "
-        "by meal, town, or cuisine, with a directory and a map."
-    )
+    home_seo = PAGE_SEO["/"]
+    title = home_seo["title"]
+    description = home_seo["description"]
     extra = json_ld(
         graph(
             {
@@ -1941,7 +1962,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     write(
         ROOT / "index.html",
         layout(
-            "Eating on 30A | Restaurant guide for Scenic Highway 30A",
+            title,
             description,
             "/",
             "home",
@@ -2221,7 +2242,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             ),
         )
     )
-    require_meta(title, description)
+    require_meta(title, description, manual=restaurant["slug"] in PAGE_SEO)
     write(
         ROOT / "restaurants" / restaurant["slug"] / "index.html",
         layout(
@@ -2466,9 +2487,13 @@ SEAFOOD_GUIDE_DESCRIPTION = (
 )
 
 
-def require_meta(title: str, description: str) -> None:
+def require_meta(title: str, description: str, *, manual: bool = False) -> None:
     if not 20 <= len(title) <= 70:
         raise SystemExit(f"title length {len(title)}: {title}")
+    if manual:
+        if not 80 <= len(description) <= 165 or "30A" not in description:
+            raise SystemExit(f"description length {len(description)}: {description}")
+        return
     if not 110 <= len(description) <= 165 or "30A" not in description or "Walton County" not in description:
         raise SystemExit(f"description length {len(description)}: {description}")
 
