@@ -54,6 +54,10 @@ function walk(dir, out = []) {
 const htmlPages = walk(root).filter((path) => path.endsWith(".html") && !path.includes(`${join(root, "includes")}`));
 const titles = new Set();
 const descriptions = new Set();
+const manualSeoPages = new Set([
+  join(root, "index.html"),
+  join(root, "restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html"),
+]);
 
 for (const path of htmlPages) {
   const html = readFileSync(path, "utf8");
@@ -65,9 +69,15 @@ for (const path of htmlPages) {
   titles.add(title);
   descriptions.add(description);
   assert.ok(title.length >= 20 && title.length <= 70, rel + " title length " + title.length + " " + title);
-  assert.ok(description.length >= 110 && description.length <= 165, rel + " description length " + description.length);
-  assert.match(description, /30A/);
-  assert.match(description, /Walton County/);
+  const manualSeo = manualSeoPages.has(path);
+  if (manualSeo) {
+    assert.ok(description.length >= 80 && description.length <= 165, rel + " description length " + description.length);
+    assert.match(description, /30A/);
+  } else {
+    assert.ok(description.length >= 110 && description.length <= 165, rel + " description length " + description.length);
+    assert.match(description, /30A/);
+    assert.match(description, /Walton County/);
+  }
   if (path.endsWith("404.html")) {
     assert.match(html, /<meta name="robots" content="noindex">/);
     assert.equal(html.includes('rel="canonical"'), false, "404 must not declare a canonical");
@@ -106,7 +116,16 @@ for (const path of htmlPages) {
   assert.equal(h1s.length, 1, rel + " h1 count");
 }
 
-const home = jsonLd(read("index.html"));
+const homeHtml = read("index.html");
+assert.match(
+  homeHtml,
+  /<title>Best Restaurants on 30A \(2026\) \| Maps, Menus, Neighborhoods<\/title>/,
+);
+assert.match(
+  homeHtml,
+  /<meta name="description" content="Local picks from Rosemary Beach to Grayton\. Maps, menus, and every 30A neighborhood on Eating on 30A\.">/,
+);
+const home = jsonLd(homeHtml);
 assert.deepEqual(home["@graph"].map((node) => node["@type"]), ["Organization", "WebSite", "ItemList"]);
 assert.equal(home["@graph"][1].publisher["@id"], `${ORIGIN}/#organization`);
 
@@ -118,6 +137,16 @@ const directoryHtml = read("restaurants/index.html");
 assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
 assert.match(directoryHtml, /href="\/areas\/seaside\/"/);
 assert.match(directoryHtml, /Scenic Highway 30A/);
+
+const tahonaHtml = read("restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html");
+assert.match(
+  tahonaHtml,
+  /<title>Tahona Tacos and Tequileria, Rosemary Beach \| Menu and Hours<\/title>/,
+);
+assert.match(
+  tahonaHtml,
+  /<meta name="description" content="Tacos, tequila, and hours at Tahona in Rosemary Beach\. See the listing on Eating on 30A\.">/,
+);
 
 const profileHtml = read("restaurants/o-ku-alys-beach/index.html");
 const profile = jsonLd(profileHtml);
