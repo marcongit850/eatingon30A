@@ -103,6 +103,21 @@
 .photo-row img, .photo-row .ph { width: 92px; height: 68px; object-fit: cover; }
 .photo-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .admin-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.badge-inactive { background: #5c4a3a; color: #fff; }
+.admin-visibility {
+  margin: 1.25rem 0;
+  padding: 1.25rem 1.35rem;
+  border: 2px solid var(--gulf-deep);
+  border-radius: 0.5rem;
+  background: #f7f3ec;
+}
+.admin-visibility .badge-inactive { margin-bottom: 0.75rem; display: inline-block; }
+.admin-toggle-active,
+.admin-list-toggle {
+  font-size: 1.05rem;
+  padding: 0.85rem 1.35rem;
+}
+.admin-list-toggle { white-space: nowrap; }
 @media (max-width: 720px) {
   .admin-grid { grid-template-columns: 1fr; }
   .photo-row { grid-template-columns: 72px 1fr; }

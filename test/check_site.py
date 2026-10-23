@@ -1070,6 +1070,14 @@ coffee_guide = (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(
 check("/restaurants/beach-happy-cafe-seagrove-beach/" in coffee_guide, "coffee guide should keep Beach Happy Seagrove")
 check(not (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").exists(), "Pickle’s Sandbar listing should be removed")
 check(
+    (ROOT / "restaurants" / "seagrove-village-market-cafe-seagrove-beach" / "index.html").exists(),
+    "Seagrove Village Market Café listing page should stay in the build",
+)
+check(
+    (ROOT / "accounts" / "migrations" / "0004_inactive_market_cafes.sql").exists(),
+    "inactive market cafe migration should ship with the repo",
+)
+check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
     "header should use the Eating on 30A logo",
 )

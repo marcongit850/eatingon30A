@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { fileURLToPath } from "node:url";
 import test, { describe } from "node:test";
 import { handleAccount } from "../account-api.js";
 import { handleAdmin } from "../admin-api.js";
@@ -13,7 +15,36 @@ import { patchHtml, patchLlms, patchSitemap } from "../public-html.js";
 import worker from "../worker.js";
 
 const ORIGIN = "http://127.0.0.1:8788";
+const REPO_ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0xd9]);
+
+function contentTypeFor(pathname) {
+  if (pathname.endsWith(".xml")) return "application/xml; charset=utf-8";
+  if (pathname.endsWith(".json")) return "application/json; charset=utf-8";
+  if (pathname.endsWith(".css")) return "text/css; charset=utf-8";
+  if (pathname.endsWith(".js")) return "application/javascript; charset=utf-8";
+  if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) return "image/jpeg";
+  if (pathname.endsWith(".png")) return "image/png";
+  if (pathname.endsWith(".ico")) return "image/x-icon";
+  return "text/html; charset=utf-8";
+}
+
+function diskAssets() {
+  return {
+    fetch(request) {
+      const pathname = new URL(request.url).pathname;
+      if (pathname === "/404.html") {
+        return new Response("missing page", { headers: { "content-type": "text/html; charset=utf-8" } });
+      }
+      let rel = pathname;
+      if (rel.endsWith("/")) rel += "index.html";
+      if (rel === "/") rel = "/index.html";
+      const file = join(REPO_ROOT, rel);
+      if (!existsSync(file)) return new Response("not found", { status: 404 });
+      return new Response(readFileSync(file), { headers: { "content-type": contentTypeFor(rel) } });
+    },
+  };
+}
 
 function memoryDb() {
   const db = new DatabaseSync(":memory:");
@@ -69,14 +100,9 @@ function accountsEnv(db, extra = {}) {
   };
 }
 
-function siteEnv(db, bucket) {
+function siteEnv(db, bucket, { assets = "mock" } = {}) {
   const shared = accountsEnv(db, { PHOTOS: bucket });
-  return {
-    ACCOUNT_SITE: "30a",
-    ACCOUNTS_SHARED_SECRET: "test-secret",
-    ACCOUNTS_ORIGIN: "http://127.0.0.1:8787",
-    ACCOUNTS: { fetch: (request) => handleAccounts(request, shared) },
-    ASSETS: {
+  const mockAssets = {
       fetch(request) {
         const path = new URL(request.url).pathname;
         if (path === "/404.html") return new Response("missing page", { headers: { "content-type": "text/html" } });
@@ -95,7 +121,13 @@ function siteEnv(db, bucket) {
           headers: { "content-type": "text/html" },
         });
       },
-    },
+  };
+  return {
+    ACCOUNT_SITE: "30a",
+    ACCOUNTS_SHARED_SECRET: "test-secret",
+    ACCOUNTS_ORIGIN: "http://127.0.0.1:8787",
+    ACCOUNTS: { fetch: (request) => handleAccounts(request, shared) },
+    ASSETS: assets === "disk" ? diskAssets() : mockAssets,
   };
 }
 
@@ -168,6 +200,13 @@ describe("restaurant admin", { concurrency: 1 }, () => {
       payload: { ...base[0], area: "Grayton Beach", areaSlug: "grayton-beach" },
     }]);
     assert.equal(publicRecords(draft).length, 0);
+    const inactive = mergeCatalog(base, [{
+      slug: "pier-test",
+      status: "inactive",
+      deleted: false,
+      payload: { ...base[0], area: "Grayton Beach", areaSlug: "grayton-beach" },
+    }]);
+    assert.equal(publicRecords(inactive).length, 0);
     const live = mergeCatalog(base, [{
       slug: "pier-test",
       status: "live",
@@ -350,5 +389,60 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(removedListing.status, 200);
     const afterDelete = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
     assert.equal(afterDelete.some((item) => item.slug === createdBody.listing.slug), false);
+  });
+
+  test("deactivate and reactivate hide a listing and redirect its URL to the town page", async () => {
+    invalidateCatalog();
+    resetLimits();
+    const db = memoryDb();
+    const bucket = memoryBucket();
+    const env = siteEnv(db, bucket, { assets: "disk" });
+    env.PHOTOS = bucket;
+    const marc = await signIn(db, env, "marc@whpinc.com");
+    const target = baseline.find((item) => item.slug === "seagrove-village-market-cafe-seagrove-beach");
+    assert.ok(target, "baseline should include Seagrove Village Market Café");
+
+    const deactivated = await handleAdmin(adminRequest(`/api/admin/listings/${target.slug}/active`, marc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ site: "30a", active: false }),
+    }), env);
+    assert.equal(deactivated.status, 200, JSON.stringify(await deactivated.clone().json()));
+
+    const hiddenPage = await worker.fetch(new Request(`https://www.eatingon30a.com/restaurants/${target.slug}/`), env);
+    assert.equal(hiddenPage.status, 301);
+    assert.equal(hiddenPage.headers.get("location"), `https://www.eatingon30a.com/areas/${target.areaSlug}/`);
+
+    const hiddenJson = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
+    assert.equal(hiddenJson.some((item) => item.slug === target.slug), false);
+
+    const townPage = await worker.fetch(new Request("https://www.eatingon30a.com/areas/seagrove-beach/"), env);
+    assert.equal(townPage.status, 200);
+    const townHtml = await townPage.text();
+    assert.equal(townHtml.includes(target.slug), false);
+    assert.equal(townHtml.includes(`id="r-${target.slug}"`), false);
+    assert.match(townHtml, /Restaurants in Seagrove Beach/);
+    assert.equal(townHtml.includes("Seagrove Village Market"), false);
+
+    const hiddenSitemap = await worker.fetch(new Request("https://www.eatingon30a.com/sitemap.xml"), env);
+    assert.equal(hiddenSitemap.status, 200);
+    const sitemapXml = await hiddenSitemap.text();
+    assert.equal(sitemapXml.includes(`/restaurants/${target.slug}/`), false);
+
+    const adminList = await (await handleAdmin(adminRequest("/api/admin/listings?site=30a", marc), env)).json();
+    const row = adminList.listings.find((item) => item.slug === target.slug);
+    assert.equal(row.status, "inactive");
+
+    const reactivated = await handleAdmin(adminRequest(`/api/admin/listings/${target.slug}/active`, marc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ site: "30a", active: true }),
+    }), env);
+    assert.equal(reactivated.status, 200);
+
+    const liveJson = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
+    assert.equal(liveJson.some((item) => item.slug === target.slug), true);
+    const livePage = await worker.fetch(new Request(`https://www.eatingon30a.com/restaurants/${target.slug}/`), env);
+    assert.equal(livePage.status, 200);
   });
 });

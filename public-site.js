@@ -4,7 +4,7 @@
  * unchanged.
  */
 
-import { liveListings, publicRecords } from "./catalog.js";
+import { liveListings, publicRecords, townPagePath } from "./catalog.js";
 import { currentCatalog } from "./catalog-store.js";
 import { siteId } from "./shared-accounts.js";
 import {
@@ -56,7 +56,12 @@ export async function servePublic(request, response, env) {
   const slug = listingSlugFromPath(url.pathname);
   if (slug) {
     const listing = merged.find((item) => item.slug === slug);
-    if (!listing || listing.deleted || listing.status !== "live") return notFound(request, env);
+    if (!listing || listing.deleted) return notFound(request, env);
+    if (listing.status === "inactive") {
+      const target = new URL(townPagePath(listing), url.origin);
+      return new Response(null, { status: 301, headers: { location: target.toString() } });
+    }
+    if (listing.status !== "live") return notFound(request, env);
     if (listing.source === "baseline") return response;
     if (request.method === "HEAD") return new Response(null, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     return htmlResponse(renderProfile(listing, liveListings(merged)));

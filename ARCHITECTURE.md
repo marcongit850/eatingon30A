@@ -17,6 +17,7 @@ A static restaurant guide for Scenic Highway 30A (Walton County, FL). The Worker
 - Directory data: `data/restaurants.csv` and `data/locations.csv` in this repo are the source of truth. `scripts/build.py` generates the HTML, `data/catalog.json`, and the sitemap. Raw CSVs are not uploaded (`.assetsignore`).
 - Photos: `images/restaurants/<slug>/` in this repo, served as static assets.
 - Admin listing edits and admin uploaded photos: stored by `eating-accounts` (D1 `eating-accounts`, R2 `eating-listings`). They override the `data/catalog.json` baseline per guide.
+- Listing visibility (live, draft, inactive): stored in D1 `listings.status` on `eating-accounts`. The built CSV and HTML stay in the repo; inactive rows hide a listing on the public site and send its restaurant URL to the matching town page with a 301. Reactivating clears the inactive status without deleting data. Toggle this at https://www.eatingon30a.com/admin/ (Deactivate / Reactivate buttons). No redeploy is required per change once the guides and accounts Workers are live.
 - Accounts, sessions, saves, and save notes: D1 `eating-accounts` (id `f3ae29af-a929-4185-b5bd-b349cc015a3f`), owned by `eating-accounts`.
 - External services: Resend (email), a Google Sheets Apps Script webhook (coupon rows), Zoho Campaigns (list subscribe).
 
@@ -51,7 +52,7 @@ TODO: write down the exact hand deploy steps for `eating-accounts` (dashboard up
 - Shared accounts: `eatingon30a`, `eatingindestin`, and `eating-accounts` must all hold the same `ACCOUNTS_SHARED_SECRET`. Change it on all three together.
 - Cookies: `ea_central` lives on the accounts host and `ea_session` on each guide host. Never set a `Domain` attribute; the two guides share no parent domain.
 - `accounts/wrangler.jsonc` in this repo still has a placeholder `database_id`. The live D1 id is `f3ae29af-a929-4185-b5bd-b349cc015a3f`.
-- `eating-accounts` D1 migrations (`accounts/migrations/`) are applied by hand. The Worker also adds the `saves.note` column itself if it is missing.
+- `eating-accounts` D1 migrations (`accounts/migrations/`) are applied by hand. The Worker also adds the `saves.note` column itself if it is missing. After deploying the accounts Worker with inactive support, run `accounts/migrations/0004_inactive_market_cafes.sql` on D1 to deactivate both Seagrove Village Market Café locations on 30A.
 - `SUBSCRIBE_FROM` must be a sender on a domain verified in Resend, or mail is not delivered.
 - Missing mail, Sheets, or Zoho secrets fail soft (the request still succeeds). Check the `delivered` and `recorded` flags. `recorded` is true only when the webhook returns JSON with `ok: true`.
 - Sheets token names are mirrored across the two guides: here `GOOGLE_SHEETS_WEBHOOK_TOKEN` is the 30A tab and `GOOGLE_SHEETS_WEBHOOK_TOKEN_DESTIN` is the Destin tab.
