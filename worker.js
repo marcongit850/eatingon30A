@@ -696,10 +696,6 @@ function decodedRestaurantSlug(pathname) {
 // Old slugs without "&" that Google still crawls. Same 301 handling as above.
 export const LEGACY_SLUG_REDIRECTS = {
   "growler-garage-30a": "/restaurants/growler-garage-30a-dune-allen-beach/",
-  "seagrove-village-market-cafe": "/areas/seagrove-beach/",
-  "seagrove-village-market-cafe-seagrove-beach": "/areas/seagrove-beach/",
-  "village-market-cafe-bar": "/areas/watersound-origins/",
-  "village-market-cafe-bar-watersound-origins": "/areas/watersound-origins/",
 };
 
 export function legacyAmpersandRedirect(url, method = "GET") {

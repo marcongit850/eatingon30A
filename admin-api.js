@@ -200,6 +200,32 @@ export async function handleAdmin(request, env) {
   if (photos && request.method === "POST") return uploadPhoto(request, env, photos[1]);
   if (photos && request.method === "PUT") return reorderPhotos(request, env, photos[1]);
 
+  const toggle = path.match(/^\/api\/admin\/listings\/([a-z0-9-]+)\/active$/);
+  if (toggle && request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: "Send the listing as JSON." }, 400);
+    }
+    const site = guideSite(body.site, env);
+    if (!site) return json({ ok: false, error: "That guide is not valid." }, 400);
+    if (body.active !== true && body.active !== false) {
+      return json({ ok: false, error: "Choose activate or deactivate." }, 400);
+    }
+    const merged = await mergedCatalog(env, site, { fresh: true });
+    const listing = merged.find((item) => item.slug === toggle[1] && !item.deleted);
+    if (!listing) return json({ ok: false, error: "That listing was not found." }, 404);
+    const payload = editorListing(listing, site);
+    payload.status = body.active ? "live" : "inactive";
+    const result = await callAccounts(env, request, `/v1/admin/listings/${toggle[1]}/active`, {
+      method: "POST",
+      body: { ...payload, site, active: body.active },
+    });
+    if (result.status < 400) invalidateCatalog(site);
+    return json(result.body, result.status);
+  }
+
   const one = path.match(/^\/api\/admin\/listings\/([a-z0-9-]+)$/);
   if (one && request.method === "GET") {
     const site = guideSite(url.searchParams.get("site"), env);

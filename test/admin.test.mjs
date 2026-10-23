@@ -168,6 +168,13 @@ describe("restaurant admin", { concurrency: 1 }, () => {
       payload: { ...base[0], area: "Grayton Beach", areaSlug: "grayton-beach" },
     }]);
     assert.equal(publicRecords(draft).length, 0);
+    const inactive = mergeCatalog(base, [{
+      slug: "pier-test",
+      status: "inactive",
+      deleted: false,
+      payload: { ...base[0], area: "Grayton Beach", areaSlug: "grayton-beach" },
+    }]);
+    assert.equal(publicRecords(inactive).length, 0);
     const live = mergeCatalog(base, [{
       slug: "pier-test",
       status: "live",
@@ -350,5 +357,47 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(removedListing.status, 200);
     const afterDelete = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
     assert.equal(afterDelete.some((item) => item.slug === createdBody.listing.slug), false);
+  });
+
+  test("deactivate and reactivate hide a listing and redirect its URL to the town page", async () => {
+    invalidateCatalog();
+    resetLimits();
+    const db = memoryDb();
+    const bucket = memoryBucket();
+    const env = siteEnv(db, bucket);
+    env.PHOTOS = bucket;
+    const marc = await signIn(db, env, "marc@whpinc.com");
+    const target = baseline.find((item) => item.slug === "seagrove-village-market-cafe-seagrove-beach");
+    assert.ok(target, "baseline should include Seagrove Village Market Café");
+
+    const deactivated = await handleAdmin(adminRequest(`/api/admin/listings/${target.slug}/active`, marc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ site: "30a", active: false }),
+    }), env);
+    assert.equal(deactivated.status, 200, JSON.stringify(await deactivated.clone().json()));
+
+    const hiddenPage = await worker.fetch(new Request(`https://www.eatingon30a.com/restaurants/${target.slug}/`), env);
+    assert.equal(hiddenPage.status, 301);
+    assert.equal(hiddenPage.headers.get("location"), `https://www.eatingon30a.com/areas/${target.areaSlug}/`);
+
+    const hiddenJson = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
+    assert.equal(hiddenJson.some((item) => item.slug === target.slug), false);
+
+    const adminList = await (await handleAdmin(adminRequest("/api/admin/listings?site=30a", marc), env)).json();
+    const row = adminList.listings.find((item) => item.slug === target.slug);
+    assert.equal(row.status, "inactive");
+
+    const reactivated = await handleAdmin(adminRequest(`/api/admin/listings/${target.slug}/active`, marc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ site: "30a", active: true }),
+    }), env);
+    assert.equal(reactivated.status, 200);
+
+    const liveJson = await (await worker.fetch(new Request("https://www.eatingon30a.com/data/restaurants.json"), env)).json();
+    assert.equal(liveJson.some((item) => item.slug === target.slug), true);
+    const livePage = await worker.fetch(new Request(`https://www.eatingon30a.com/restaurants/${target.slug}/`), env);
+    assert.equal(livePage.status, 200);
   });
 });

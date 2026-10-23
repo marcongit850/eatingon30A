@@ -173,23 +173,26 @@
       return (listing.name + " " + listing.area + " " + listing.slug).toLowerCase().indexOf(q) !== -1;
     }).slice().sort(compareListings);
     var body = rows.map(function (listing) {
-      var badge = listing.status === "draft" ? "badge badge-draft" : "badge";
-      var label = listing.status === "draft" ? "Draft" : "Live";
-      return "<tr><td><a href=\"#\" data-edit=\"" + escapeHtml(listing.slug) + "\">" + escapeHtml(listing.name) + "</a></td><td>" + escapeHtml(listing.area) + "</td><td><span class=\"" + badge + "\">" + label + "</span></td><td>" + listing.photoCount + "</td></tr>";
+      var badge = listing.status === "draft" ? "badge badge-draft" : listing.status === "inactive" ? "badge badge-inactive" : "badge";
+      var label = listing.status === "draft" ? "Draft" : listing.status === "inactive" ? "Inactive" : "Live";
+      var toggle = listing.status === "inactive"
+        ? '<button type="button" class="button admin-list-toggle" data-set-active="true" data-slug="' + escapeHtml(listing.slug) + '">Reactivate</button>'
+        : '<button type="button" class="button secondary admin-list-toggle" data-set-active="false" data-slug="' + escapeHtml(listing.slug) + '">Deactivate</button>';
+      return "<tr><td><a href=\"#\" data-edit=\"" + escapeHtml(listing.slug) + "\">" + escapeHtml(listing.name) + "</a></td><td>" + escapeHtml(listing.area) + "</td><td><span class=\"" + badge + "\">" + label + "</span></td><td>" + listing.photoCount + "</td><td>" + toggle + "</td></tr>";
     }).join("");
-    if (!body) body = '<tr><td colspan="4">No listings match.</td></tr>';
+    if (!body) body = '<tr><td colspan="5">No listings match.</td></tr>';
     var sites = (state.options ? state.options.sites : []).map(function (site) {
       var pressed = site.id === state.site ? "true" : "false";
       return '<button type="button" class="button secondary" data-site="' + site.id + '" aria-pressed="' + pressed + '">' + escapeHtml(site.label) + "</button>";
     }).join("");
     return (
-      '<p class="admin-lead">Edits to ' + escapeHtml(siteLabel()) + " go live when you save. Choose Draft to hide a listing from the public guide.</p>" +
+      '<p class="admin-lead">Edits to ' + escapeHtml(siteLabel()) + " go live when you save. Deactivate hides a listing and sends its page to the town guide. Draft is for work in progress.</p>" +
       '<div class="admin-bar"><div class="admin-sites" role="group" aria-label="Guide">' + sites + "</div>" +
       '<button type="button" class="button" data-new>New listing</button></div>' +
       '<label class="field"><span>Search</span><input id="admin-search" type="search" value="' + escapeHtml(state.query) + '" placeholder="Name or town"></label>' +
       '<p class="admin-message" data-error="' + (state.error ? "true" : "false") + '">' + escapeHtml(state.message) + "</p>" +
       '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>' +
-      sortHeader("name", "Restaurant") + sortHeader("area", "Area") + sortHeader("status", "Status") + sortHeader("photos", "Photos") +
+      sortHeader("name", "Restaurant") + sortHeader("area", "Area") + sortHeader("status", "Status") + sortHeader("photos", "Photos") + "<th scope=\"col\">Visibility</th>" +
       "</tr></thead><tbody>" + body + "</tbody></table></div>"
     );
   }
@@ -212,14 +215,26 @@
     var photoNote = listing.slug
       ? "The first photo is the cover. JPEG, PNG, or WebP, up to 5 MB."
       : "Save the listing, then add photos.";
+    var visibility = "";
+    if (listing.slug) {
+      if (listing.status === "inactive") {
+        visibility = '<section class="admin-visibility"><p class="badge badge-inactive">Inactive on the public guide</p>' +
+          '<button type="button" class="button admin-toggle-active" data-set-active="true">Reactivate this listing</button>' +
+          "<p class=\"admin-lead\">Visitors who open the old listing link go to the town page. Nothing is deleted.</p></section>";
+      } else {
+        visibility = '<section class="admin-visibility"><button type="button" class="button secondary admin-toggle-active" data-set-active="false">Deactivate this listing</button>' +
+          "<p class=\"admin-lead\">Hide it from search, guides, and the directory. The listing URL will redirect to the town page.</p></section>";
+      }
+    }
     return (
       '<p><button type="button" class="button secondary" data-back>All listings</button></p>' +
       "<h2>" + escapeHtml(listing.slug ? listing.name : "New listing") + "</h2>" +
-      '<p class="admin-lead">' + escapeHtml(siteLabel()) + ". Live is the public guide. Draft stays hidden.</p>" +
+      visibility +
+      '<p class="admin-lead">' + escapeHtml(siteLabel()) + ". Live is the public guide. Draft stays hidden while you edit.</p>" +
       '<form class="listing-form admin-editor" data-editor>' +
       '<div class="admin-grid">' +
       field("name", "Restaurant name", listing.name, { wide: true }) +
-      select("status", "Status", listing.status || "live", [{ value: "live", label: "Live" }, { value: "draft", label: "Draft" }]) +
+      select("status", "Status", listing.status || "live", [{ value: "live", label: "Live" }, { value: "draft", label: "Draft" }, { value: "inactive", label: "Inactive" }]) +
       select("price", "Price", listing.price || "", [{ value: "", label: "Not set" }, { value: "$", label: "$" }, { value: "$$", label: "$$" }, { value: "$$$", label: "$$$" }, { value: "$$$$", label: "$$$$" }]) +
       areaField +
       field("subarea", "Subarea", listing.subarea) +
@@ -250,7 +265,7 @@
       flag("laurensFavorite", "Lauren’s Favorites", listing.laurensFavorite) +
       "</div></fieldset>" +
       '<div class="admin-actions"><button class="button" type="submit">Save</button>' +
-      (listing.slug && listing.status !== "draft" && state.site === "30a" ? '<a class="button secondary" href="/restaurants/' + escapeHtml(listing.slug) + '/">View</a>' : "") +
+      (listing.slug && listing.status === "live" && state.site === "30a" ? '<a class="button secondary" href="/restaurants/' + escapeHtml(listing.slug) + '/">View</a>' : "") +
       (listing.slug ? '<button type="button" class="button secondary" data-delete>Delete</button>' : "") +
       "</div>" +
       '<p class="admin-message" data-error="' + (state.error ? "true" : "false") + '">' + escapeHtml(state.message) + "</p>" +
@@ -358,6 +373,28 @@
       state.mode = "edit";
       state.message = "";
       render();
+    });
+  }
+
+  function setListingActive(slug, active) {
+    if (!slug) return;
+    var name = (state.listings.find(function (item) { return item.slug === slug; }) || state.listing || {}).name || "this listing";
+    if (!active && !window.confirm("Deactivate " + name + "? It will leave the public guide and redirect to the town page.")) return;
+    return api("/api/admin/listings/" + encodeURIComponent(slug) + "/active", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ site: state.site, active: active }),
+    }).then(function (result) {
+      if (!result.ok) {
+        showMessage(result.body.error || "That listing could not be updated.", true);
+        return;
+      }
+      var saved = result.body.listing;
+      showMessage(active ? "Reactivated. The listing is live again." : "Deactivated. The listing is hidden from the public guide.", false);
+      if (state.mode === "edit" && state.listing && state.listing.slug === slug) {
+        return openListing(slug);
+      }
+      return loadList();
     });
   }
 
@@ -535,6 +572,13 @@
     }
     if (event.target.closest("[data-back]")) {
       loadList();
+      return;
+    }
+    var toggleActive = event.target.closest("[data-set-active]");
+    if (toggleActive) {
+      event.preventDefault();
+      var slug = toggleActive.getAttribute("data-slug") || (state.listing && state.listing.slug);
+      setListingActive(slug, toggleActive.getAttribute("data-set-active") === "true");
       return;
     }
     if (event.target.closest("[data-delete]")) {

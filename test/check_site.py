@@ -33,8 +33,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 153, f"full CSV should stay at 153 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 153, "public json should include every published restaurant")
+check(len(source) == 155, f"full CSV should stay at 155 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 155, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -285,13 +285,7 @@ worker_src = (ROOT / "worker.js").read_text(encoding="utf-8")
 not_found_page = (ROOT / "404.html").read_text(encoding="utf-8")
 check('name="robots" content="noindex"' in not_found_page, "404 should be noindex")
 check('rel="canonical"' not in not_found_page and "/404.html" not in not_found_page, "404 should not canonical to /404.html")
-for dead in (
-    "vue-on-30a",
-    "brozinni-pizzeria",
-    "pecan-jacks-gulf-place",
-    "seagrove-village-market-cafe-seagrove-beach",
-    "village-market-cafe-bar-watersound-origins",
-):
+for dead in ("vue-on-30a", "brozinni-pizzeria", "pecan-jacks-gulf-place"):
     check(f"/restaurants/{dead}/" not in sitemap, f"sitemap should drop deleted slug {dead}")
 with (ROOT / "data" / "restaurants.csv").open(encoding="utf-8", newline="") as handle:
     for row in csv.DictReader(handle):
@@ -328,7 +322,7 @@ expected_monograms = [
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 141, f"expected 141 restaurant photos, got {len(photos)}")
+check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
 check(build.gallery_label(9) == "4 of 9 photos", "a full first window should read 4 of 9 photos")
 check(build.gallery_label(9, 1) == "5 of 9 photos", "stepping one photo should advance the counter")
 check(build.gallery_label(9, 20) == "9 of 9 photos", "the counter should stop on the last photo")
@@ -999,7 +993,7 @@ check('href="/guides/"' in shared_footer, "shared footer is missing the guides l
 check('href="/guides/best-seafood-30a/"' in home and 'href="/guides/"' in home, "homepage should mention the guides")
 check("Popular guides for a trip along Scenic Highway 30A." in home, "homepage guides mention should stay modest")
 seafood = build.seafood_restaurants(source, build.load_areas(source))
-check(len(seafood) == 31, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
+check(len(seafood) == 33, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")
@@ -1075,18 +1069,14 @@ check("/restaurants/beach-happy-cafe-watercolor/" in breakfast_guide, "breakfast
 coffee_guide = (ROOT / "guides" / "coffee-brunch-30a" / "index.html").read_text(encoding="utf-8")
 check("/restaurants/beach-happy-cafe-seagrove-beach/" in coffee_guide, "coffee guide should keep Beach Happy Seagrove")
 check(not (ROOT / "restaurants" / "pickles-sandbar-seaside" / "index.html").exists(), "Pickle’s Sandbar listing should be removed")
-for removed_slug in (
-    "seagrove-village-market-cafe-seagrove-beach",
-    "village-market-cafe-bar-watersound-origins",
-):
-    check(
-        not (ROOT / "restaurants" / removed_slug / "index.html").exists(),
-        f"{removed_slug} listing should be removed",
-    )
-    check(
-        f'"{removed_slug}": "/areas/' in worker_src,
-        f"{removed_slug} should 301 to its town page",
-    )
+check(
+    (ROOT / "restaurants" / "seagrove-village-market-cafe-seagrove-beach" / "index.html").exists(),
+    "Seagrove Village Market Café listing page should stay in the build",
+)
+check(
+    (ROOT / "accounts" / "migrations" / "0004_inactive_market_cafes.sql").exists(),
+    "inactive market cafe migration should ship with the repo",
+)
 check(
     'src="/images/eating-on-30a-logo.png"' in shared_header and 'alt="Eating on 30A"' in shared_header,
     "header should use the Eating on 30A logo",

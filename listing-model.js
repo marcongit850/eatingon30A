@@ -1,7 +1,7 @@
 /**
  * Editable restaurant fields shared by the accounts Worker and both guides.
  * SEO is not a field. Titles, descriptions, and social tags stay generated.
- * Status defaults to live. Draft is the only hidden state.
+ * Status defaults to live. Draft and inactive stay off the public guide.
  */
 
 export const DEFAULT_ADMINS = ["marc@whpinc.com"];
@@ -58,7 +58,8 @@ export function normalizeStatus(value) {
   const text = String(value).trim().toLowerCase();
   if (text === "live" || text === "published") return { status: "live" };
   if (text === "draft") return { status: "draft" };
-  return { error: "Choose Live or Draft." };
+  if (text === "inactive") return { status: "inactive" };
+  return { error: "Choose Live, Draft, or Inactive." };
 }
 
 function cleanLine(value, max) {

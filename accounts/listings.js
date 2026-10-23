@@ -42,7 +42,7 @@ export function rowsFrom(result) {
     if (!payload) return null;
     return {
       slug: row.slug,
-      status: row.status === "draft" ? "draft" : "live",
+      status: row.status === "draft" ? "draft" : row.status === "inactive" ? "inactive" : "live",
       deleted: Number(row.deleted) === 1,
       payload,
       updatedAt: row.updated_at,
@@ -116,6 +116,32 @@ export async function createListing(db, body, email) {
     slug = listingSlug(parsed.value.name, parsed.value.area, used);
   }
   const saved = await writeListing(db, site, slug, parsed.status, storedPayload(parsed.value, ""), email);
+  return json({ ok: true, listing: { site, ...saved } });
+}
+
+export async function setListingActive(db, site, slug, active, body, email) {
+  if (!siteFrom(site) || !isSlug(slug)) return json({ ok: false, error: "That listing could not be updated." }, 400);
+  if (active !== true && active !== false) return json({ ok: false, error: "Choose activate or deactivate." }, 400);
+  const status = active ? "live" : "inactive";
+  const allowed = await photoIds(db, site, slug);
+  const parsed = validateListing({ ...(body || {}), status }, { allowedPhotoIds: allowed });
+  if (parsed.error) return json({ ok: false, error: parsed.error }, 400);
+  const current = await db.prepare(
+    "SELECT payload FROM listings WHERE site = ? AND slug = ?",
+  ).bind(site, slug).first();
+  const previous = current ? parsePayload(current.payload) : null;
+  const logo = keepLogo(body && body.logo) || keepLogo(previous && previous.logo);
+  const photos = parsed.value.photos && parsed.value.photos.length
+    ? parsed.value.photos
+    : (previous && previous.photos) || [];
+  const saved = await writeListing(
+    db,
+    site,
+    slug,
+    status,
+    storedPayload({ ...parsed.value, photos }, logo),
+    email,
+  );
   return json({ ok: true, listing: { site, ...saved } });
 }
 
@@ -293,6 +319,17 @@ export async function handleAdminApi(request, env, user) {
       return json({ ok: false, error: "Send the photos as JSON." }, 400);
     }
     return orderPhotos(env.DB, env, site || (body && body.site) || request.headers.get("x-account-site"), photos[1], body && body.photos);
+  }
+  const active = url.pathname.match(/^\/v1\/admin\/listings\/([a-z0-9-]+)\/active$/);
+  if (active && request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: "Send the listing as JSON." }, 400);
+    }
+    const guide = siteFrom((body && body.site) || site || request.headers.get("x-account-site"));
+    return setListingActive(env.DB, guide, active[1], body && body.active, body, email);
   }
   const one = url.pathname.match(/^\/v1\/admin\/listings\/([a-z0-9-]+)$/);
   if (one && request.method === "PUT") {

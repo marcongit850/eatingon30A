@@ -1,7 +1,7 @@
 /**
  * Merge the built catalog with admin rows from the accounts Worker.
- * A missing row means the built listing is live. Draft and deleted rows
- * stay out of the public guide. Created rows exist only in the overlay.
+ * A missing row means the built listing is live. Draft, inactive, and deleted
+ * rows stay out of the public guide. Created rows exist only in the overlay.
  */
 
 import { publicRecord, slugify } from "./listing-model.js";
@@ -52,7 +52,7 @@ export function presentListing(raw) {
     photos: photosOf(raw.photos),
     logo: raw.logo || "",
     search: raw.search || "",
-    status: raw.status === "draft" ? "draft" : "live",
+    status: raw.status === "draft" ? "draft" : raw.status === "inactive" ? "inactive" : "live",
     deleted: Boolean(raw.deleted),
     source: raw.source || "baseline",
   };
@@ -71,7 +71,7 @@ export function mergeCatalog(baseline, rows) {
       ...payload,
       logo: payload.logo || (previous && previous.logo) || "",
       slug: row.slug,
-      status: row.status === "draft" ? "draft" : "live",
+      status: row.status === "draft" ? "draft" : row.status === "inactive" ? "inactive" : "live",
       deleted: Boolean(row.deleted),
       source: previous ? "override" : "created",
       updatedAt: row.updatedAt || null,
@@ -82,6 +82,11 @@ export function mergeCatalog(baseline, rows) {
 
 export function isPublicListing(listing) {
   return Boolean(listing) && !listing.deleted && listing.status === "live";
+}
+
+export function townPagePath(listing) {
+  const slug = listing && listing.areaSlug ? String(listing.areaSlug) : "";
+  return slug ? `/areas/${slug}/` : "/restaurants/";
 }
 
 export function liveListings(merged) {

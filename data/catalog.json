@@ -6677,6 +6677,63 @@
     "search": "seagrove coffee & donuts seagrove beach  seagrove beach american cafe breakfast coffee donuts cafe / coffee seagrove coffee & donuts is perfect for coffee and breakfast on the go. a quick and easy stop. seagrove coffee & donuts cafe coffee coffee donuts american casual dining seagrove beach $"
   },
   {
+    "slug": "seagrove-village-market-cafe-seagrove-beach",
+    "name": "Seagrove Village Market Caf\u00e9",
+    "area": "Seagrove Beach",
+    "areaSlug": "seagrove-beach",
+    "subarea": "",
+    "label": "Seagrove Beach",
+    "address": "3871 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "lat": 30.31284819999999,
+    "lng": -86.112354,
+    "phone": "(850) 231-5736",
+    "website": "https://seagrovevillagemarket.com/",
+    "price": "$$",
+    "notes": "Seagrove Village Market Caf\u00e9 offers sandwiches and seafood in a casual environment. A local favorite.",
+    "hours": "Mon-Fri: 10:30am-8:30pm Sat & Sun: 10:30am-8:30pm",
+    "cuisines": [
+      "Seafood",
+      "American"
+    ],
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "foods": [
+      "Sandwiches"
+    ],
+    "vibes": [
+      "Grab & Go"
+    ],
+    "category": "Food Market / Prepared Food",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "laurensFavorite": false,
+    "happyDrinks": false,
+    "happyFood": false,
+    "reservations": true,
+    "groups": false,
+    "facebook": "https://www.facebook.com/SeagroveVillage/",
+    "instagram": "https://www.instagram.com/seagrovevillagemarket/",
+    "photos": [
+      {
+        "id": null,
+        "src": "/images/restaurants/seagrove-village-market-cafe-seagrove-beach/01.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/seagrove-village-market-cafe-seagrove-beach/02.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/seagrove-village-market-cafe-seagrove-beach/03.jpg"
+      }
+    ],
+    "logo": null,
+    "search": "seagrove village market caf\u00e9 seagrove beach  seagrove beach seafood american lunch dinner sandwiches food market / prepared food seagrove village market caf\u00e9 offers sandwiches and seafood in a casual environment. a local favorite. seagrove village market caf\u00e9 food market prepared food sandwiches seafood american grab go seagrove beach $$"
+  },
+  {
     "slug": "shades-bar-and-grill-inlet-beach",
     "name": "Shades Bar & Grill",
     "area": "Inlet Beach",
@@ -8247,6 +8304,64 @@
     ],
     "logo": null,
     "search": "turbo coffee seagrove beach  seagrove beach american cafe breakfast lunch coffee cafe cafe / coffee turbo coffee serves craft coffee, espresso drinks, and light caf\u00e9 fare in a stylish atmosphere. a popular stop for coffee lovers in seagrove. turbo coffee cafe coffee american casual dining seagrove beach $"
+  },
+  {
+    "slug": "village-market-cafe-bar-watersound-origins",
+    "name": "Village Market Caf\u00e9 + Bar",
+    "area": "Watersound Origins",
+    "areaSlug": "watersound-origins",
+    "subarea": "Town Center",
+    "label": "Watersound Origins | Town Center",
+    "address": "86 N Watersound Parkway, Inlet Beach, FL 32461, USA",
+    "lat": 30.29568859999999,
+    "lng": -86.0231543,
+    "phone": "(850) 563-8110",
+    "website": "https://watersoundvillagemarket.com/",
+    "price": "$$",
+    "notes": "Village Market Caf\u00e9 + Bar is the Watersound Town Center sister of Seagrove Village Market, with seafood, Southern plates, a full bar, and a takeaway counter.",
+    "hours": "Mon-Fri 11am-9pm Sat 11am-9pm, Sun closed",
+    "cuisines": [
+      "Seafood",
+      "Southern"
+    ],
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "foods": [
+      "Bistro"
+    ],
+    "vibes": [
+      "Casual Dining",
+      "Bar"
+    ],
+    "category": "Restaurant",
+    "outdoor": true,
+    "kids": true,
+    "music": false,
+    "laurensFavorite": false,
+    "happyDrinks": true,
+    "happyFood": true,
+    "reservations": false,
+    "groups": false,
+    "facebook": "https://www.facebook.com/watersoundvillagemarket",
+    "instagram": "https://www.instagram.com/villagemarketcafebar/",
+    "photos": [
+      {
+        "id": null,
+        "src": "/images/restaurants/village-market-cafe-bar-watersound-origins/01.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/village-market-cafe-bar-watersound-origins/02.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/village-market-cafe-bar-watersound-origins/03.jpg"
+      }
+    ],
+    "logo": null,
+    "search": "village market caf\u00e9 + bar watersound origins town center watersound origins | town center seafood southern lunch dinner bistro restaurant village market caf\u00e9 + bar is the watersound town center sister of seagrove village market, with seafood, southern plates, a full bar, and a takeaway counter. village market caf\u00e9 + bar restaurant sandwiches seafood southern casual dining bar watersound origins $$"
   },
   {
     "slug": "vki-japanese-steak-house-and-sushi",
