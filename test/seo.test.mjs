@@ -131,7 +131,7 @@ assert.equal(home["@graph"][1].publisher["@id"], `${ORIGIN}/#organization`);
 
 const directory = jsonLd(read("restaurants/index.html"));
 const list = directory["@graph"].find((node) => node["@type"] === "ItemList");
-assert.equal(list.numberOfItems, 155);
+assert.equal(list.numberOfItems, 153);
 assert.equal(directory["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
 const directoryHtml = read("restaurants/index.html");
 assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
@@ -276,7 +276,15 @@ assert.equal(locs.includes(`${ORIGIN}/restaurants/`), true);
 assert.equal(locs.includes(`${ORIGIN}/restaurants/o-ku-alys-beach/`), true);
 assert.equal(locs.includes(`${ORIGIN}/404.html`), false);
 assert.equal(locs.some((url) => url.includes("%26") || url.includes("&")), false);
-for (const dead of ["vue-on-30a", "brozinni-pizzeria", "pecan-jacks-gulf-place", "raw-&-juicy", "raw-%26-juicy"]) {
+for (const dead of [
+  "vue-on-30a",
+  "brozinni-pizzeria",
+  "pecan-jacks-gulf-place",
+  "raw-&-juicy",
+  "raw-%26-juicy",
+  "seagrove-village-market-cafe-seagrove-beach",
+  "village-market-cafe-bar-watersound-origins",
+]) {
   assert.equal(locs.some((url) => url.includes(dead)), false, dead);
 }
 assert.equal(locs.includes(`${ORIGIN}/guides/`), true);
@@ -296,7 +304,7 @@ for (const slug of [
 }
 assert.equal(locs.filter((url) => url.includes("/guides/")).length, 11);
 assert.equal(locs.includes(`${ORIGIN}/list-your-restaurant/`), true);
-assert.equal(locs.length, 7 + 11 + 14 + 155);
+assert.equal(locs.length, 7 + 11 + 14 + 153);
 assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
 assert.equal(sitemap.includes("workers.dev"), false);
 
@@ -338,6 +346,15 @@ for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-gar
   const growler = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
   assert.equal(growler.status, 301);
   assert.equal(growler.headers.get("location"), "https://www.eatingon30a.com/restaurants/growler-garage-30a-dune-allen-beach/");
+}
+
+for (const [path, target] of [
+  ["/restaurants/seagrove-village-market-cafe-seagrove-beach/", "https://www.eatingon30a.com/areas/seagrove-beach/"],
+  ["/restaurants/village-market-cafe-bar-watersound-origins/", "https://www.eatingon30a.com/areas/watersound-origins/"],
+]) {
+  const closed = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(closed.status, 301);
+  assert.equal(closed.headers.get("location"), target);
 }
 
 const stale404 = `<!DOCTYPE html><head><link rel="canonical" href="https://www.eatingon30a.com/404.html"><meta property="og:url" content="https://www.eatingon30a.com/404.html"><script type="application/ld+json">{"@type": "WebPage", "url": "https://www.eatingon30a.com/404.html", "name": "Page not found"}</script></head>`;

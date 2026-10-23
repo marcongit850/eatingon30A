@@ -3968,39 +3968,6 @@
     "image": "/images/restaurants/seagrove-coffee-and-donuts-seagrove-beach/01.jpg"
   },
   {
-    "slug": "seagrove-village-market-cafe-seagrove-beach",
-    "name": "Seagrove Village Market Caf\u00e9",
-    "area": "Seagrove Beach",
-    "areaSlug": "seagrove-beach",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "Seafood",
-      "American"
-    ],
-    "foods": [
-      "Sandwiches"
-    ],
-    "price": "$$",
-    "lat": 30.31284819999999,
-    "lng": -86.112354,
-    "address": "3871 E County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "(850) 231-5736",
-    "search": "seagrove village market caf\u00e9 seagrove beach  seagrove beach seafood american lunch dinner sandwiches food market / prepared food seagrove village market caf\u00e9 offers sandwiches and seafood in a casual environment. a local favorite. seagrove village market caf\u00e9 food market prepared food sandwiches seafood american grab go seagrove beach $$",
-    "label": "Seagrove Beach",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "reservations": true,
-    "groups": false,
-    "happyFood": false,
-    "happyDrinks": false,
-    "laurensFavorite": false,
-    "image": "/images/restaurants/seagrove-village-market-cafe-seagrove-beach/01.jpg"
-  },
-  {
     "slug": "shades-bar-and-grill-inlet-beach",
     "name": "Shades Bar & Grill",
     "area": "Inlet Beach",
@@ -4919,39 +4886,6 @@
     "happyDrinks": false,
     "laurensFavorite": false,
     "image": "/images/restaurants/turbo-coffee/01.jpg"
-  },
-  {
-    "slug": "village-market-cafe-bar-watersound-origins",
-    "name": "Village Market Caf\u00e9 + Bar",
-    "area": "Watersound Origins",
-    "areaSlug": "watersound-origins",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "Seafood",
-      "Southern"
-    ],
-    "foods": [
-      "Bistro"
-    ],
-    "price": "$$",
-    "lat": 30.29568859999999,
-    "lng": -86.0231543,
-    "address": "86 N Watersound Parkway, Inlet Beach, FL 32461, USA",
-    "phone": "(850) 563-8110",
-    "search": "village market caf\u00e9 + bar watersound origins town center watersound origins | town center seafood southern lunch dinner bistro restaurant village market caf\u00e9 + bar is the watersound town center sister of seagrove village market, with seafood, southern plates, a full bar, and a takeaway counter. village market caf\u00e9 + bar restaurant sandwiches seafood southern casual dining bar watersound origins $$",
-    "label": "Watersound Origins | Town Center",
-    "outdoor": true,
-    "kids": true,
-    "music": false,
-    "reservations": false,
-    "groups": false,
-    "happyFood": true,
-    "happyDrinks": true,
-    "laurensFavorite": false,
-    "image": "/images/restaurants/village-market-cafe-bar-watersound-origins/01.jpg"
   },
   {
     "slug": "vki-japanese-steak-house-and-sushi",
