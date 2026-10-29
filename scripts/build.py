@@ -276,6 +276,9 @@ def notes_markup(notes: str) -> str:
 
 # Concrete clock times stay in the Hours fact. This phrase sends people to the restaurant site instead.
 WEBSITE_HOURS = "Check website for hours"
+# A published listing can still be shut for now. Hours that start with this phrase
+# keep the page in the guide. Deactivate is a different switch and hides the page.
+CLOSURE_STATUS = "Temporarily closed"
 
 
 def clean_hours(raw: str) -> str:
@@ -284,9 +287,19 @@ def clean_hours(raw: str) -> str:
         return ""
     if text.casefold() == WEBSITE_HOURS.casefold():
         return WEBSITE_HOURS
+    if text.casefold().startswith(CLOSURE_STATUS.casefold()):
+        return CLOSURE_STATUS + text[len(CLOSURE_STATUS):]
     if not re.search(r"\d", text):
         return ""
     return text
+
+
+def closure_notice(restaurant: dict) -> str:
+    """Temporary-closure sentence from the hours cell, or empty when the listing is not marked closed."""
+    hours = restaurant.get("hours") or ""
+    if hours.casefold().startswith(CLOSURE_STATUS.casefold()):
+        return hours
+    return ""
 
 
 def parse_address(raw: str) -> dict:
@@ -490,6 +503,8 @@ def hours_refer_to_website(restaurant: dict) -> bool:
 
 def hours_markup(restaurant: dict) -> str:
     """Hours fact. The website word links to the listing's own site, including its UTM query."""
+    if closure_notice(restaurant):
+        return e(CLOSURE_STATUS)
     if hours_refer_to_website(restaurant):
         return "Check " + external_link(restaurant["website"], "website") + " for hours"
     hours = restaurant.get("hours") or ""
@@ -971,6 +986,8 @@ def card(restaurant: dict, heading: str = "h2") -> str:
     meals = " · ".join(restaurant["meals"])
     cuisines = ", ".join(restaurant["cuisines"])
     bits = [bit for bit in (restaurant["price"], cuisines, meals) if bit]
+    if closure_notice(restaurant):
+        bits.insert(0, CLOSURE_STATUS)
     area_line = restaurant["area"]
     if restaurant["subarea"]:
         area_line += f" · {restaurant['subarea']}"
@@ -1153,6 +1170,16 @@ def listing_description(restaurant: dict) -> str:
     override = PAGE_SEO.get(restaurant["slug"])
     if override and "description" in override:
         return override["description"]
+    notice = closure_notice(restaurant)
+    if notice:
+        identity = listing_identity(restaurant).rstrip(".")
+        closed = clean_text(f"{identity}. {notice.rstrip('.')}.")
+        if meta_ok(closed):
+            return closed
+        shorter = clean_text(f"{restaurant['name']} {listing_where(restaurant)}. {notice.rstrip('.')}.")
+        if meta_ok(shorter):
+            return shorter
+        return closed
     identity = listing_identity(restaurant)
     cuisine = lead_cuisine(restaurant["cuisines"])
     note = first_sentence(restaurant["notes"])
@@ -1265,7 +1292,7 @@ def listing_intro(restaurant: dict) -> str:
         on_road = bool(re.match(r"^(?:US|U\.S\.|CR|Hwy|Highway)\b", subarea, re.I))
         sentences.append(f"It’s on {subarea}." if on_road else f"It’s in {subarea}.")
     meals = meal_words(restaurant["meals"])
-    if meals:
+    if meals and not closure_notice(restaurant):
         sentences.append(f"Come by for {human_list(meals)}.")
     amenities = []
     if restaurant["outdoor"]:
@@ -2058,6 +2085,8 @@ def fact(label: str, value: str) -> str:
 def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     """Single restaurant profile template. Every listing page is rendered here."""
     chips = []
+    if closure_notice(restaurant):
+        chips.append(f"<li>{e(CLOSURE_STATUS)}</li>")
     for meal in restaurant["meals"]:
         chips.append(f'<li><a href="/restaurants/?meal={e(meal)}">{e(meal)}</a></li>')
     for cuisine in restaurant["cuisines"]:
@@ -2155,6 +2184,11 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     gallery_script = ""
     if len(restaurant.get("photos") or []) > GALLERY_WINDOW:
         gallery_script = '<script type="module" src="/gallery.js"></script>\n'
+    closed_html = (
+        f'<p class="closure-notice">{e(closure_notice(restaurant))}</p>'
+        if closure_notice(restaurant)
+        else ""
+    )
     body = (
         '<article class="profile">'
         f"{profile_gallery(restaurant)}"
@@ -2162,6 +2196,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
         f"<h1>{e(restaurant['name'])}</h1>"
+        f"{closed_html}"
         f"{website_cta(restaurant)}"
         f'<ul class="chips">{"".join(chips)}</ul>'
         + (
@@ -2216,8 +2251,15 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         schema["logo"] = logo_url if logo_url.startswith(("http://", "https://")) else ORIGIN + logo_url
     if same_as:
         schema["sameAs"] = same_as
+    if closure_notice(restaurant):
+        schema["additionalProperty"] = {
+            "@type": "PropertyValue",
+            "name": "Status",
+            "value": CLOSURE_STATUS,
+        }
     # Hours stay in the visible facts list. CSV hours are free text, so they are not
-    # copied into openingHours. Ratings and reviews are never invented.
+    # copied into openingHours. A temporary closure keeps the listing and does not
+    # add opening hours. Ratings and reviews are never invented.
     title = listing_title(restaurant)
     webpage = {
         "@type": "WebPage",
@@ -4439,6 +4481,9 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
             where = f"{cuisine} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A."
         else:
             where = f"{cuisine} in {restaurant['area']} on Scenic Highway 30A."
+        notice = closure_notice(restaurant)
+        if notice:
+            where = f"{where} {notice if notice.endswith('.') else notice + '.'}"
         lines.append(f"- [{restaurant['name']}]({ORIGIN}/restaurants/{restaurant['slug']}/): {where}")
     lines.extend(
         [

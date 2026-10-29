@@ -1006,6 +1006,17 @@ a.card:hover h2, a.card:hover h3, .card-link:hover h2, .card-link:hover h3 { col
   font-weight: 300;
   line-height: 1.4;
 }
+.closure-notice {
+  margin: 0.9rem 0 0;
+  max-width: 42rem;
+  padding: 0.75rem 0.95rem;
+  background: var(--sand);
+  border-left: 3px solid var(--coral);
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
 .profile-grid { display: grid; gap: 2rem; padding: 1.6rem 0 2.4rem; }
 .profile-story p {
   font-family: var(--serif);

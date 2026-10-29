@@ -899,6 +899,42 @@ pig = (ROOT / "restaurants" / "the-perfect-pig-watercolor" / "index.html").read_
 check("<dt>Hours</dt><dd>Daily 8am-9pm</dd>" in pig, "other listings should keep concrete hours")
 check(build.clean_hours("Mon-Fri: Unknown Sat & Sun: Unknown") == "", "hours without a clock time should stay unlisted")
 check(build.clean_hours("check website for hours") == "Check website for hours", "website hours phrase should survive the hours cleaner")
+check(
+    build.clean_hours("Temporarily closed due to a fire") == "Temporarily closed due to a fire",
+    "temporary closure notice should survive the hours cleaner",
+)
+check(build.clean_hours("temporarily closed") == "Temporarily closed", "short closure status should be canonical")
+NOTICE = "Temporarily closed due to a fire"
+closed_slugs = (
+    "goatfeathers-seafood-restaurant-dune-allen-beach",
+)
+for slug in closed_slugs:
+    page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
+    row = full_by_slug[slug]
+    check(f'<p class="closure-notice">{NOTICE}</p>' in page, f"{slug} should show the fire notice")
+    check("<li>Temporarily closed</li>" in page, f"{slug} should be marked Temporarily closed")
+    check("<dt>Hours</dt><dd>Temporarily closed</dd>" in page, f"{slug} hours should say Temporarily closed")
+    check("Open now" not in page and "Open for" not in page and "Come by for" not in page, f"{slug} should not be presented as open")
+    check("11am" not in page and "10am" not in page, f"{slug} should not show a clock schedule")
+    check("—" not in page.split('class="closure-notice"', 1)[1].split("</p>", 1)[0], f"{slug} notice should not use an em dash")
+    check("–" not in page.split('class="closure-notice"', 1)[1].split("</p>", 1)[0], f"{slug} notice should not use an en dash")
+    check(f"{build.ORIGIN}/restaurants/{slug}/" in sitemap, f"{slug} should stay in the sitemap")
+    check(f'id="r-{slug}"' in directory, f"{slug} should stay in the directory")
+    schema = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', page).group(1))
+    place = next(node for node in schema["@graph"] if "Restaurant" in (node.get("@type") if isinstance(node.get("@type"), list) else [node.get("@type")]))
+    check("openingHours" not in place and "openingHoursSpecification" not in place, f"{slug} schema should not claim hours")
+    check(NOTICE in place.get("description", ""), f"{slug} schema description should say it is temporarily closed")
+    check("Open for" not in place.get("description", ""), f"{slug} schema should not say open")
+    check((place.get("additionalProperty") or {}).get("value") == "Temporarily closed", f"{slug} schema status")
+    check(row.get("hours") == NOTICE, f"{slug} hours cell should be the closure notice")
+open_markets = {
+    "goatfeathers-seafood-market-inlet-beach": "Mon-Fri: 11am-8pm Sat &amp; Sun: 11am-8pm",
+    "goatfeathers-seafood-market-east-location-seagrove-beach": "Mon-Fri: 10am-6pm Sat &amp; Sun: 10am-6pm",
+}
+for slug, hours_html in open_markets.items():
+    page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
+    check("closure-notice" not in page, f"{slug} should stay open")
+    check(f"<dt>Hours</dt><dd>{hours_html}</dd>" in page, f"{slug} should keep its hours")
 seagrove_row = full_by_slug["beach-happy-cafe-seagrove-beach"]
 check(seagrove_row["meals"] == ["Drinks"], f"Seagrove meals should be drinks only, got {seagrove_row['meals']}")
 check("Breakfast" not in seagrove_row["meals"] and "Lunch" not in seagrove_row["meals"], "Seagrove should not be a food meal")
