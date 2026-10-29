@@ -2130,38 +2130,6 @@
     "image": "/images/restaurants/goatfeathers-seafood-market-east-location-seagrove-beach/01.jpg"
   },
   {
-    "slug": "goatfeathers-seafood-market-dune-allen-beach",
-    "name": "Goatfeathers Seafood Market (West)",
-    "area": "Dune Allen Beach",
-    "areaSlug": "dune-allen-beach",
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "cuisines": [
-      "Seafood"
-    ],
-    "foods": [
-      "Seafood Market"
-    ],
-    "price": "$$",
-    "lat": 30.3466402,
-    "lng": -86.2212809,
-    "address": "3865 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
-    "phone": "",
-    "search": "goatfeathers seafood market (west) dune allen beach  dune allen beach seafood lunch dinner seafood market food market / prepared food goatfeathers\u2019 west seafood market at 3865 w county highway 30a is temporarily closed due to a fire. goatfeathers seafood market west dune allen beach $$",
-    "label": "Dune Allen Beach",
-    "outdoor": false,
-    "kids": false,
-    "music": false,
-    "reservations": false,
-    "groups": false,
-    "happyFood": false,
-    "happyDrinks": false,
-    "laurensFavorite": false,
-    "image": null
-  },
-  {
     "slug": "goatfeathers-seafood-restaurant-dune-allen-beach",
     "name": "Goatfeathers Seafood Restaurant",
     "area": "Dune Allen Beach",

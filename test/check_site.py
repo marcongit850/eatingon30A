@@ -33,8 +33,8 @@ def check(condition: bool, message: str) -> None:
 
 
 shown = build.published_restaurants()
-check(len(source) == 156, f"full CSV should stay at 156 published rows, got {len(source)}")
-check(len(restaurants) == len(shown) == 156, "public json should include every published restaurant")
+check(len(source) == 155, f"full CSV should stay at 155 published rows, got {len(source)}")
+check(len(restaurants) == len(shown) == 155, "public json should include every published restaurant")
 detail_pages = list((ROOT / "restaurants").glob("*/index.html"))
 check(len(detail_pages) == len(restaurants), f"generated {len(detail_pages)} detail pages for {len(restaurants)} rows")
 check("not on the site yet" not in home and "Design preview" not in home, "homepage should not say the catalog is still a sample")
@@ -315,7 +315,6 @@ expected_monograms = [
     "dawsons-yogurt-and-fudge-seaside",
     "dough-sea-dough-seagrove-beach",
     "drome-seaside",
-    "goatfeathers-seafood-market-dune-allen-beach",
     "grace-pizza-and-shakes-grayton-beach",
     "hibiscus-cafe-grayton-beach",
     "nigels-bananas-seaside",
@@ -678,7 +677,7 @@ check("1 restaurant on the map" in site_js and "restaurants on the map" in site_
 check("place on the map" not in site_js, "map count should not say place")
 check("filter" not in areas_index.lower() and "directory" not in areas_index.lower(), "towns page should not explain the directory")
 dune = (ROOT / "areas" / "dune-allen-beach" / "index.html").read_text(encoding="utf-8")
-check("Show 6 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
+check("Show 5 Restaurants" in dune, "Dune Allen should label its count as Restaurants")
 check("Gulf Place" in (ROOT / "areas" / "gulf-place" / "index.html").read_text(encoding="utf-8"), "Gulf Place stays a place name")
 for area_page in (ROOT / "areas").glob("*/index.html"):
     text = area_page.read_text(encoding="utf-8")
@@ -908,7 +907,6 @@ check(build.clean_hours("temporarily closed") == "Temporarily closed", "short cl
 NOTICE = "Temporarily closed due to a fire"
 closed_slugs = (
     "goatfeathers-seafood-restaurant-dune-allen-beach",
-    "goatfeathers-seafood-market-dune-allen-beach",
 )
 for slug in closed_slugs:
     page = (ROOT / "restaurants" / slug / "index.html").read_text(encoding="utf-8")
@@ -1031,7 +1029,7 @@ check('href="/guides/"' in shared_footer, "shared footer is missing the guides l
 check('href="/guides/best-seafood-30a/"' in home and 'href="/guides/"' in home, "homepage should mention the guides")
 check("Popular guides for a trip along Scenic Highway 30A." in home, "homepage guides mention should stay modest")
 seafood = build.seafood_restaurants(source, build.load_areas(source))
-check(len(seafood) == 34, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
+check(len(seafood) == 33, f"seafood guide should list every Seafood cuisine row, got {len(seafood)}")
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")
