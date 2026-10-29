@@ -91,7 +91,7 @@ function yesNo(flag) {
 export function renderCard(listing) {
   const meals = (listing.meals || []).join(" · ");
   const cuisines = (listing.cuisines || []).join(", ");
-  const bits = [listing.price, cuisines, meals].filter(Boolean);
+  const bits = [closureNotice(listing) ? CLOSURE_STATUS : "", listing.price, cuisines, meals].filter(Boolean);
   const areaLine = listing.subarea ? `${listing.area} · ${listing.subarea}` : listing.area;
   const note = snippet(listing.notes);
   const noteHtml = note ? `<p class="note">${escapeHtml(note)}</p>` : "";
@@ -340,6 +340,14 @@ function hostOf(url) {
   return String(url || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
 }
 
+const CLOSURE_STATUS = "Temporarily closed";
+
+function closureNotice(listing) {
+  const hours = String((listing && listing.hours) || "");
+  if (hours.toLowerCase().startsWith(CLOSURE_STATUS.toLowerCase())) return hours;
+  return "";
+}
+
 function paragraphs(text) {
   const blocks = String(text || "").split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
   return blocks.map((part) => `<p>${escapeHtml(part).replace(/\n/g, "<br>")}</p>`).join("");
@@ -376,6 +384,7 @@ export function renderProfile(listing, nearby = []) {
   if (listing.reservations) flags.push("Takes reservations");
   if (listing.groups) flags.push("Good for groups 12+");
   for (const flag of flags) chips.push(`<li>${escapeHtml(flag)}</li>`);
+  if (closureNotice(listing)) chips.unshift(`<li>${escapeHtml(CLOSURE_STATUS)}</li>`);
   const phone = telHref(listing.phone) ? `<a href="${escapeHtml(telHref(listing.phone))}">${escapeHtml(listing.phone)}</a>` : "";
   const website = listing.website ? `<a href="${escapeHtml(listing.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(hostOf(listing.website))}</a>` : "";
   const directions = listing.lat != null && listing.lng != null
@@ -385,7 +394,7 @@ export function renderProfile(listing, nearby = []) {
   if (listing.instagram) socials.push(`<a href="${escapeHtml(listing.instagram)}" rel="noopener noreferrer">Instagram</a>`);
   if (listing.facebook) socials.push(`<a href="${escapeHtml(listing.facebook)}" rel="noopener noreferrer">Facebook</a>`);
   const facts = [
-    ["Hours", listing.hours ? escapeHtml(listing.hours).replace(/\n/g, "<br>") : ""],
+    ["Hours", closureNotice(listing) ? escapeHtml(CLOSURE_STATUS) : (listing.hours ? escapeHtml(listing.hours).replace(/\n/g, "<br>") : "")],
     ["Phone", phone],
     ["Website", website],
     ["Address", listing.address ? escapeHtml(listing.address) : ""],
@@ -420,7 +429,7 @@ export function renderProfile(listing, nearby = []) {
 <body>
 <div id="site-header"></div>
 <main id="main">
-<article class="profile">${gallery(listing)}<div class="wrap profile-head"><p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a> <span aria-hidden="true">/</span> ${escapeHtml(listing.name)}</p><p class="eyebrow"><a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a>${listing.price ? ` · ${escapeHtml(listing.price)}` : ""}${listing.category ? ` · ${escapeHtml(listing.category)}` : ""}</p><h1>${escapeHtml(listing.name)}</h1><ul class="chips">${chips.join("")}</ul></div><div class="wrap profile-grid"><div class="prose profile-story">${paragraphs(listing.notes) || `<p>${escapeHtml(listing.name)} is in ${escapeHtml(listing.area)}.</p>`}</div><aside><dl class="facts">${facts}</dl></aside></div>${map}<section class="wrap more"><h2>Also in ${escapeHtml(listing.area)}</h2><div class="map-list">${alsoHtml}</div><p><a class="text-link" href="/areas/${escapeHtml(listing.areaSlug)}/">All restaurants in ${escapeHtml(listing.area)}</a></p></section></article>
+<article class="profile">${gallery(listing)}<div class="wrap profile-head"><p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a> <span aria-hidden="true">/</span> ${escapeHtml(listing.name)}</p><p class="eyebrow"><a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a>${listing.price ? ` · ${escapeHtml(listing.price)}` : ""}${listing.category ? ` · ${escapeHtml(listing.category)}` : ""}</p><h1>${escapeHtml(listing.name)}</h1>${closureNotice(listing) ? `<p class="closure-notice">${escapeHtml(closureNotice(listing))}</p>` : ""}<ul class="chips">${chips.join("")}</ul></div><div class="wrap profile-grid"><div class="prose profile-story">${paragraphs(listing.notes) || `<p>${escapeHtml(listing.name)} is in ${escapeHtml(listing.area)}.</p>`}</div><aside><dl class="facts">${facts}</dl></aside></div>${map}<section class="wrap more"><h2>Also in ${escapeHtml(listing.area)}</h2><div class="map-list">${alsoHtml}</div><p><a class="text-link" href="/areas/${escapeHtml(listing.areaSlug)}/">All restaurants in ${escapeHtml(listing.area)}</a></p></section></article>
 </main>
 <div id="site-footer"></div>
 <script src="/header.js"></script>

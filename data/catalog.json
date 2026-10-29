@@ -3582,6 +3582,49 @@
     "search": "goatfeathers seafood market (east) seagrove beach  seagrove beach seafood lunch dinner seafood market food market / prepared food goatfeathers\u2019 seagrove market sells local seafood to go at 4042 e county highway 30a, open daily from 10am to 6pm. goatfeathers seafood market (east) food market prepared food seafood market seafood grab go seagrove beach $$"
   },
   {
+    "slug": "goatfeathers-seafood-market-dune-allen-beach",
+    "name": "Goatfeathers Seafood Market (West)",
+    "area": "Dune Allen Beach",
+    "areaSlug": "dune-allen-beach",
+    "subarea": "",
+    "label": "Dune Allen Beach",
+    "address": "3865 W County Hwy 30A, Santa Rosa Beach, FL 32459, USA",
+    "lat": 30.3466402,
+    "lng": -86.2212809,
+    "phone": "",
+    "website": "https://goatfeathersseafood.com/",
+    "price": "$$",
+    "notes": "Goatfeathers\u2019 west seafood market at 3865 W County Highway 30A is temporarily closed due to a fire.",
+    "hours": "Temporarily closed due to a fire",
+    "cuisines": [
+      "Seafood"
+    ],
+    "meals": [
+      "Lunch",
+      "Dinner"
+    ],
+    "foods": [
+      "Seafood Market"
+    ],
+    "vibes": [
+      "Grab & Go"
+    ],
+    "category": "Food Market / Prepared Food",
+    "outdoor": false,
+    "kids": false,
+    "music": false,
+    "laurensFavorite": false,
+    "happyDrinks": false,
+    "happyFood": false,
+    "reservations": false,
+    "groups": false,
+    "facebook": "https://www.facebook.com/goatfeathersrestaurant",
+    "instagram": "https://www.instagram.com/goatfeathers30a/",
+    "photos": [],
+    "logo": null,
+    "search": "goatfeathers seafood market (west) dune allen beach  dune allen beach seafood lunch dinner seafood market food market / prepared food goatfeathers\u2019 west seafood market at 3865 w county highway 30a is temporarily closed due to a fire. goatfeathers seafood market west dune allen beach $$"
+  },
+  {
     "slug": "goatfeathers-seafood-restaurant-dune-allen-beach",
     "name": "Goatfeathers Seafood Restaurant",
     "area": "Dune Allen Beach",
@@ -3594,8 +3637,8 @@
     "phone": "(850) 267-2627",
     "website": "https://goatfeathersseafood.com/",
     "price": "$$",
-    "notes": "Goatfeathers\u2019 dining room at 3865 W County Highway 30A is marked temporarily closed on the restaurant\u2019s site. The west seafood market at the same address is still listed there.",
-    "hours": "Mon-Fri: 11am-9pm Sat & Sun: 11am-9pm",
+    "notes": "Goatfeathers\u2019 dining room at 3865 W County Highway 30A is temporarily closed due to a fire.",
+    "hours": "Temporarily closed due to a fire",
     "cuisines": [
       "Seafood"
     ],
@@ -3635,7 +3678,7 @@
       }
     ],
     "logo": null,
-    "search": "goatfeathers seafood restaurant dune allen beach  dune allen beach seafood lunch dinner seafood market restaurant goatfeathers\u2019 dining room at 3865 w county highway 30a is marked temporarily closed on the restaurant\u2019s site. the west seafood market at the same address is still listed there. goatfeathers seafood restaurant restaurant seafood market seafood casual dining dune allen beach $$"
+    "search": "goatfeathers seafood restaurant dune allen beach  dune allen beach seafood lunch dinner seafood market restaurant goatfeathers\u2019 dining room at 3865 w county highway 30a is temporarily closed due to a fire. goatfeathers seafood restaurant restaurant seafood market seafood casual dining dune allen beach $$"
   },
   {
     "slug": "grace-pizza-and-shakes-grayton-beach",
