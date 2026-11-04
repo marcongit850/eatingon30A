@@ -339,6 +339,16 @@ for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-gar
   assert.equal(growler.status, 301);
   assert.equal(growler.headers.get("location"), "https://www.eatingon30a.com/restaurants/growler-garage-30a-dune-allen-beach/");
 }
+for (const path of [
+  "/restaurants/idyll-hounds-proper",
+  "/restaurants/idyll-hounds-proper/",
+  "/restaurants/idyll-hounds-proper-inlet-beach",
+  "/restaurants/idyll-hounds-proper-inlet-beach/",
+]) {
+  const proper = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(proper.status, 301);
+  assert.equal(proper.headers.get("location"), "https://www.eatingon30a.com/restaurants/proper-restaurant-and-bar-inlet-beach/");
+}
 
 const stale404 = `<!DOCTYPE html><head><link rel="canonical" href="https://www.eatingon30a.com/404.html"><meta property="og:url" content="https://www.eatingon30a.com/404.html"><script type="application/ld+json">{"@type": "WebPage", "url": "https://www.eatingon30a.com/404.html", "name": "Page not found"}</script></head>`;
 const cleaned = stripFalseCanonical(stale404);
