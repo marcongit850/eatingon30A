@@ -4337,60 +4337,6 @@
     "search": "hurricane oyster bar grayton beach  grayton beach seafood lunch dinner oyster bar restaurant hurricane oyster bar offers oysters and seafood in a casual, no-frills environment. a go-to for simple, fresh flavors. hurricane oyster bar restaurant oyster bar seafood casual dining grayton beach $$"
   },
   {
-    "slug": "idyll-hounds-proper-inlet-beach",
-    "name": "Idyll Hounds Proper",
-    "area": "Inlet Beach",
-    "areaSlug": "inlet-beach",
-    "subarea": "30Avenue",
-    "label": "Inlet Beach | 30Avenue",
-    "address": "12805 US-98 Suite E101, Inlet Beach, FL 32461, USA",
-    "lat": 30.2812105,
-    "lng": -86.0101327,
-    "phone": "(850) 909-9041",
-    "website": "https://www.idyllhoundproper.com/",
-    "price": "$$",
-    "notes": "Idyll Hounds Proper serves sandwiches and drinks in a casual setting. A great hangout spot.",
-    "hours": "Mon-Tue 12pm-7pm, Wed-Thu 12pm-8pm, Fri 11am-8pm Sat 11am-8pm, Sun 12pm-6pm",
-    "cuisines": [
-      "American"
-    ],
-    "meals": [
-      "Lunch",
-      "Dinner"
-    ],
-    "foods": [
-      "Sandwiches"
-    ],
-    "vibes": [
-      "Casual Dining"
-    ],
-    "category": "Bar & Restaurant",
-    "outdoor": true,
-    "waterfront": false,
-    "bar": true,
-    "kids": true,
-    "music": true,
-    "laurensFavorite": false,
-    "happyDrinks": true,
-    "happyFood": true,
-    "reservations": false,
-    "groups": false,
-    "facebook": "https://www.facebook.com/idyllhoundproper",
-    "instagram": "https://www.instagram.com/idyllhoundsproper/",
-    "photos": [
-      {
-        "id": null,
-        "src": "/images/restaurants/idyll-hounds-proper-inlet-beach/01.jpg"
-      },
-      {
-        "id": null,
-        "src": "/images/restaurants/idyll-hounds-proper-inlet-beach/02.jpg"
-      }
-    ],
-    "logo": null,
-    "search": "idyll hounds proper inlet beach 30avenue inlet beach | 30avenue american lunch dinner sandwiches bar & restaurant idyll hounds proper serves sandwiches and drinks in a casual setting. a great hangout spot. idyll hounds proper bar restaurant sandwiches american casual dining inlet beach $$"
-  },
-  {
     "slug": "johnny-mctighes-irish-pub-dune-allen-beach",
     "name": "Johnny McTighe\u2019s Irish Pub",
     "area": "Blue Mountain Beach",
@@ -6269,6 +6215,68 @@
     ],
     "logo": null,
     "search": "prema organic caf\u00e9 seagrove beach  seagrove beach american cafe breakfast lunch cafe juice & bowls smoothies cafe / coffee prema organic caf\u00e9 serves organic bowls, juices, and coffee in seagrove. prema organic caf\u00e9 cafe coffee cafe juice bowls smoothies american casual dining seagrove beach $$"
+  },
+  {
+    "slug": "proper-restaurant-and-bar-inlet-beach",
+    "name": "Proper Restaurant & Bar",
+    "area": "Inlet Beach",
+    "areaSlug": "inlet-beach",
+    "subarea": "30Avenue",
+    "label": "Inlet Beach | 30Avenue",
+    "address": "12805 US-98 Suite E101, Inlet Beach, FL 32461, USA",
+    "lat": 30.2812105,
+    "lng": -86.0101327,
+    "phone": "(850) 347-1422",
+    "website": "https://proper30a.com/",
+    "price": "",
+    "notes": "Proper Restaurant & Bar is in 30Avenue in Inlet Beach, across from the green space. There is a covered patio, a kids menu, and lawn games. Happy hour runs daily from 4 to 6p, with wines by the glass, select drafts, specialty cocktails, and food. Weekend brunch is 10a to 2p, with live jazz from 11a to 2p. Friday and Saturday DJ parties start at 10PM.",
+    "hours": "Mon to Thu 11:30AM to 9:30PM, Fri 11:30AM to 1AM, Sat 10AM to 1AM, Sun 10AM to 9:30PM",
+    "cuisines": [
+      "American"
+    ],
+    "meals": [
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
+    ],
+    "foods": [],
+    "vibes": [
+      "Bar & Restaurant"
+    ],
+    "category": "Bar & Restaurant",
+    "outdoor": true,
+    "waterfront": false,
+    "bar": true,
+    "kids": true,
+    "music": true,
+    "laurensFavorite": false,
+    "happyDrinks": true,
+    "happyFood": true,
+    "reservations": false,
+    "groups": false,
+    "facebook": "https://www.facebook.com/profile.php?id=100088323911577",
+    "instagram": "https://www.instagram.com/proper30a",
+    "photos": [
+      {
+        "id": null,
+        "src": "/images/restaurants/proper-restaurant-and-bar-inlet-beach/01.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/proper-restaurant-and-bar-inlet-beach/02.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/proper-restaurant-and-bar-inlet-beach/03.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/proper-restaurant-and-bar-inlet-beach/04.jpg"
+      }
+    ],
+    "logo": "/images/restaurants/proper-restaurant-and-bar-inlet-beach-logo.png",
+    "search": "proper restaurant & bar inlet beach 30avenue inlet beach | 30avenue american brunch lunch dinner late night  bar & restaurant proper restaurant & bar is in 30avenue in inlet beach, across from the green space. there is a covered patio, a kids menu, and lawn games. happy hour runs daily from 4 to 6p, with wines by the glass, select drafts, specialty cocktails, and food. weekend brunch is 10a to 2p, with live jazz from 11a to 2p. friday and saturday dj parties start at 10pm. proper restaurant & bar bar restaurant american inlet beach "
   },
   {
     "slug": "raw-and-juicy-alys-beach",
