@@ -1,6 +1,6 @@
 # Eating on 30A: architecture
 
-Last checked against the code and Cloudflare on Oct 8, 2026.
+Last checked against the code and Cloudflare on Nov 4, 2026.
 
 ## What it does
 
@@ -16,7 +16,11 @@ A static restaurant guide for Scenic Highway 30A (Walton County, FL). The Worker
 
 - Directory data: `data/restaurants.csv` and `data/locations.csv` in this repo are the source of truth. `scripts/build.py` generates the HTML, `data/catalog.json`, and the sitemap. Raw CSVs are not uploaded (`.assetsignore`).
 - Photos: `images/restaurants/<slug>/` in this repo, served as static assets.
-- Admin listing edits and admin uploaded photos: stored by `eating-accounts` (D1 `eating-accounts`, R2 `eating-listings`). They override the `data/catalog.json` baseline per guide.
+- Admin listing edits and admin uploaded photos: stored by `eating-accounts` (D1 `eating-accounts`, R2 `eating-listings`). They override the `data/catalog.json` baseline per guide. Listing fields live in the JSON `listings.payload` column. There is no separate column for amenities, so new booleans do not need a D1 migration.
+- `waterfront` and `bar` are booleans on every listing (display labels Waterfront and Bar Scene). They default to false. The baseline values are `Waterfront` and `Bar Scene` columns on `data/restaurants.csv` (`["Yes"]` / `["No"]`), written through `scripts/build.py` into `data/catalog.json` and `data/restaurants.json`. Approved tags: 13 waterfront and 27 bar. Every other published listing is false.
+- Directory and map filters read `area`, `meal`, `cuisine`, `q`, `outdoor`, `kids`, `music`, `reservations`, `groups`, `happyfood`, `happydrinks`, `laurensFavorite`, plus `price` (`$`, `$$`, `$$$`, `$$$$`), `waterfront=yes`, `bar=yes`, and `happyhour=yes` (happy hour food or happy hour drinks). The homepage hero search submits those same params. Waterfront and Bar Scene controls stay hidden while no live listing has that tag.
+- An admin override whose payload omits `waterfront` or `bar` keeps the baseline value for that flag. An explicit true or false in the payload replaces it. Red's Pub (`redds-pub`) and The Red Bar (`the-red-bar-grayton-beach`) already have override rows, so their tags show from the baseline without a D1 write.
+- Saving a listing from the admin or the list-your-restaurant form only stores `waterfront` and `bar` after `eating-accounts` is redeployed. That Worker has no Builds trigger. `eatingon30a` picks up the public filters and the merge on its next deploy. Deploy `eating-accounts` before relying on an admin save to persist the new flags. Until then, a save from the old Worker drops the keys and the baseline tags still show.
 - Listing visibility (live, draft, inactive): stored in D1 `listings.status` on `eating-accounts`. The built CSV and HTML stay in the repo; inactive rows hide a listing on the public site and send its restaurant URL to the matching town page with a 301. Reactivating clears the inactive status without deleting data. Toggle this at https://www.eatingon30a.com/admin/ (Deactivate / Reactivate buttons). No redeploy is required per change once the guides and accounts Workers are live.
 - Accounts, sessions, saves, and save notes: D1 `eating-accounts` (id `f3ae29af-a929-4185-b5bd-b349cc015a3f`), owned by `eating-accounts`.
 - External services: Resend (email), a Google Sheets Apps Script webhook (coupon rows), Zoho Campaigns (list subscribe).

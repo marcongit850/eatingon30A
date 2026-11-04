@@ -101,7 +101,13 @@ check(
     'name="laurensFavorite"' in map_page and ">Lauren’s Favorites</span>" in map_page,
     "map should offer a Lauren’s Favorites checkbox",
 )
+check('id="price"' in directory and ">Any price</option>" in directory, "directory should offer a price filter")
+check('id="price"' in map_page and ">Any price</option>" in map_page, "map should offer a price filter")
+check('data-filter-flag="waterfront" hidden' not in directory and 'data-filter-flag="bar" hidden' not in directory, "tagged flags should stay visible on the directory")
 for name, label in (
+    ("happyhour", "Happy hour"),
+    ("waterfront", "Waterfront"),
+    ("bar", "Bar Scene"),
     ("reservations", "Takes reservations"),
     ("groups", "Good for groups 12+"),
     ("happyfood", "Happy hour food"),
@@ -158,8 +164,30 @@ check('"name": "eatingon30a"' in wrangler, "worker name must stay eatingon30a")
 check("eatingon30a.com" not in wrangler, "wrangler must not attach the vanity domain")
 check("routes" not in wrangler, "wrangler must not declare custom routes")
 
-for meal in ("Breakfast", "Lunch", "Dinner", "Desserts", "Drinks"):
-    check(f'href="/restaurants/?meal={meal}"' in home, f"homepage missing meal link {meal}")
+for href, label in (
+    ("/restaurants/?meal=Breakfast", "Breakfast"),
+    ("/restaurants/?meal=Lunch", "Lunch"),
+    ("/restaurants/?meal=Dinner", "Dinner"),
+    ("/restaurants/?meal=Desserts", "Desserts"),
+    ("/restaurants/?happyhour=yes", "Happy Hour"),
+    ("/restaurants/?cuisine=Seafood", "Seafood"),
+    ("/restaurants/?outdoor=yes", "Outdoor Dining"),
+    ("/restaurants/?music=yes", "Live Music"),
+):
+    check(f'href="{href}"' in home, f"homepage missing category link {label}")
+check('href="/restaurants/?meal=Drinks"' not in home, "homepage should drop the Drinks category")
+check(home.count('class="search-form"') == 1, "homepage should keep a single search form")
+check("What are you looking for?" in home, "homepage search should ask what visitors want")
+check(">All of 30A</option>" in home, "homepage town menu should start with all of 30A")
+check("More filters" in home and "Clear all" in home, "homepage search should offer more filters and clear all")
+check("Outdoor Dining" in home and "Outdoor Seating" not in home, "homepage should say Outdoor Dining")
+check('aria-pressed="false"' in home and 'data-hero-chip' in home, "homepage chips should be toggle buttons")
+check('data-hero-flag="waterfront"' in home and 'data-hero-flag="waterfront" hidden' not in home, "Waterfront chip should show once listings are tagged")
+check('data-hero-flag="bar"' in home and 'data-hero-flag="bar" hidden' not in home, "Bar Scene chip should show once listings are tagged")
+check(">Bar Scene</span>" in home and ">Waterfront</span>" in home, "homepage should name Waterfront and Bar Scene")
+check(sum(1 for item in restaurants if item.get("waterfront") is True) == 13, "public catalog should tag 13 waterfront restaurants")
+check(sum(1 for item in restaurants if item.get("bar") is True) == 27, "public catalog should tag 27 bar scene restaurants")
+check(all(item.get("waterfront") in {True, False} and item.get("bar") in {True, False} for item in restaurants), "every public restaurant should carry waterfront and bar")
 
 areas = json.loads((ROOT / "data" / "locations.json").read_text(encoding="utf-8"))
 check(len(areas) == len({item["areaSlug"] for item in restaurants}), f"town pages should match listed areas, got {len(areas)}")
@@ -555,7 +583,7 @@ check(
 )
 for field in ("name", "role", "email", "contactPhone", "bestTime", "intent", "existingListing", "restaurant", "area", "address", "restaurantPhone", "website", "price", "description", "hours", "seasonalNote", "cuisines", "meals", "foods", "facebook", "instagram", "videoUrl", "photos", "notes", "authorized"):
     check(f'name="{field}"' in listing_page, f"listing form missing {field}")
-for amenity in ("outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"):
+for amenity in ("outdoor", "waterfront", "bar", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"):
     check(f'name="{amenity}"' in listing_page, f"listing form missing amenity {amenity}")
 options = json.loads((ROOT / "data" / "listing-form.json").read_text(encoding="utf-8"))
 for area in options["areas"]:

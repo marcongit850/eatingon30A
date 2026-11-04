@@ -165,6 +165,39 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(file, LISTINGS_SQL);
   });
 
+  test("an override without waterfront or bar keeps the baseline tags", () => {
+    const red = baseline.find((item) => item.slug === "the-red-bar-grayton-beach");
+    const redd = baseline.find((item) => item.slug === "redds-pub");
+    assert.equal(red.waterfront, true);
+    assert.equal(red.bar, true);
+    assert.equal(redd.waterfront, false);
+    assert.equal(redd.bar, true);
+    const omit = (listing) => {
+      const payload = { ...listing };
+      delete payload.waterfront;
+      delete payload.bar;
+      return payload;
+    };
+    const merged = mergeCatalog(baseline, [
+      { slug: red.slug, status: "live", deleted: false, payload: omit(red) },
+      { slug: redd.slug, status: "live", deleted: false, payload: omit(redd) },
+    ]);
+    const redOut = merged.find((item) => item.slug === red.slug);
+    const reddOut = merged.find((item) => item.slug === redd.slug);
+    assert.equal(redOut.waterfront, true);
+    assert.equal(redOut.bar, true);
+    assert.equal(reddOut.waterfront, false);
+    assert.equal(reddOut.bar, true);
+    assert.equal(publicRecords(merged).find((item) => item.slug === red.slug).waterfront, true);
+    assert.equal(publicRecords(merged).find((item) => item.slug === redd.slug).bar, true);
+    const cleared = mergeCatalog(
+      [{ slug: "pier-flag", name: "Pier Flag", area: "Seaside", waterfront: true, bar: true }],
+      [{ slug: "pier-flag", status: "live", deleted: false, payload: { name: "Pier Flag", area: "Seaside", waterfront: false } }],
+    );
+    assert.equal(cleared[0].waterfront, false);
+    assert.equal(cleared[0].bar, true);
+  });
+
   test("the built catalog has editable fields and no SEO keys", () => {
     assert.ok(baseline.length > 100);
     const sample = baseline[0];

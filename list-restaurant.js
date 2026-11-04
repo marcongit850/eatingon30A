@@ -61,7 +61,7 @@
       notes: value(form, "notes"),
       authorized: Boolean(field(form, "authorized") && field(form, "authorized").checked),
     };
-    ["outdoor", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"].forEach(function (name) {
+    ["outdoor", "waterfront", "bar", "happyDrinks", "happyFood", "reservations", "kids", "groups", "music"].forEach(function (name) {
       var node = field(form, name);
       body[name] = Boolean(node && node.checked);
     });

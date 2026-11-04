@@ -114,7 +114,10 @@ export function renderCard(listing) {
     `data-area="${escapeHtml(listing.areaSlug)}"`,
     `data-meals="${escapeHtml((listing.meals || []).join("|"))}"`,
     `data-cuisines="${escapeHtml((listing.cuisines || []).join("|"))}"`,
+    `data-price="${escapeHtml(listing.price || "")}"`,
     `data-outdoor="${yesNo(listing.outdoor)}"`,
+    `data-waterfront="${yesNo(listing.waterfront)}"`,
+    `data-bar="${yesNo(listing.bar)}"`,
     `data-kids="${yesNo(listing.kids)}"`,
     `data-music="${yesNo(listing.music)}"`,
     `data-reservations="${yesNo(listing.reservations)}"`,
@@ -376,6 +379,8 @@ export function renderProfile(listing, nearby = []) {
   if (listing.price) chips.push(`<li>${escapeHtml(listing.price)}</li>`);
   const flags = [];
   if (listing.outdoor) flags.push("Outdoor dining");
+  if (listing.waterfront) flags.push("Waterfront");
+  if (listing.bar) flags.push("Bar Scene");
   if (listing.kids) flags.push("Kid friendly");
   if (listing.music) flags.push("Live music*");
   if (listing.laurensFavorite) flags.push("Lauren’s Favorites");
