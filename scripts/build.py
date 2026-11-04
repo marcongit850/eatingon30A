@@ -703,6 +703,8 @@ def load_restaurants() -> list[dict]:
                 "vibes": vibes,
                 "category": category,
                 "outdoor": is_yes(row.get("Outdoor Dining")),
+                "waterfront": is_yes(row.get("Waterfront")),
+                "bar": is_yes(row.get("Bar Scene")),
                 "kids": is_yes(row.get("Kid Friendly")),
                 "music": is_yes(row.get("Live Music")),
                 "laurensFavorite": clean_text(row.get("ID")) in favorite_ids,
@@ -1000,7 +1002,10 @@ def card(restaurant: dict, heading: str = "h2") -> str:
             f'data-area="{e(restaurant["areaSlug"])}"',
             f'data-meals="{e("|".join(restaurant["meals"]))}"',
             f'data-cuisines="{e("|".join(restaurant["cuisines"]))}"',
+            f'data-price="{e(restaurant["price"])}"',
             f'data-outdoor="{yes_no(restaurant["outdoor"])}"',
+            f'data-waterfront="{yes_no(restaurant["waterfront"])}"',
+            f'data-bar="{yes_no(restaurant["bar"])}"',
             f'data-kids="{yes_no(restaurant["kids"])}"',
             f'data-music="{yes_no(restaurant["music"])}"',
             f'data-reservations="{yes_no(restaurant["reservations"])}"',
@@ -1295,6 +1300,10 @@ def listing_intro(restaurant: dict) -> str:
     if meals and not closure_notice(restaurant):
         sentences.append(f"Come by for {human_list(meals)}.")
     amenities = []
+    if restaurant.get("waterfront"):
+        amenities.append("waterfront")
+    if restaurant.get("bar"):
+        amenities.append("a bar scene")
     if restaurant["outdoor"]:
         amenities.append("outdoor dining")
     if restaurant["music"]:
@@ -1689,7 +1698,17 @@ def browse_by_area(areas: list[dict]) -> str:
     )
 
 
-def filter_form(areas: list[dict], cuisines: list[str]) -> str:
+def flag_check(name: str, label: str, *, hidden: bool = False) -> str:
+    """Directory amenity checkbox. Waterfront and Bar Scene stay out of the tab order while unused."""
+    hidden_attr = " hidden" if hidden else ""
+    flag_attr = f' data-filter-flag="{e(name)}"' if name in {"waterfront", "bar"} else ""
+    return (
+        f'<label class="check"{flag_attr}{hidden_attr}>'
+        f'<input type="checkbox" name="{e(name)}" value="yes"><span>{e(label)}</span></label>'
+    )
+
+
+def filter_form(areas: list[dict], cuisines: list[str], restaurants: list[dict]) -> str:
     area_options = ['<option value="">All towns</option>']
     for area in areas:
         area_options.append(f'<option value="{e(area["slug"])}">{e(area["fullName"])}</option>')
@@ -1699,22 +1718,34 @@ def filter_form(areas: list[dict], cuisines: list[str]) -> str:
     cuisine_options = ['<option value="">Any cuisine</option>']
     for cuisine in cuisines:
         cuisine_options.append(f'<option value="{e(cuisine)}">{e(cuisine)}</option>')
+    used_prices = {restaurant["price"] for restaurant in restaurants if restaurant["price"]}
+    price_options = ['<option value="">Any price</option>']
+    for price in ("$", "$$", "$$$", "$$$$"):
+        if price in used_prices:
+            price_options.append(f'<option value="{e(price)}">{e(price)}</option>')
+    waterfront_count = sum(1 for restaurant in restaurants if restaurant["waterfront"])
+    bar_count = sum(1 for restaurant in restaurants if restaurant["bar"])
+    checks = [
+        flag_check("outdoor", "Outdoor dining"),
+        flag_check("waterfront", "Waterfront", hidden=waterfront_count == 0),
+        flag_check("bar", "Bar Scene", hidden=bar_count == 0),
+        flag_check("kids", "Kid friendly"),
+        flag_check("music", "Live music"),
+        flag_check("reservations", "Takes reservations"),
+        flag_check("groups", "Good for groups 12+"),
+        flag_check("happyhour", "Happy hour"),
+        flag_check("happyfood", "Happy hour food"),
+        flag_check("happydrinks", "Happy hour drinks"),
+        flag_check("laurensFavorite", "Lauren’s Favorites"),
+    ]
     return (
         '<form id="filters" class="filters" action="/restaurants/" method="get">'
         '<label class="field"><span>Search</span><input id="q" name="q" type="search" placeholder="Oysters, coffee, pizza"></label>'
         f'<label class="field"><span>Town</span><select id="area" name="area">{"".join(area_options)}</select></label>'
         f'<label class="field"><span>Meal</span><select id="meal" name="meal">{"".join(meal_options)}</select></label>'
         f'<label class="field"><span>Cuisine</span><select id="cuisine" name="cuisine">{"".join(cuisine_options)}</select></label>'
-        '<div class="checks">'
-        '<label class="check"><input type="checkbox" name="outdoor" value="yes"><span>Outdoor dining</span></label>'
-        '<label class="check"><input type="checkbox" name="kids" value="yes"><span>Kid friendly</span></label>'
-        '<label class="check"><input type="checkbox" name="music" value="yes"><span>Live music</span></label>'
-        '<label class="check"><input type="checkbox" name="reservations" value="yes"><span>Takes reservations</span></label>'
-        '<label class="check"><input type="checkbox" name="groups" value="yes"><span>Good for groups 12+</span></label>'
-        '<label class="check"><input type="checkbox" name="happyfood" value="yes"><span>Happy hour food</span></label>'
-        '<label class="check"><input type="checkbox" name="happydrinks" value="yes"><span>Happy hour drinks</span></label>'
-        '<label class="check"><input type="checkbox" name="laurensFavorite" value="yes"><span>Lauren’s Favorites</span></label>'
-        "</div>"
+        f'<label class="field"><span>Price</span><select id="price" name="price">{"".join(price_options)}</select></label>'
+        f'<div class="checks">{"".join(checks)}</div>'
         '<div class="filter-actions"><button type="submit">Apply</button><a class="clear" href="/restaurants/">Clear</a></div>'
         "</form>"
         f'<script type="application/json" id="area-names">{area_names(areas)}</script>'
@@ -1749,6 +1780,8 @@ def catalog_record(restaurant: dict) -> dict:
         "vibes": restaurant["vibes"],
         "category": restaurant["category"],
         "outdoor": restaurant["outdoor"],
+        "waterfront": restaurant["waterfront"],
+        "bar": restaurant["bar"],
         "kids": restaurant["kids"],
         "music": restaurant["music"],
         "laurensFavorite": restaurant["laurensFavorite"],
@@ -1782,6 +1815,8 @@ def public_record(restaurant: dict) -> dict:
         "search": restaurant["search"],
         "label": restaurant["label"],
         "outdoor": restaurant["outdoor"],
+        "waterfront": restaurant["waterfront"],
+        "bar": restaurant["bar"],
         "kids": restaurant["kids"],
         "music": restaurant["music"],
         "reservations": restaurant["reservations"],
@@ -1867,17 +1902,177 @@ FEATURED_ROTATION = (
     "for(var i=0;i<nodes.length;i++)nodes[i].hidden=i!==index;}();</script>"
 )
 
+HERO_CHEVRON = (
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    '<path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.75" '
+    'stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+)
+HOME_MEAL_ORDER = ["Breakfast", "Brunch", "Lunch", "Dinner", "Desserts", "Late night", "Drinks"]
+HOME_PRICE_ORDER = ["$", "$$", "$$$", "$$$$"]
+# Photos are from images/restaurants/. Each one is a listing in that category.
+HOME_CATEGORIES = (
+    ("Breakfast", "/restaurants/?meal=Breakfast", "/images/restaurants/big-bad-breakfast-inlet-beach/01.jpg", "meal", "Breakfast"),
+    ("Lunch", "/restaurants/?meal=Lunch", "/images/restaurants/bud-and-alleys-taco-bar-seaside/01.jpg", "meal", "Lunch"),
+    ("Dinner", "/restaurants/?meal=Dinner", "/images/restaurants/bud-and-alleys-seaside/01.jpg", "meal", "Dinner"),
+    ("Desserts", "/restaurants/?meal=Desserts", "/images/restaurants/kilwins-rosemary-beach/01.jpg", "meal", "Desserts"),
+    ("Happy Hour", "/restaurants/?happyhour=yes", "/images/restaurants/shades-bar-and-grill-inlet-beach/01.jpg", "happy", ""),
+    ("Seafood", "/restaurants/?cuisine=Seafood", "/images/restaurants/old-florida-fish-house-seagrove-beach/01.jpg", "cuisine", "Seafood"),
+    ("Outdoor Dining", "/restaurants/?outdoor=yes", "/images/restaurants/fish-out-of-water-watercolor/01.jpg", "outdoor", ""),
+    ("Live Music", "/restaurants/?music=yes", "/images/restaurants/ajs-grayton-beach-grayton-beach/01.jpg", "music", ""),
+)
+HERO_FIELDS = (
+    "outdoor", "music", "happyhour", "kids", "waterfront", "bar",
+    "meal", "cuisine", "price", "reservations", "groups", "happyfood",
+)
+
+
+def category_count(restaurants: list[dict], kind: str, value: str = "") -> int:
+    if kind == "meal":
+        return sum(1 for restaurant in restaurants if value in restaurant["meals"])
+    if kind == "cuisine":
+        return sum(1 for restaurant in restaurants if value in restaurant["cuisines"])
+    if kind == "happy":
+        return sum(1 for restaurant in restaurants if restaurant["happyFood"] or restaurant["happyDrinks"])
+    if kind == "outdoor":
+        return sum(1 for restaurant in restaurants if restaurant["outdoor"])
+    if kind == "music":
+        return sum(1 for restaurant in restaurants if restaurant["music"])
+    if kind == "waterfront":
+        return sum(1 for restaurant in restaurants if restaurant["waterfront"])
+    if kind == "bar":
+        return sum(1 for restaurant in restaurants if restaurant["bar"])
+    if kind == "kids":
+        return sum(1 for restaurant in restaurants if restaurant["kids"])
+    if kind == "reservations":
+        return sum(1 for restaurant in restaurants if restaurant["reservations"])
+    if kind == "groups":
+        return sum(1 for restaurant in restaurants if restaurant["groups"])
+    if kind == "happyfood":
+        return sum(1 for restaurant in restaurants if restaurant["happyFood"])
+    return 0
+
+
+def hero_chip(label: str, param: str, value: str, *, group: str = "", count: int | None = None, hidden: bool = False, flag: bool = False) -> str:
+    attrs = [
+        'type="button"',
+        'class="hero-chip"',
+        "data-hero-chip",
+        f'data-param="{e(param)}"',
+        f'data-value="{e(value)}"',
+        'aria-pressed="false"',
+    ]
+    if group:
+        attrs.append(f'data-group="{e(group)}"')
+    if flag:
+        attrs.append(f'data-hero-flag="{e(param)}"')
+    if hidden:
+        attrs.append("hidden")
+    count_html = f'<span class="hero-chip-count">{count}</span>' if count is not None else ""
+    return f'<button {" ".join(attrs)}><span>{e(label)}</span>{count_html}</button>'
+
+
+def hero_group(label: str, chips: list[str]) -> str:
+    group_id = "hero-group-" + re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-")
+    return (
+        f'<div class="hero-group"><p class="hero-group-label" id="{group_id}">{e(label)}</p>'
+        f'<div class="hero-chips" role="group" aria-labelledby="{group_id}">{"".join(chips)}</div></div>'
+    )
+
+
+def hero_search(areas: list[dict], restaurants: list[dict]) -> str:
+    """The one homepage search. Chips set the same query params as the directory."""
+    area_options = ['<option value="">All of 30A</option>']
+    for area in areas:
+        area_options.append(f'<option value="{e(area["slug"])}">{e(area["fullName"])}</option>')
+    quick = [
+        ("bar", "Bar Scene", "bar"),
+        ("waterfront", "Waterfront", "waterfront"),
+        ("outdoor", "Outdoor Dining", "outdoor"),
+        ("music", "Live Music", "music"),
+        ("happyhour", "Happy Hour", "happy"),
+        ("kids", "Kid Friendly", "kids"),
+    ]
+    quick_html = []
+    for param, label, kind in quick:
+        count = category_count(restaurants, kind)
+        hide = param in {"bar", "waterfront"} and count == 0
+        quick_html.append(hero_chip(label, param, "yes", hidden=hide, flag=param in {"bar", "waterfront"}))
+    meals = []
+    for meal in HOME_MEAL_ORDER:
+        count = category_count(restaurants, "meal", meal)
+        if count:
+            meals.append(hero_chip(meal, "meal", meal, group="meal", count=count))
+    cuisine_counts: dict[str, int] = {}
+    for restaurant in restaurants:
+        for cuisine in restaurant["cuisines"]:
+            cuisine_counts[cuisine] = cuisine_counts.get(cuisine, 0) + 1
+    cuisines = []
+    for cuisine in sorted(cuisine_counts, key=lambda name: (-cuisine_counts[name], name.lower())):
+        cuisines.append(hero_chip(cuisine, "cuisine", cuisine, group="cuisine"))
+    prices = []
+    used_prices = {restaurant["price"] for restaurant in restaurants if restaurant["price"]}
+    for price in HOME_PRICE_ORDER:
+        if price in used_prices:
+            prices.append(hero_chip(price, "price", price, group="price"))
+    good_for = [
+        hero_chip("Reservations", "reservations", "yes"),
+        hero_chip("Groups", "groups", "yes"),
+        hero_chip("Happy hour food", "happyfood", "yes"),
+    ]
+    fields = "".join(
+        f'<input type="hidden" name="{e(name)}" data-hero-field="{e(name)}" value="" disabled>'
+        for name in HERO_FIELDS
+    )
+    return (
+        '<form class="search-form" action="/restaurants/" method="get" data-hero-search>'
+        '<div class="hero-search-row">'
+        '<label class="field"><span class="sr-only">Search restaurants</span>'
+        '<input name="q" type="search" placeholder="Oysters, coffee, a town…" autocomplete="off"></label>'
+        '<button type="submit">Search</button></div>'
+        '<label class="hero-town"><span class="sr-only">Town</span>'
+        f'<select name="area">{"".join(area_options)}</select></label>'
+        '<p class="hero-looking" id="hero-looking">What are you looking for?</p>'
+        f'<div class="hero-chips" role="group" aria-labelledby="hero-looking">{"".join(quick_html)}</div>'
+        '<div class="hero-search-tools">'
+        '<button type="button" class="hero-more" data-hero-more aria-expanded="false" aria-controls="hero-more-panel">'
+        f'More filters {HERO_CHEVRON}</button>'
+        '<button type="button" class="hero-clear" data-hero-clear>Clear all</button></div>'
+        '<div id="hero-more-panel" class="hero-more-panel" hidden>'
+        f"{hero_group('Meal', meals)}"
+        f"{hero_group('Cuisine', cuisines)}"
+        f"{hero_group('Price', prices)}"
+        f"{hero_group('Good for', good_for)}"
+        '<button type="submit" class="hero-show" data-hero-show>Show restaurants</button>'
+        "</div>"
+        '<p class="hero-empty" data-hero-empty hidden>No restaurants match.</p>'
+        '<p class="sr-only" data-hero-status aria-live="polite"></p>'
+        f"{fields}</form>"
+    )
+
+
+def home_categories(restaurants: list[dict]) -> str:
+    items = []
+    for name, href, image, kind, value in HOME_CATEGORIES:
+        path = ROOT / image.lstrip("/")
+        if not path.is_file():
+            raise SystemExit(f"homepage category photo missing: {image}")
+        slug = image.split("/images/restaurants/", 1)[1].rsplit("/", 1)[0]
+        source = next((restaurant for restaurant in restaurants if restaurant["slug"] == slug), None)
+        if not source:
+            raise SystemExit(f"homepage category photo is not a listing: {image}")
+        count = category_count(restaurants, kind, value)
+        if count <= 0:
+            raise SystemExit(f"homepage category has no restaurants: {name}")
+        items.append(
+            f'<a href="{e(href)}">'
+            f'<img src="{e(image)}" alt="{e(photo_alt(source))}" loading="lazy">'
+            f'<span class="meal-copy"><span class="meal-name">{e(name)}</span>'
+            f'<span class="meal-count">{count}</span></span></a>'
+        )
+    return f'<nav class="meal-index" aria-label="Browse by category">{"".join(items)}</nav>'
+
 
 def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> None:
-    meal_counts = []
-    for meal in MEAL_ORDER:
-        count = sum(1 for restaurant in restaurants if meal in restaurant["meals"])
-        if count:
-            meal_counts.append((meal, count))
-    meals_html = "".join(
-        f'<a href="/restaurants/?meal={e(meal)}"><span>{e(meal)}</span><em>{count:02d}</em></a>'
-        for meal, count in meal_counts
-    )
     towns = []
     for area in areas:
         if area["image"]:
@@ -1914,12 +2109,9 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>Where to eat<br> on 30A.</h1>"
         '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A — from Dune Allen to Inlet Beach.</p>'
-        '<form class="search-form" action="/restaurants/" method="get">'
-        '<label class="field"><span class="sr-only">Search restaurants</span>'
-        '<input name="q" type="search" placeholder="Oysters, coffee, a town…"></label>'
-        "<button>Search</button></form>"
+        f"{hero_search(areas, restaurants)}"
         "</div></div></section>"
-        f'<nav class="meal-index" aria-label="Meals">{meals_html}</nav>'
+        f"{home_categories(restaurants)}"
         f"{cover}"
         '<section class="section band"><div class="wrap">'
         '<div class="section-head"><div><p class="kicker">West to east</p><h2>The towns</h2></div>'
@@ -2004,7 +2196,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
 def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[str]) -> None:
     pending = (
         "<script>!function(){var p=new URLSearchParams(location.search);"
-        "['meal','area','cuisine','q','outdoor','kids','music','reservations','groups','happyfood','happydrinks','laurensFavorite'].some(function(k){return p.get(k)})"
+        "['meal','area','cuisine','q','outdoor','kids','music','reservations','groups','happyfood','happydrinks','laurensFavorite','price','waterfront','bar','happyhour'].some(function(k){return p.get(k)})"
         "&&document.documentElement.classList.add('js-filter')}();</script>\n"
     )
     cards = "".join(card(restaurant) for restaurant in restaurants)
@@ -2022,7 +2214,7 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         '<p class="lede">Find restaurants along Scenic Highway 30A in Walton County. Filter by beach town, meal, or a few words.</p>'
         "</div>"
         f"{view_switch('list')}"
-        f"{filter_form(areas, cuisines)}"
+        f"{filter_form(areas, cuisines, restaurants)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
         f'<div id="cards" class="card-grid">{cards}</div>'
@@ -2096,6 +2288,10 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     flags = []
     if restaurant["outdoor"]:
         flags.append("Outdoor dining")
+    if restaurant["waterfront"]:
+        flags.append("Waterfront")
+    if restaurant["bar"]:
+        flags.append("Bar Scene")
     if restaurant["kids"]:
         flags.append("Kid friendly")
     if restaurant["music"]:
@@ -2301,7 +2497,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     )
 
 
-def build_map(areas: list[dict], cuisines: list[str]) -> None:
+def build_map(restaurants: list[dict], areas: list[dict], cuisines: list[str]) -> None:
     body = (
         '<div class="wrap page-intro">'
         '<div class="map-intro">'
@@ -2312,7 +2508,7 @@ def build_map(areas: list[dict], cuisines: list[str]) -> None:
         "<p class=\"lede\">Explore restaurants on the map using the same filters as the directory. Tap a pin to see the restaurant name, street address, and full profile.</p>"
         "</div>"
         + view_switch("map")
-        + filter_form(areas, cuisines).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
+        + filter_form(areas, cuisines, restaurants).replace('action="/restaurants/"', 'action="/map/"').replace('href="/restaurants/"', 'href="/map/"')
         + '<p id="result-count" class="count">Loading the map…</p>'
         '<p id="map-note" class="empty" hidden></p>'
         '<div class="map-layout"><div id="map" role="region" aria-label="Restaurant map"></div>'
@@ -3959,6 +4155,8 @@ LISTING_INTENTS = (
 )
 LISTING_AMENITIES = (
     ("outdoor", "Outdoor dining"),
+    ("waterfront", "Waterfront"),
+    ("bar", "Bar Scene"),
     ("happyDrinks", "Happy hour (drinks)"),
     ("happyFood", "Happy hour (food)"),
     ("reservations", "Reservations"),
@@ -4572,7 +4770,7 @@ def main() -> None:
     build_directory(restaurants, areas, cuisines)
     for restaurant in restaurants:
         build_detail(restaurant, restaurants)
-    build_map(areas, cuisines)
+    build_map(restaurants, areas, cuisines)
     build_areas(areas, restaurants)
     guides = build_guides(restaurants, areas)
     build_about()

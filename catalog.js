@@ -42,6 +42,8 @@ export function presentListing(raw) {
     vibes: raw.vibes || [],
     category: raw.category || "",
     outdoor: Boolean(raw.outdoor),
+    waterfront: Boolean(raw.waterfront),
+    bar: Boolean(raw.bar),
     kids: Boolean(raw.kids),
     music: Boolean(raw.music),
     reservations: Boolean(raw.reservations),
@@ -58,6 +60,19 @@ export function presentListing(raw) {
   };
 }
 
+// Admin rows stored before these flags existed omit the keys. A missing key
+// keeps the baseline value. An explicit true or false in the payload wins.
+const BASELINE_FLAGS = ["waterfront", "bar"];
+
+function overlayPayload(previous, payload) {
+  const next = { ...(previous || {}), ...(payload || {}) };
+  for (const key of BASELINE_FLAGS) {
+    if (payload && Object.hasOwn(payload, key)) continue;
+    if (previous && Object.hasOwn(previous, key)) next[key] = previous[key];
+  }
+  return next;
+}
+
 export function mergeCatalog(baseline, rows) {
   const map = new Map();
   for (const item of baseline || []) {
@@ -67,8 +82,7 @@ export function mergeCatalog(baseline, rows) {
     const previous = map.get(row.slug);
     const payload = row.payload || {};
     map.set(row.slug, presentListing({
-      ...(previous || {}),
-      ...payload,
+      ...overlayPayload(previous, payload),
       logo: payload.logo || (previous && previous.logo) || "",
       slug: row.slug,
       status: row.status === "draft" ? "draft" : row.status === "inactive" ? "inactive" : "live",

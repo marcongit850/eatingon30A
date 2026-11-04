@@ -104,6 +104,8 @@ function editorListing(listing, site) {
     vibes: listing.vibes,
     category: listing.category,
     outdoor: listing.outdoor,
+    waterfront: Boolean(listing.waterfront),
+    bar: Boolean(listing.bar),
     kids: listing.kids,
     music: listing.music,
     reservations: listing.reservations,

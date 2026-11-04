@@ -5,7 +5,7 @@ import { FEATURED_ROTATE_MS, describeFilters, documentTitle, featuredAutoRotate,
 
 const restaurants = JSON.parse(readFileSync(new URL("../data/restaurants.json", import.meta.url), "utf8"));
 
-const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "", reservations: "", groups: "", happyfood: "", happydrinks: "", laurensFavorite: "" };
+const blank = { meal: "", area: "", cuisine: "", q: "", outdoor: "", kids: "", music: "", reservations: "", groups: "", happyfood: "", happydrinks: "", laurensFavorite: "", price: "", waterfront: "", bar: "", happyhour: "" };
 
 test("empty filters keep the full directory", () => {
   assert.equal(restaurants.filter((item) => matches(item, blank)).length, restaurants.length);
@@ -74,6 +74,33 @@ test("amenity filters require a yes flag", () => {
   assert.ok(music.length > 0 && music.every((item) => item.music === true));
   assert.ok(music.some((item) => item.slug === "fish-out-of-water-watercolor"));
   assert.equal(describeFilters({ ...blank, groups: "yes", reservations: "yes" }, {}), "Takes reservations · Good for groups 12+");
+});
+
+test("price, waterfront, bar, and happy hour query params filter the directory", () => {
+  const priced = restaurants.filter((item) => matches(item, { ...blank, price: "$$$" }));
+  assert.ok(priced.length > 0);
+  assert.ok(priced.every((item) => item.price === "$$$"));
+  assert.ok(priced.length < restaurants.length);
+
+  const waterfront = restaurants.filter((item) => matches(item, { ...blank, waterfront: "yes" }));
+  const bar = restaurants.filter((item) => matches(item, { ...blank, bar: "yes" }));
+  assert.equal(waterfront.length, 13);
+  assert.equal(bar.length, 27);
+  assert.ok(waterfront.every((item) => item.waterfront === true));
+  assert.ok(bar.every((item) => item.bar === true));
+  assert.ok(waterfront.some((item) => item.slug === "the-red-bar-grayton-beach"));
+  assert.ok(bar.some((item) => item.slug === "redds-pub"));
+  assert.ok(!bar.some((item) => item.slug === "fish-out-of-water-watercolor"));
+
+  const happy = restaurants.filter((item) => matches(item, { ...blank, happyhour: "yes" }));
+  assert.ok(happy.length > 0);
+  assert.ok(happy.every((item) => item.happyFood || item.happyDrinks));
+  assert.ok(happy.some((item) => item.happyFood && !item.happyDrinks));
+  assert.ok(happy.some((item) => item.happyDrinks && !item.happyFood));
+  const neither = restaurants.filter((item) => !item.happyFood && !item.happyDrinks);
+  assert.ok(neither.length > 0);
+  assert.equal(matches(neither[0], { ...blank, happyhour: "yes" }), false);
+  assert.equal(describeFilters({ ...blank, happyhour: "yes", waterfront: "yes", bar: "yes", price: "$$" }, {}), "$$ · Waterfront · Bar Scene · Happy hour");
 });
 
 test("Lauren’s Favorites keeps only the six tagged restaurants", () => {

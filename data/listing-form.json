@@ -117,6 +117,14 @@
       "label": "Outdoor dining"
     },
     {
+      "name": "waterfront",
+      "label": "Waterfront"
+    },
+    {
+      "name": "bar",
+      "label": "Bar Scene"
+    },
+    {
       "name": "happyDrinks",
       "label": "Happy hour (drinks)"
     },

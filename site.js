@@ -4,7 +4,7 @@
  * directory stay in lockstep. Imported by tests; the browser boots below.
  */
 
-const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music", "reservations", "groups", "happyfood", "happydrinks", "laurensFavorite"];
+const FILTER_KEYS = ["meal", "area", "cuisine", "q", "outdoor", "kids", "music", "reservations", "groups", "happyfood", "happydrinks", "laurensFavorite", "price", "waterfront", "bar", "happyhour"];
 
 export function filtersFromParams(params) {
   const read = (key) => (params.get(key) || "").trim();
@@ -21,6 +21,10 @@ export function filtersFromParams(params) {
     happyfood: read("happyfood"),
     happydrinks: read("happydrinks"),
     laurensFavorite: read("laurensFavorite"),
+    price: read("price"),
+    waterfront: read("waterfront"),
+    bar: read("bar"),
+    happyhour: read("happyhour"),
   };
 }
 
@@ -36,13 +40,17 @@ export function matches(record, filters) {
     const cuisines = (record.cuisines || []).map((cuisine) => cuisine.toLowerCase());
     if (!cuisines.includes(want)) return false;
   }
+  if (filters.price && record.price !== filters.price) return false;
   if (filters.outdoor === "yes" && !record.outdoor) return false;
+  if (filters.waterfront === "yes" && !record.waterfront) return false;
+  if (filters.bar === "yes" && !record.bar) return false;
   if (filters.kids === "yes" && !record.kids) return false;
   if (filters.music === "yes" && !record.music) return false;
   if (filters.reservations === "yes" && !record.reservations) return false;
   if (filters.groups === "yes" && !record.groups) return false;
   if (filters.happyfood === "yes" && !record.happyFood) return false;
   if (filters.happydrinks === "yes" && !record.happyDrinks) return false;
+  if (filters.happyhour === "yes" && !(record.happyFood || record.happyDrinks)) return false;
   if (filters.laurensFavorite === "yes" && !record.laurensFavorite) return false;
   const query = (filters.q || "").trim().toLowerCase();
   if (query && !(record.search || "").toLowerCase().includes(query)) return false;
@@ -167,13 +175,17 @@ export function describeFilters(filters, areaNames, emptyLabel = "Restaurants on
   if (filters.meal) parts.push(filters.meal);
   if (filters.cuisine) parts.push(filters.cuisine);
   if (filters.q) parts.push(`“${filters.q}”`);
+  if (filters.price) parts.push(filters.price);
   if (filters.outdoor === "yes") parts.push("Outdoor dining");
+  if (filters.waterfront === "yes") parts.push("Waterfront");
+  if (filters.bar === "yes") parts.push("Bar Scene");
   if (filters.kids === "yes") parts.push("Kid friendly");
   if (filters.music === "yes") parts.push("Live music");
   if (filters.reservations === "yes") parts.push("Takes reservations");
   if (filters.groups === "yes") parts.push("Good for groups 12+");
   if (filters.happyfood === "yes") parts.push("Happy hour food");
   if (filters.happydrinks === "yes") parts.push("Happy hour drinks");
+  if (filters.happyhour === "yes") parts.push("Happy hour");
   if (filters.laurensFavorite === "yes") parts.push("Lauren’s Favorites");
   let label = parts.length ? parts.join(" · ") : emptyLabel;
   if (filters.area) {
@@ -189,7 +201,10 @@ function recordFromCard(card) {
     areaSlug: card.dataset.area || "",
     meals: split(card.dataset.meals),
     cuisines: split(card.dataset.cuisines),
+    price: card.dataset.price || "",
     outdoor: card.dataset.outdoor === "yes",
+    waterfront: card.dataset.waterfront === "yes",
+    bar: card.dataset.bar === "yes",
     kids: card.dataset.kids === "yes",
     music: card.dataset.music === "yes",
     reservations: card.dataset.reservations === "yes",
@@ -257,6 +272,151 @@ function syncUrl(filters) {
   history.replaceState(null, "", next);
 }
 
+function revealFlagFilters(records) {
+  const params = new URLSearchParams(location.search);
+  for (const name of ["waterfront", "bar"]) {
+    const label = document.querySelector(`[data-filter-flag="${name}"]`);
+    if (!label) continue;
+    const any = (records || []).some((record) => record && record[name]);
+    label.hidden = !(any || params.get(name) === "yes");
+  }
+}
+
+function bootHeroSearch() {
+  const form = document.querySelector("[data-hero-search]");
+  if (!form || form.dataset.bound === "true") return;
+  form.dataset.bound = "true";
+  const toggle = form.querySelector("[data-hero-more]");
+  const panel = form.querySelector("#hero-more-panel");
+  const clear = form.querySelector("[data-hero-clear]");
+  const show = form.querySelector("[data-hero-show]");
+  const status = form.querySelector("[data-hero-status]");
+  const empty = form.querySelector("[data-hero-empty]");
+  const searchButton = form.querySelector(".hero-search-row button");
+  let catalog = null;
+
+  const setPressed = (chip, pressed) => {
+    chip.setAttribute("aria-pressed", pressed ? "true" : "false");
+  };
+
+  const syncFields = () => {
+    form.querySelectorAll("[data-hero-field]").forEach((input) => {
+      input.disabled = true;
+      input.value = "";
+    });
+    form.querySelectorAll("[data-hero-chip]").forEach((chip) => {
+      if (chip.hidden || chip.getAttribute("aria-pressed") !== "true") return;
+      const input = form.querySelector(`[data-hero-field="${chip.dataset.param}"]`);
+      if (!input) return;
+      input.disabled = false;
+      input.value = chip.dataset.value || "yes";
+    });
+  };
+
+  const currentFilters = () => {
+    syncFields();
+    return formFilters(form);
+  };
+
+  const revealFlags = () => {
+    if (!catalog) return;
+    for (const name of ["waterfront", "bar"]) {
+      const chip = form.querySelector(`[data-hero-flag="${name}"]`);
+      if (!chip) continue;
+      const any = catalog.some((record) => record[name]);
+      chip.hidden = !any;
+      if (!any) setPressed(chip, false);
+    }
+  };
+
+  const updateCount = () => {
+    const filters = currentFilters();
+    if (!catalog) {
+      if (show) show.textContent = "Show restaurants";
+      if (show) show.disabled = false;
+      if (searchButton) searchButton.disabled = false;
+      if (empty) empty.hidden = true;
+      return null;
+    }
+    const count = catalog.filter((record) => matches(record, filters)).length;
+    const noun = count === 1 ? "restaurant" : "restaurants";
+    if (show) {
+      show.textContent = `Show ${count} ${noun}`;
+      show.disabled = count === 0;
+    }
+    if (searchButton) searchButton.disabled = count === 0;
+    if (empty) empty.hidden = count !== 0;
+    if (status) status.textContent = count === 0 ? "No restaurants match." : `${count} ${noun}`;
+    return count;
+  };
+
+  form.querySelectorAll("[data-hero-chip]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const next = chip.getAttribute("aria-pressed") !== "true";
+      const group = chip.dataset.group;
+      if (group && next) {
+        form.querySelectorAll(`[data-group="${group}"]`).forEach((other) => setPressed(other, false));
+      }
+      setPressed(chip, next);
+      updateCount();
+    });
+  });
+
+  if (toggle && panel) {
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+      if (!open) updateCount();
+    });
+  }
+  if (clear) {
+    clear.addEventListener("click", () => {
+      const query = form.querySelector('input[name="q"]');
+      const area = form.querySelector('select[name="area"]');
+      if (query) query.value = "";
+      if (area) area.value = "";
+      form.querySelectorAll("[data-hero-chip]").forEach((chip) => setPressed(chip, false));
+      updateCount();
+    });
+  }
+  form.addEventListener("input", () => updateCount());
+  form.addEventListener("change", () => updateCount());
+  form.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !toggle || !panel) return;
+    if (toggle.getAttribute("aria-expanded") !== "true") return;
+    toggle.setAttribute("aria-expanded", "false");
+    panel.hidden = true;
+    toggle.focus();
+  });
+  form.addEventListener("submit", (event) => {
+    const count = updateCount();
+    if (catalog && count === 0) {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    const params = paramsFromFilters(currentFilters());
+    const query = params.toString();
+    location.assign(query ? `/restaurants/?${query}` : "/restaurants/");
+  });
+
+  fetch("/data/restaurants.json")
+    .then((response) => {
+      if (!response.ok) throw new Error(String(response.status));
+      return response.json();
+    })
+    .then((data) => {
+      catalog = Array.isArray(data) ? data : [];
+      revealFlags();
+      updateCount();
+    })
+    .catch(() => {
+      catalog = null;
+      updateCount();
+    });
+}
+
 function bootDirectory() {
   const form = document.querySelector("#filters");
   const cards = [...document.querySelectorAll("#cards .card")];
@@ -287,6 +447,7 @@ function bootDirectory() {
 
   const current = filtersFromParams(new URLSearchParams(location.search));
   writeForm(form, current);
+  revealFlagFilters(cards.map(recordFromCard));
   apply(current, false);
 
   form.addEventListener("submit", (event) => {
@@ -393,6 +554,7 @@ function bootMap() {
     })
     .then((data) => {
       restaurants = data;
+      revealFlagFilters(restaurants);
       const filters = filtersFromParams(new URLSearchParams(location.search));
       if (form) writeForm(form, filters);
       apply(filters, false);
@@ -535,6 +697,7 @@ function bootFeatured() {
 
 function boot() {
   bootFeatured();
+  if (document.querySelector("[data-hero-search]")) bootHeroSearch();
   if (document.querySelector("#cards") && document.querySelector("#filters")) bootDirectory();
   if (document.querySelector("#map")) bootMap();
   if (document.querySelector("#detail-map")) bootDetailMap();

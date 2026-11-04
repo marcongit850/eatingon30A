@@ -83,6 +83,8 @@
       vibes: [],
       category: "",
       outdoor: false,
+      waterfront: false,
+      bar: false,
       kids: false,
       music: false,
       reservations: false,
@@ -256,6 +258,8 @@
       checks("foods", "Foods", state.options.foods, listing.foods) +
       '<fieldset><legend>Details</legend><div class="checks admin-checks">' +
       flag("outdoor", "Outdoor dining", listing.outdoor) +
+      flag("waterfront", "Waterfront", listing.waterfront) +
+      flag("bar", "Bar Scene", listing.bar) +
       flag("kids", "Kid friendly", listing.kids) +
       flag("music", "Live music", listing.music) +
       flag("reservations", "Takes reservations", listing.reservations) +
@@ -336,6 +340,8 @@
       vibes: value("vibes") ? value("vibes").split(",").map(function (item) { return item.trim(); }).filter(Boolean) : [],
       category: value("category"),
       outdoor: readFlag(form, "outdoor"),
+      waterfront: readFlag(form, "waterfront"),
+      bar: readFlag(form, "bar"),
       kids: readFlag(form, "kids"),
       music: readFlag(form, "music"),
       reservations: readFlag(form, "reservations"),
