@@ -135,16 +135,16 @@ The accounts Worker sets `ea_central` on its own host only (HttpOnly, SameSite=L
 
 `wrangler.jsonc` sets `ACCOUNT_SITE` to `30a` and `ACCOUNTS_ORIGIN` to `https://eating-accounts.352marc.workers.dev`. Change the origin if Cloudflare assigns a different workers.dev host. Do not add a custom domain binding in this repo.
 
-Deploy the accounts Worker before sign-in will work. From `accounts/`:
+Deploy the accounts Worker from `accounts/` before sign-in will work. `accounts/wrangler.jsonc` already has the live `eating-accounts` database id. Do not create a second database.
 
 ```bash
-npx wrangler d1 create eating-accounts
+cd accounts
+npx wrangler deploy
 ```
 
-Put the returned `database_id` in `accounts/wrangler.jsonc` in place of the placeholder. Then:
+After any accounts change, hard reload the admin page before saving. The database, migrations, and secrets are already on that Worker. First-time setup on an empty account, from `accounts/`, is `npx wrangler d1 create eating-accounts`, then put that new id in `wrangler.jsonc`, then:
 
 ```bash
-npx wrangler deploy -c accounts/wrangler.jsonc
 npx wrangler d1 migrations apply eating-accounts --remote
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put SUBSCRIBE_FROM
