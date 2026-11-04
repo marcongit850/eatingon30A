@@ -80,8 +80,17 @@ function keepLogo(value) {
   return "";
 }
 
-function storedPayload(value, logo) {
+// These two flags are optional on a write. validateListing fills a missing key
+// with false; that must not replace a stored boolean or the CSV baseline.
+const OPTIONAL_FLAGS = ["waterfront", "bar"];
+
+function storedPayload(value, logo, body, previous) {
   const payload = { ...value };
+  for (const key of OPTIONAL_FLAGS) {
+    if (body && Object.hasOwn(body, key)) continue;
+    if (previous && (previous[key] === true || previous[key] === false)) payload[key] = previous[key];
+    else delete payload[key];
+  }
   if (logo) payload.logo = logo;
   return payload;
 }
@@ -115,7 +124,7 @@ export async function createListing(db, body, email) {
   } else {
     slug = listingSlug(parsed.value.name, parsed.value.area, used);
   }
-  const saved = await writeListing(db, site, slug, parsed.status, storedPayload(parsed.value, ""), email);
+  const saved = await writeListing(db, site, slug, parsed.status, storedPayload(parsed.value, "", body, null), email);
   return json({ ok: true, listing: { site, ...saved } });
 }
 
@@ -139,7 +148,7 @@ export async function setListingActive(db, site, slug, active, body, email) {
     site,
     slug,
     status,
-    storedPayload({ ...parsed.value, photos }, logo),
+    storedPayload({ ...parsed.value, photos }, logo, body, previous),
     email,
   );
   return json({ ok: true, listing: { site, ...saved } });
@@ -157,7 +166,7 @@ export async function updateListing(db, env, slug, body, email) {
   const previous = current ? parsePayload(current.payload) : null;
   const logo = keepLogo(body && body.logo) || keepLogo(previous && previous.logo);
   const photos = await dropRemovedPhotos(db, env && env.PHOTOS, site, slug, parsed.value.photos, allowed);
-  const saved = await writeListing(db, site, slug, parsed.status, storedPayload({ ...parsed.value, photos }, logo), email);
+  const saved = await writeListing(db, site, slug, parsed.status, storedPayload({ ...parsed.value, photos }, logo, body, previous), email);
   return json({ ok: true, listing: { site, ...saved } });
 }
 
