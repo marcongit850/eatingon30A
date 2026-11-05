@@ -34,6 +34,10 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
+    // Serves /name/ from name/index.html. The mode's own redirect is a 307
+    // and the status cannot be changed. worker.js answers directory URLs
+    // with a 301 first, so that 307 is not what Google receives. Do not set
+    // this to "none": /restaurants/ would stop serving restaurants/index.html.
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
     // true so the apex host hits canonicalRedirect before static HTML.

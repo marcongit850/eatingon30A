@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import worker, { canonicalRedirect, legacyAmpersandRedirect, markNotFound, robotsTagForHost, stripFalseCanonical } from "../worker.js";
+import { patchHtml, renderCard, renderProfile } from "../public-html.js";
+import worker, {
+  canonicalRedirect,
+  directorySlashPath,
+  legacyAmpersandRedirect,
+  markNotFound,
+  robotsTagForHost,
+  stripFalseCanonical,
+  trailingSlashRedirect,
+  withHtmlCharset,
+} from "../worker.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const config = JSON.parse(readFileSync(join(root, "site.config.json"), "utf8"));
@@ -335,6 +345,94 @@ assert.equal(locs.includes(`${ORIGIN}/list-your-restaurant/`), true);
 assert.equal(locs.length, 7 + 11 + 14 + 155);
 assert.match(sitemap, new RegExp(`<loc>${ORIGIN.replaceAll(".", "\\.")}/areas/seaside/</loc>\\s*<lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`));
 assert.equal(sitemap.includes("workers.dev"), false);
+
+const shortMeta = {
+  "angelinas-pizzeria-and-pasta-seagrove-beach": [60, 160],
+  "basmatis-asian-cuisine-blue-mountain-beach": [60, 160],
+  "don-pedros-mexican-restaurant": [60, 160],
+  "edwards-fine-food-and-wine-rosemary-beach": [60, 160],
+  "heavenlys-shortcakes-and-ice-cream-seaside": [60, 160],
+  "cafe-thirty-a-seagrove-beach": [60, 160],
+  "cajun-corner-sports-bar-and-grill": [60, 160],
+  "mimmos-30a-blue-mountain-beach": [60, 160],
+};
+for (const [slug, [titleLimit, descLimit]] of Object.entries(shortMeta)) {
+  const page = read(`restaurants/${slug}/index.html`);
+  const title = attr(page, /<title>([^<]+)<\/title>/);
+  const description = attr(page, /<meta name="description" content="([^"]+)">/);
+  assert.ok(title.length <= titleLimit, `${slug} title ${title.length}: ${title}`);
+  assert.ok(description.length <= descLimit, `${slug} description ${description.length}: ${description}`);
+}
+
+const mapHtml = read("map/index.html");
+assert.match(mapHtml, /alt="Map of restaurants along Scenic Highway 30A"/);
+for (const path of htmlPages) {
+  const html = readFileSync(path, "utf8");
+  for (const tag of html.matchAll(/<img\b[^>]*class="logo"[^>]*>/g)) {
+    assert.match(tag[0], /\bwidth="/, path);
+    assert.match(tag[0], /\bheight="/, path);
+  }
+}
+
+const watersound = read("areas/watersound-origins/index.html");
+const hiddenMarket = patchHtml(watersound, "/areas/watersound-origins/", {
+  hidden: [{ slug: "village-market-cafe-bar-watersound-origins" }],
+  placed: [],
+});
+const hiddenLd = jsonLd(hiddenMarket);
+assert.equal(hiddenLd["@graph"].some((node) => node["@type"] === "WebSite"), true);
+assert.equal(hiddenLd["@graph"].some((node) => node["@type"] === "Organization"), true);
+assert.equal(hiddenLd["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
+const hiddenList = hiddenLd["@graph"].find((node) => node["@type"] === "ItemList");
+assert.equal(hiddenList.itemListElement.some((item) => String(item.url).includes("village-market-cafe-bar")), false);
+assert.equal(hiddenList.numberOfItems, hiddenList.itemListElement.length);
+
+const reddCard = renderCard({
+  slug: "redds-pub",
+  name: "Redd’s Pub",
+  area: "Nearby",
+  areaSlug: "nearby",
+  subarea: "US 98",
+  photos: [{ src: "/images/restaurants/redds-pub/02.jpg" }],
+});
+assert.match(reddCard, /src="\/images\/restaurants\/redds-pub\/02\.jpg"/);
+assert.match(reddCard, /width="600"/);
+assert.match(reddCard, /height="434"/);
+const redBarPage = renderProfile({
+  slug: "the-red-bar-grayton-beach",
+  name: "The Red Bar",
+  area: "Grayton Beach",
+  areaSlug: "grayton-beach",
+  photos: [{ src: "/images/restaurants/the-red-bar-grayton-beach/01.jpg" }],
+}, []);
+assert.match(redBarPage, /src="\/images\/restaurants\/the-red-bar-grayton-beach\/01\.jpg"[^>]*width="1600" height="1200"/);
+
+const slashRestaurants = trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants"));
+assert.equal(slashRestaurants.status, 301);
+assert.equal(slashRestaurants.headers.get("location"), "https://www.eatingon30a.com/restaurants/");
+const slashMap = trailingSlashRedirect(new URL("https://www.eatingon30a.com/map?area=seaside"));
+assert.equal(slashMap.status, 301);
+assert.equal(slashMap.headers.get("location"), "https://www.eatingon30a.com/map/?area=seaside");
+const slashListing = trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants/salty-butcher"));
+assert.equal(slashListing.status, 301);
+assert.equal(slashListing.headers.get("location"), "https://www.eatingon30a.com/restaurants/salty-butcher/");
+assert.equal(trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants/charlies-delights")).headers.get("location"), "https://www.eatingon30a.com/restaurants/charlies-delights/");
+assert.equal(trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants/")), null);
+assert.equal(trailingSlashRedirect(new URL("https://www.eatingon30a.com/styles.css")), null);
+assert.equal(trailingSlashRedirect(new URL("https://www.eatingon30a.com/sitemap.xml")), null);
+assert.equal(trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants/salty-butcher"), "POST"), null);
+assert.equal(directorySlashPath("/restaurants/index.html"), "/restaurants/");
+const apexDirectory = canonicalRedirect(new URL("https://eatingon30a.com/restaurants"));
+assert.equal(apexDirectory.status, 301);
+assert.equal(apexDirectory.headers.get("location"), "https://www.eatingon30a.com/restaurants/");
+const apexMap = canonicalRedirect(new URL("https://eatingon30a.com/map"));
+assert.equal(apexMap.headers.get("location"), "https://www.eatingon30a.com/map/");
+const plainHtml = withHtmlCharset(new Response("<html></html>", { headers: { "content-type": "text/html" } }));
+assert.equal(plainHtml.headers.get("content-type"), "text/html; charset=utf-8");
+const already = withHtmlCharset(new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } }));
+assert.equal(already.headers.get("content-type"), "text/html; charset=utf-8");
+const jpeg = withHtmlCharset(new Response("x", { headers: { "content-type": "image/jpeg" } }));
+assert.equal(jpeg.headers.get("content-type"), "image/jpeg");
 
 const apex = canonicalRedirect(new URL("https://eatingon30a.com/restaurants/o-ku-alys-beach/?q=sushi"));
 assert.equal(apex.status, 301);

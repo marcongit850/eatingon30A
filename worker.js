@@ -794,6 +794,32 @@ export async function markNotFound(response) {
   return new Response(html, { status: 404, statusText: response.statusText, headers });
 }
 
+// Folder pages live at /name/index.html. html_handling "auto-trailing-slash"
+// redirects /name to /name/ with a 307, and that status is not configurable.
+// Return the slashed path for a directory request, or "" when the path should
+// stay as it is (a file, an API route, or a URL that already ends in /).
+export function directorySlashPath(pathname) {
+  const path = String(pathname || "/");
+  if (path === "/" || path.startsWith("/api/") || path.startsWith("/media/")) return "";
+  const index = path.match(/^(.*)\/index\.html$/i);
+  if (index) return `${index[1]}/`;
+  if (path.endsWith("/")) return "";
+  const last = path.slice(path.lastIndexOf("/") + 1);
+  if (last.includes(".")) return "";
+  return `${path}/`;
+}
+
+export function trailingSlashRedirect(url, method = "GET") {
+  const verb = String(method || "GET").toUpperCase();
+  if (verb !== "GET" && verb !== "HEAD") return null;
+  const next = directorySlashPath(url.pathname);
+  if (!next || next === url.pathname) return null;
+  const target = new URL(url.toString());
+  target.pathname = next;
+  target.hash = "";
+  return new Response(null, { status: 301, headers: { location: target.toString() } });
+}
+
 export function canonicalRedirect(url, method = "GET") {
   const host = String(url.hostname || "").toLowerCase();
   if (host !== "eatingon30a.com") return null;
@@ -804,8 +830,25 @@ export function canonicalRedirect(url, method = "GET") {
   const target = new URL(url.toString());
   target.protocol = "https:";
   target.hostname = CANONICAL_HOST;
+  if (verb === "GET" || verb === "HEAD") {
+    const next = directorySlashPath(target.pathname);
+    if (next) target.pathname = next;
+  }
   const status = verb === "GET" || verb === "HEAD" ? 301 : 308;
   return new Response(null, { status, headers: { location: target.toString() } });
+}
+
+export function withHtmlCharset(response) {
+  if (!response) return response;
+  const type = response.headers.get("content-type") || "";
+  if (!/^text\/html\b/i.test(type) || /charset\s*=/i.test(type)) return response;
+  const headers = new Headers(response.headers);
+  headers.set("content-type", "text/html; charset=utf-8");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 export function robotsTagForHost(hostname) {
@@ -925,6 +968,11 @@ export default {
     if (redirect) return redirect;
     const legacy = legacyAmpersandRedirect(url, request.method);
     if (legacy) return legacy;
+    // Before static assets. auto-trailing-slash would answer these with a 307,
+    // and /restaurants and /map then lose the Location header when the catalog
+    // overlay rebuilds that response.
+    const slash = trailingSlashRedirect(url, request.method);
+    if (slash) return slash;
     if (url.pathname === "/api/subscribe") return handleSubscribe(request, env);
     if (url.pathname === "/api/listing") return handleListing(request, env);
     if (url.pathname === "/api/list-restaurant") return handleListRestaurant(request, env);
@@ -932,6 +980,6 @@ export default {
     if (url.pathname.startsWith("/api/admin/") || url.pathname.startsWith("/media/photos/")) {
       return handleAdmin(request, env);
     }
-    return await withPreviewRobots(url, await markNotFound(await servePublic(request, await env.ASSETS.fetch(request), env)));
+    return withHtmlCharset(await withPreviewRobots(url, await markNotFound(await servePublic(request, await env.ASSETS.fetch(request), env))));
   },
 };
