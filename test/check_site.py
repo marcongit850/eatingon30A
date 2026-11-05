@@ -1150,7 +1150,7 @@ check('class="footer-mark"' in shared_footer and 'src="/images/eating-on-30a-log
 check('alt="Eating on 30A"' in shared_footer and "<em>Eating</em>" not in shared_footer, "footer logo needs alt text")
 check("Be sure to also check out" in shared_footer, "footer should point visitors to the sister guide")
 check(
-    'class="footer-also"' in shared_footer and 'href="https://eatingindestin.352marc.workers.dev"' in shared_footer,
+    'class="footer-also"' in shared_footer and 'href="https://eatingindestin.com/"' in shared_footer,
     "footer promo should link Eating in Destin",
 )
 check(
