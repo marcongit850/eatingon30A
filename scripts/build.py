@@ -1879,6 +1879,18 @@ def area_names(areas: list[dict]) -> str:
     return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def directory_town_label(area: dict) -> str:
+    """Directory chip label. Nearby listings are in Santa Rosa Beach. The query value stays nearby."""
+    if area["slug"] == "nearby":
+        return "Santa Rosa Beach"
+    return area["fullName"]
+
+
+def directory_area_names(areas: list[dict]) -> str:
+    payload = {area["slug"]: directory_town_label(area) for area in areas}
+    return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
+
+
 VIDEO_TOUR_SCRIPT = """
 !function(){
   var root=document.querySelector(".video-tour");
@@ -2304,7 +2316,7 @@ DIRECTORY_CHIP_FIELDS = (
 def chip_filter_form(areas: list[dict], cuisines: list[str], restaurants: list[dict]) -> str:
     """Directory filters. Same chip buttons as the homepage, plus the extras that page does not show."""
     towns = [
-        hero_chip(area["fullName"], "area", area["slug"], group="area")
+        hero_chip(directory_town_label(area), "area", area["slug"], group="area")
         for area in areas
     ]
     waterfront_count = sum(1 for restaurant in restaurants if restaurant["waterfront"])
@@ -2384,7 +2396,7 @@ def chip_filter_form(areas: list[dict], cuisines: list[str], restaurants: list[d
         "</div>"
         f"{fields}</form>"
         f"{script}"
-        f'<script type="application/json" id="area-names">{area_names(areas)}</script>'
+        f'<script type="application/json" id="area-names">{directory_area_names(areas)}</script>'
     )
 
 

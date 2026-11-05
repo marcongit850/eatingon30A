@@ -1073,6 +1073,14 @@ nearby_meta = nearby_page.split('name="description" content="', 1)[1].split('"',
 check("on 30A" not in nearby_meta and "on Scenic Highway 30A" not in nearby_meta, f"Nearby meta should not say on 30A: {nearby_meta}")
 check('href="/restaurants/?area=nearby"' in home or 'href="/areas/nearby/"' in home, "homepage should browse Nearby")
 check('value="nearby"' in directory, "directory town filter should include Nearby")
+check(
+    'data-param="area" data-value="nearby" aria-pressed="false" data-group="area"><span>Santa Rosa Beach</span>' in directory,
+    "Nearby town chip should say Santa Rosa Beach and keep area=nearby",
+)
+check(
+    all("Santa Rosa Beach" in (item.get("address") or "") for item in nearby_rows),
+    "Nearby listings should all be in Santa Rosa Beach",
+)
 for item in nearby_rows:
     page = (ROOT / "restaurants" / item["slug"] / "index.html").read_text(encoding="utf-8")
     title = page.split("<title>", 1)[1].split("</title>", 1)[0]
