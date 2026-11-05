@@ -40,10 +40,26 @@
     });
   }
 
+  var SITE_ORIGINS = {
+    "30a": "https://www.eatingon30a.com",
+    destin: "https://www.eatingindestin.com",
+  };
+
   function siteLabel() {
     if (!state.options) return state.site === "destin" ? "Eating in Destin" : "Eating on 30A";
     var match = state.options.sites.filter(function (site) { return site.id === state.site; })[0];
     return match ? match.label : state.site;
+  }
+
+  function publicListingHref(slug) {
+    var origin = SITE_ORIGINS[state.site] || SITE_ORIGINS["30a"];
+    return origin.replace(/\/$/, "") + "/restaurants/" + encodeURIComponent(slug) + "/";
+  }
+
+  function publicLink(slug, name) {
+    if (!slug) return "";
+    var label = name ? "Link to the live page for " + name : "Link to the live page";
+    return '<a class="button secondary admin-public-link" href="' + escapeHtml(publicListingHref(slug)) + '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHtml(label) + '">Link</a>';
   }
 
   function areas() {
@@ -180,9 +196,9 @@
       var toggle = listing.status === "inactive"
         ? '<button type="button" class="button admin-list-toggle" data-set-active="true" data-slug="' + escapeHtml(listing.slug) + '">Reactivate</button>'
         : '<button type="button" class="button secondary admin-list-toggle" data-set-active="false" data-slug="' + escapeHtml(listing.slug) + '">Deactivate</button>';
-      return "<tr><td><a href=\"#\" data-edit=\"" + escapeHtml(listing.slug) + "\">" + escapeHtml(listing.name) + "</a></td><td>" + escapeHtml(listing.area) + "</td><td><span class=\"" + badge + "\">" + label + "</span></td><td>" + listing.photoCount + "</td><td>" + toggle + "</td></tr>";
+      return "<tr><td><a href=\"#\" data-edit=\"" + escapeHtml(listing.slug) + "\">" + escapeHtml(listing.name) + "</a></td><td>" + escapeHtml(listing.area) + "</td><td><span class=\"" + badge + "\">" + label + "</span></td><td>" + listing.photoCount + "</td><td>" + publicLink(listing.slug, listing.name) + "</td><td>" + toggle + "</td></tr>";
     }).join("");
-    if (!body) body = '<tr><td colspan="5">No listings match.</td></tr>';
+    if (!body) body = '<tr><td colspan="6">No listings match.</td></tr>';
     var sites = (state.options ? state.options.sites : []).map(function (site) {
       var pressed = site.id === state.site ? "true" : "false";
       return '<button type="button" class="button secondary" data-site="' + site.id + '" aria-pressed="' + pressed + '">' + escapeHtml(site.label) + "</button>";
@@ -194,7 +210,7 @@
       '<label class="field"><span>Search</span><input id="admin-search" type="search" value="' + escapeHtml(state.query) + '" placeholder="Name or town"></label>' +
       '<p class="admin-message" data-error="' + (state.error ? "true" : "false") + '">' + escapeHtml(state.message) + "</p>" +
       '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>' +
-      sortHeader("name", "Restaurant") + sortHeader("area", "Area") + sortHeader("status", "Status") + sortHeader("photos", "Photos") + "<th scope=\"col\">Visibility</th>" +
+      sortHeader("name", "Restaurant") + sortHeader("area", "Area") + sortHeader("status", "Status") + sortHeader("photos", "Photos") + "<th scope=\"col\">Page</th><th scope=\"col\">Visibility</th>" +
       "</tr></thead><tbody>" + body + "</tbody></table></div>"
     );
   }
@@ -229,7 +245,9 @@
       }
     }
     return (
-      '<p><button type="button" class="button secondary" data-back>All listings</button></p>' +
+      '<p class="admin-editor-bar"><button type="button" class="button secondary" data-back>All listings</button>' +
+      publicLink(listing.slug, listing.name) +
+      "</p>" +
       "<h2>" + escapeHtml(listing.slug ? listing.name : "New listing") + "</h2>" +
       visibility +
       '<p class="admin-lead">' + escapeHtml(siteLabel()) + ". Live is the public guide. Draft stays hidden while you edit.</p>" +
@@ -269,7 +287,7 @@
       flag("laurensFavorite", "Lauren’s Favorites", listing.laurensFavorite) +
       "</div></fieldset>" +
       '<div class="admin-actions"><button class="button" type="submit">Save</button>' +
-      (listing.slug && listing.status === "live" && state.site === "30a" ? '<a class="button secondary" href="/restaurants/' + escapeHtml(listing.slug) + '/">View</a>' : "") +
+      publicLink(listing.slug, listing.name) +
       (listing.slug ? '<button type="button" class="button secondary" data-delete>Delete</button>' : "") +
       "</div>" +
       '<p class="admin-message" data-error="' + (state.error ? "true" : "false") + '">' + escapeHtml(state.message) + "</p>" +
