@@ -1467,6 +1467,7 @@ CUISINE_INTRO = {
     "Dessert": "is a dessert stop",
     "Southern": "serves Southern food",
     "Mexican": "serves Mexican food",
+    "Latin Coastal": "serves Latin Coastal food",
     "Asian": "serves Asian food",
     "Japanese": "serves Japanese food",
     "Mediterranean": "serves Mediterranean food",
@@ -5197,6 +5198,9 @@ def write_image_sizes() -> None:
     if images.is_dir():
         for path in images.rglob("*"):
             if not path.is_file() or path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+                continue
+            # Masters kept beside a listing are not pages or card images.
+            if "originals" in path.parts:
                 continue
             info = local_image_info(path)
             if not info:

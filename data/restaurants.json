@@ -2758,17 +2758,19 @@
       "Dinner"
     ],
     "cuisines": [
-      "Mexican"
+      "Latin Coastal"
     ],
     "foods": [
-      "Tacos"
+      "Tacos",
+      "Ceviches",
+      "Authentic Latin"
     ],
     "price": "$$",
     "lat": 30.2816635,
     "lng": -86.0196426,
     "address": "10343 E County Hwy 30A, Inlet Beach, FL 32461, USA",
     "phone": "(850) 231-4021",
-    "search": "laco seacrest  seacrest beach mexican lunch dinner tacos restaurant laco, formerly la cocina, serves latin-inspired lunch and dinner with a coastal twist in seacrest beach. laco la cocina restaurant tacos mexican latin casual dining seacrest $$",
+    "search": "laco seacrest  seacrest beach latin coastal lunch dinner tacos ceviches authentic latin restaurant laco, formerly la cocina, serves latin-inspired lunch and dinner with a coastal twist in seacrest beach. laco la cocina restaurant tacos ceviches authentic latin coastal casual dining seacrest $$",
     "label": "Seacrest Beach",
     "outdoor": true,
     "waterfront": false,
