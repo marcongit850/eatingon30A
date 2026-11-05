@@ -77,11 +77,142 @@ function placeholder(tone, label, name, hidden = false) {
   return `<div class="ph" data-tone="${escapeHtml(tone)}"${flag}><span class="mono" aria-hidden="true">${escapeHtml(monogram(name || label))}</span><span class="ph-label">${escapeHtml(label)}</span></div>`;
 }
 
+function placeTown(listing) {
+  if (listing.areaSlug !== "nearby") return listing.area || "";
+  const address = String(listing.address || "");
+  const match = address.match(/,\s*([^,]+),\s*FL\b/i);
+  return (match && match[1].trim()) || "Santa Rosa Beach";
+}
+
 function photoAlt(listing) {
   if (listing.areaSlug === "nearby") {
-    return `${listing.name} in ${listing.area} on ${listing.subarea || "US 98"}, near Scenic Highway 30A`;
+    return `${listing.name} in ${placeTown(listing)} on ${listing.subarea || "US 98"}, near Scenic Highway 30A`;
   }
-  return `${listing.name} in ${listing.area} on Scenic Highway 30A`;
+  return `${listing.name} in ${placeTown(listing)} on Scenic Highway 30A`;
+}
+
+const PAGE_SEO = {
+  "louis-louis": {
+    title: "Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours",
+    description: "Waterfront dinner on Mussett Bayou from the Red Bar's sister restaurant. Blackened grouper, crab cakes, live music, open daily 4:30 to 9pm.",
+  },
+  "the-donut-hole-inlet-beach": {
+    title: "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
+    description: "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. See hours, address and what to order.",
+    h1: "The Donut Hole Inlet Beach",
+  },
+};
+
+function fitTitle(name, town, near) {
+  const cue = near ? "near 30A" : "on 30A";
+  const options = [`${name} in ${town} ${cue}`];
+  if (near) options.push(`${name}, ${town}`);
+  if (town.endsWith(" Beach")) options.push(`${name} in ${town.slice(0, -" Beach".length)} ${cue}`);
+  if (!near) options.push(`${name}, ${town}`);
+  options.push(`${name}: Hours`);
+  return options.find((option) => option.length >= 20 && option.length <= 60) || options[options.length - 1].slice(0, 60);
+}
+
+function listingTitle(listing) {
+  const seo = PAGE_SEO[listing.slug];
+  if (seo && seo.title) return seo.title;
+  const town = placeTown(listing);
+  const near = listing.areaSlug === "nearby";
+  const cuisine = (listing.cuisines || [])[0] || "";
+  const place = near ? `in ${town}, near 30A` : `in ${town}, 30A`;
+  const primary = cuisine ? `${listing.name} | ${cuisine} ${place}` : "";
+  if (primary && primary.length <= 60) return primary;
+  return fitTitle(listing.name, town, near);
+}
+
+function clampMeta(text) {
+  const value = String(text || "").replace(/\s+/g, " ").trim();
+  if (value.length <= 160) return value;
+  let cut = value.slice(0, 155);
+  cut = cut.replace(/\s+\S*$/, "").replace(/[ ,;:-]+$/, "");
+  if (cut && !/[.!?]$/.test(cut)) cut += ".";
+  return cut;
+}
+
+function listingDescription(listing) {
+  const seo = PAGE_SEO[listing.slug];
+  if (seo && seo.description) return seo.description;
+  const town = placeTown(listing);
+  const cuisine = (listing.cuisines || [])[0] || "";
+  const where = listing.areaSlug === "nearby"
+    ? `in ${town} near 30A (${listing.subarea || "US 98"}), Walton County, Florida`
+    : `in ${town} on 30A, Walton County, Florida`;
+  const identity = cuisine ? `${listing.name}, ${cuisine} ${where}.` : `${listing.name} ${where}.`;
+  return clampMeta(identity);
+}
+
+const DAY_INDEX = { mon: 0, monday: 0, tue: 1, tues: 1, tuesday: 1, wed: 2, wednesday: 2, thu: 3, thur: 3, thurs: 3, thursday: 3, fri: 4, friday: 4, sat: 5, saturday: 5, sun: 6, sunday: 6 };
+const DAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function daySpan(token) {
+  const text = token.toLowerCase().replace(/\./g, "").trim();
+  if (text === "daily" || text === "mon-sun") return [0, 1, 2, 3, 4, 5, 6];
+  const parts = text.split(/\s*(?:-|to)\s*/).filter(Boolean);
+  if (parts.length === 1 && DAY_INDEX[parts[0]] != null) return [DAY_INDEX[parts[0]]];
+  if (parts.length === 2 && DAY_INDEX[parts[0]] != null && DAY_INDEX[parts[1]] != null) {
+    const start = DAY_INDEX[parts[0]];
+    const end = DAY_INDEX[parts[1]];
+    const days = [];
+    if (start <= end) {
+      for (let day = start; day <= end; day += 1) days.push(day);
+    } else {
+      for (let day = start; day < 7; day += 1) days.push(day);
+      for (let day = 0; day <= end; day += 1) days.push(day);
+    }
+    return days;
+  }
+  return null;
+}
+
+function clock(hour, minute, meridiem) {
+  let value = Number(hour);
+  const minutes = Number(minute || "0");
+  if (minutes > 59 || value < 1 || value > 12) return "";
+  const suffix = meridiem.toLowerCase();
+  if (suffix === "pm" && value !== 12) value += 12;
+  if (suffix === "am" && value === 12) value = 0;
+  return `${String(value).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+export function openingHoursSpecification(raw) {
+  let text = String(raw || "").replace(/\s+/g, " ").trim();
+  text = text.replace(/hours and seasonal closings change\.?/ig, "").replace(/^[.\s]+|[.\s]+$/g, "");
+  if (!text || !/\d/.test(text) || /\b(unknown|check website|temporarily closed)\b/i.test(text)) return [];
+  text = text.replace(/\b(Mon(?:day)?|Tue(?:s|sday)?|Wed(?:nesday)?|Thu(?:r|rs|rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)\s*&\s*(Mon(?:day)?|Tue(?:s|sday)?|Wed(?:nesday)?|Thu(?:r|rs|rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?)\b/ig, "$1-$2");
+  const pattern = /(Mon(?:day)?|Tue(?:s|sday)?|Wed(?:nesday)?|Thu(?:r|rs|rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?|Daily)(?:\s*(?:-|to)\s*(Mon(?:day)?|Tue(?:s|sday)?|Wed(?:nesday)?|Thu(?:r|rs|rsday)?|Fri(?:day)?|Sat(?:urday)?|Sun(?:day)?))?(?:\s*:\s*|\s+)/ig;
+  const marks = [...text.matchAll(pattern)];
+  if (!marks.length) return [];
+  const timeRange = /(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*(?:-|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)/ig;
+  const specs = [];
+  for (let index = 0; index < marks.length; index += 1) {
+    const mark = marks[index];
+    const days = daySpan(mark[2] ? `${mark[1]}-${mark[2]}` : mark[1]);
+    const body = text.slice(mark.index + mark[0].length, marks[index + 1] ? marks[index + 1].index : text.length);
+    if (!days) return [];
+    if (/\bclosed\b/i.test(body) && !/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i.test(body)) continue;
+    const ranges = [...body.matchAll(timeRange)];
+    if (!ranges.length) {
+      if (/\d/.test(body)) return [];
+      continue;
+    }
+    for (const found of ranges) {
+      const opens = clock(found[1], found[2], found[3]);
+      const closes = clock(found[4], found[5], found[6]);
+      if (!opens || !closes) return [];
+      specs.push({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: days.map((day) => DAY_LABELS[day]),
+        opens,
+        closes,
+      });
+    }
+  }
+  return specs;
 }
 
 function yesNo(flag) {
@@ -412,29 +543,120 @@ export function renderProfile(listing, nearby = []) {
   const also = nearby.filter((item) => item.slug !== listing.slug && item.areaSlug === listing.areaSlug).slice(0, 4);
   const alsoHtml = also.map((item) => `<a class="map-hit" href="/restaurants/${escapeHtml(item.slug)}/"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price || "")}</span></a>`).join("");
   const image = listing.photos && listing.photos[0] ? listing.photos[0].src : "";
-  const title = `${listing.name} in ${listing.area}`;
-  const description = snippet(`${listing.name} in ${listing.area} on Scenic Highway 30A, Walton County, Florida. ${listing.notes || ""}`.trim(), 160);
+  const title = listingTitle(listing);
+  const description = listingDescription(listing);
+  const h1 = (PAGE_SEO[listing.slug] && PAGE_SEO[listing.slug].h1) || listing.name;
+  const town = placeTown(listing);
+  const areaLabel = listing.areaSlug === "nearby" ? "US 98" : listing.area;
   const path = `/restaurants/${listing.slug}/`;
+  const pageUrl = ORIGIN + path;
+  const imageUrl = image ? (image.startsWith("http") ? image : ORIGIN + image) : `${ORIGIN}/images/og-scenic-30a.jpg`;
+  const imageAlt = image ? photoAlt(listing) : "Gulf of America water and white sand along Scenic Highway 30A in Walton County, Florida.";
   const map = listing.lat != null && listing.lng != null
-    ? `<div class="wrap profile-map"><div id="detail-map" data-lat="${listing.lat}" data-lng="${listing.lng}" data-name="${escapeHtml(listing.name)}" data-slug="${escapeHtml(listing.slug)}" data-area="${escapeHtml(listing.area)}" data-address="${escapeHtml(listing.address)}" data-image="${escapeHtml(image)}" role="region" aria-label="Map"></div><link rel="stylesheet" href="/vendor/leaflet/leaflet.css"><script src="/vendor/leaflet/leaflet.js"></script></div>`
+    ? `<div class="wrap profile-map"><div id="detail-map" data-lat="${listing.lat}" data-lng="${listing.lng}" data-name="${escapeHtml(listing.name)}" data-slug="${escapeHtml(listing.slug)}" data-area="${escapeHtml(town)}" data-address="${escapeHtml(listing.address)}" data-image="${escapeHtml(image)}" role="region" aria-label="Map"></div><link rel="stylesheet" href="/vendor/leaflet/leaflet.css"><script src="/vendor/leaflet/leaflet.js"></script></div>`
     : "";
+  const music = listing.music ? '<p class="music-note">Live music is seasonal and subject to change, confirm with the restaurant.</p>' : "";
+  const restaurantSchema = {
+    "@type": ["Restaurant", "LocalBusiness"],
+    "@id": `${pageUrl}#restaurant`,
+    name: listing.name,
+    url: pageUrl,
+    description,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: listing.address || "",
+      addressLocality: town,
+      addressRegion: "FL",
+      addressCountry: "US",
+    },
+  };
+  if (listing.cuisines && listing.cuisines.length) restaurantSchema.servesCuisine = listing.cuisines;
+  if (listing.price) restaurantSchema.priceRange = listing.price;
+  if (listing.phone) restaurantSchema.telephone = listing.phone;
+  if (listing.reservations) restaurantSchema.acceptsReservations = true;
+  if (listing.lat != null && listing.lng != null) {
+    restaurantSchema.geo = { "@type": "GeoCoordinates", latitude: listing.lat, longitude: listing.lng };
+  }
+  if (image) restaurantSchema.image = imageUrl;
+  const hours = closureNotice(listing) ? [] : openingHoursSpecification(listing.hours);
+  if (hours.length) restaurantSchema.openingHoursSpecification = hours;
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${ORIGIN}/#organization`,
+        name: "Eating on 30A",
+        url: `${ORIGIN}/`,
+        logo: `${ORIGIN}/images/eating-on-30a-logo.png`,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${ORIGIN}/#website`,
+        name: "Eating on 30A",
+        url: `${ORIGIN}/`,
+        publisher: { "@id": `${ORIGIN}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${ORIGIN}/restaurants/?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: title,
+        description,
+        isPartOf: { "@id": `${ORIGIN}/#website` },
+        mainEntity: { "@id": `${pageUrl}#restaurant` },
+      },
+      restaurantSchema,
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${ORIGIN}/` },
+          { "@type": "ListItem", position: 2, name: "Restaurants", item: `${ORIGIN}/restaurants/` },
+          { "@type": "ListItem", position: 3, name: areaLabel, item: `${ORIGIN}/areas/${listing.areaSlug}/` },
+          { "@type": "ListItem", position: 4, name: listing.name, item: pageUrl },
+        ],
+      },
+    ],
+  };
+  const jsonLd = JSON.stringify(graph).replace(/</g, "\\u003c");
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(title)} | Eating on 30A</title>
+<title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(description)}">
-<link rel="canonical" href="${escapeHtml(ORIGIN + path)}">
-<meta name="robots" content="index,follow">
+<link rel="canonical" href="${escapeHtml(pageUrl)}">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta property="og:title" content="${escapeHtml(title)}">
+<meta property="og:description" content="${escapeHtml(description)}">
+<meta property="og:url" content="${escapeHtml(pageUrl)}">
+<meta property="og:image" content="${escapeHtml(imageUrl)}">
+<meta property="og:image:alt" content="${escapeHtml(imageAlt)}">
+<meta property="og:type" content="restaurant.restaurant">
+<meta property="og:site_name" content="Eating on 30A">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escapeHtml(title)}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
+<meta name="twitter:image" content="${escapeHtml(imageUrl)}">
+<meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}">
 <meta name="theme-color" content="#102825">
 <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">${jsonLd}</script>
 </head>
 <body>
 <div id="site-header"></div>
 <main id="main">
-<article class="profile">${gallery(listing)}<div class="wrap profile-head"><p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a> <span aria-hidden="true">/</span> ${escapeHtml(listing.name)}</p><p class="eyebrow"><a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.area)}</a>${listing.price ? ` · ${escapeHtml(listing.price)}` : ""}${listing.category ? ` · ${escapeHtml(listing.category)}` : ""}</p><h1>${escapeHtml(listing.name)}</h1>${closureNotice(listing) ? `<p class="closure-notice">${escapeHtml(closureNotice(listing))}</p>` : ""}<ul class="chips">${chips.join("")}</ul></div><div class="wrap profile-grid"><div class="prose profile-story">${paragraphs(listing.notes) || `<p>${escapeHtml(listing.name)} is in ${escapeHtml(listing.area)}.</p>`}</div><aside><dl class="facts">${facts}</dl></aside></div>${map}<section class="wrap more"><h2>Also in ${escapeHtml(listing.area)}</h2><div class="map-list">${alsoHtml}</div><p><a class="text-link" href="/areas/${escapeHtml(listing.areaSlug)}/">All restaurants in ${escapeHtml(listing.area)}</a></p></section></article>
+<article class="profile">${gallery(listing)}<div class="wrap profile-head"><p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(areaLabel)}</a> <span aria-hidden="true">/</span> ${escapeHtml(listing.name)}</p><p class="eyebrow"><a href="/areas/${escapeHtml(listing.areaSlug)}/">${escapeHtml(listing.label || areaLabel)}</a>${listing.price ? ` · ${escapeHtml(listing.price)}` : ""}${listing.category ? ` · ${escapeHtml(listing.category)}` : ""}</p><h1>${escapeHtml(h1)}</h1>${closureNotice(listing) ? `<p class="closure-notice">${escapeHtml(closureNotice(listing))}</p>` : ""}${music}<ul class="chips">${chips.join("")}</ul></div><div class="wrap profile-grid"><div class="prose profile-story">${paragraphs(listing.notes) || `<p>${escapeHtml(listing.name)} is in ${escapeHtml(town)}.</p>`}</div><aside><dl class="facts">${facts}</dl></aside></div>${map}<section class="wrap more"><h2>Also in ${escapeHtml(town)}</h2><div class="map-list">${alsoHtml}</div><p><a class="text-link" href="/areas/${escapeHtml(listing.areaSlug)}/">All restaurants in ${escapeHtml(town)}</a></p></section></article>
 </main>
 <div id="site-footer"></div>
 <script src="/header.js"></script>

@@ -21,11 +21,11 @@ DATA = ROOT / "data"
 CONFIG = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 ORIGIN = os.environ.get("SITE_ORIGIN", CONFIG["origin"]).rstrip("/")
 SHARE_IMAGE = "/images/og-scenic-30a.jpg"
-SHARE_ALT = "Gulf water and white sand along Scenic Highway 30A in Walton County, Florida."
+SHARE_ALT = "Gulf of America water and white sand along Scenic Highway 30A in Walton County, Florida."
 # Local homepage hero. Replaces the Wix photo on the "all of 30A" location row.
 HERO_IMAGE = "/images/hero-beachside-dining.jpg"
 HERO_WEBP = "/images/hero-beachside-dining.webp"
-HERO_ALT = "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background."
+HERO_ALT = "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf of America in the background."
 
 # Google Analytics 4. One measurement ID, injected once by layout() into every page head.
 GA_MEASUREMENT_ID = "G-3T7VN1WPX5"
@@ -132,6 +132,24 @@ PAGE_SEO: dict[str, dict[str, str]] = {
             "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A."
         ),
     },
+    "louis-louis": {
+        "title": "Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours",
+        "description": (
+            "Waterfront dinner on Mussett Bayou from the Red Bar's sister restaurant. "
+            "Blackened grouper, crab cakes, live music, open daily 4:30 to 9pm."
+        ),
+    },
+    "the-donut-hole-inlet-beach": {
+        "title": "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
+        "description": (
+            "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. "
+            "See hours, address and what to order."
+        ),
+    },
+}
+
+LISTING_H1 = {
+    "the-donut-hole-inlet-beach": "The Donut Hole Inlet Beach",
 }
 
 ABOUT = (
@@ -181,8 +199,27 @@ TOWNS = (
 )
 
 
+def house_style(value: str) -> str:
+    """Visible copy: no em or en dashes, and the Gulf is the Gulf of America.
+
+    Town and restaurant names such as Gulf Place stay as written.
+    """
+    text = "" if value is None else str(value)
+    text = text.replace("\u2014", ", ").replace("\u2013", ", ")
+    text = text.replace("Gulf of America", "\u0001")
+    text = text.replace("Gulf Coast", "\u0001")
+    text = text.replace("Gulf-inspired", "\u0001-inspired")
+    text = text.replace("Gulf seafood", "\u0001 seafood")
+    text = text.replace("Gulf water", "\u0001 water")
+    text = text.replace("the Gulf", "the \u0001")
+    text = text.replace("\u0001", "Gulf of America")
+    text = re.sub(r"\s+,", ",", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    return text
+
+
 def e(value) -> str:
-    return html.escape("" if value is None else str(value), quote=True)
+    return html.escape(house_style("" if value is None else str(value)), quote=True)
 
 
 def claim_listing_href(name: str, slug: str) -> str:
@@ -230,7 +267,7 @@ def is_yes(raw: str) -> bool:
 
 
 def clean_text(raw: str) -> str:
-    return re.sub(r"\s+", " ", (raw or "").replace("\u00a0", " ")).strip()
+    return house_style(re.sub(r"\s+", " ", (raw or "").replace("\u00a0", " ")).strip())
 
 
 NOTE_LINK = re.compile(r"\[([^\]]+)\]\((https://[^)\s]+)\)")
@@ -292,6 +329,116 @@ def clean_hours(raw: str) -> str:
     if not re.search(r"\d", text):
         return ""
     return text
+
+
+DAY_INDEX = {
+    "mon": 0,
+    "monday": 0,
+    "tue": 1,
+    "tues": 1,
+    "tuesday": 1,
+    "wed": 2,
+    "wednesday": 2,
+    "thu": 3,
+    "thur": 3,
+    "thurs": 3,
+    "thursday": 3,
+    "fri": 4,
+    "friday": 4,
+    "sat": 5,
+    "saturday": 5,
+    "sun": 6,
+    "sunday": 6,
+}
+DAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DAY_WORD = (
+    r"(?:Mon(?:day)?|Tue(?:s|sday)?|Wed(?:nesday)?|Thu(?:r|rs|rsday)?|Fri(?:day)?|"
+    r"Sat(?:urday)?|Sun(?:day)?)"
+)
+
+
+def _day_span(token: str) -> list[int] | None:
+    token = token.lower().replace(".", "").strip()
+    if token in {"daily", "every day", "mon-sun", "monday-sunday"}:
+        return list(range(7))
+    parts = re.split(r"\s*(?:-|to)\s*", token)
+    parts = [part.strip() for part in parts if part.strip()]
+    if len(parts) == 1 and parts[0] in DAY_INDEX:
+        return [DAY_INDEX[parts[0]]]
+    if len(parts) == 2 and parts[0] in DAY_INDEX and parts[1] in DAY_INDEX:
+        start, end = DAY_INDEX[parts[0]], DAY_INDEX[parts[1]]
+        if start <= end:
+            return list(range(start, end + 1))
+        return list(range(start, 7)) + list(range(0, end + 1))
+    return None
+
+
+def _clock(hour: str, minute: str | None, meridiem: str) -> str | None:
+    value = int(hour)
+    minutes = int(minute or "0")
+    if minutes > 59 or value < 1 or value > 12:
+        return None
+    suffix = meridiem.lower()
+    if suffix == "pm" and value != 12:
+        value += 12
+    if suffix == "am" and value == 12:
+        value = 0
+    return f"{value:02d}:{minutes:02d}"
+
+
+def opening_hours_specification(raw: str) -> list[dict]:
+    """Schema hours from the listing text. Unparsed or open-ended hours are omitted."""
+    text = re.sub(r"\s+", " ", (raw or "").replace("\u00a0", " ")).strip()
+    text = re.sub(r"hours and seasonal closings change\.?", "", text, flags=re.I).strip(" .")
+    if not text or not re.search(r"\d", text):
+        return []
+    if re.search(r"\b(unknown|check website|temporarily closed)\b", text, flags=re.I):
+        return []
+    text = re.sub(
+        rf"\b({DAY_WORD})\s*&\s*({DAY_WORD})\b",
+        lambda match: f"{match.group(1)}-{match.group(2)}",
+        text,
+        flags=re.I,
+    )
+    pattern = re.compile(
+        rf"(?P<days>{DAY_WORD}(?:\s*(?:-|to)\s*{DAY_WORD})?|Daily)"
+        rf"(?:\s*:\s*|\s+)(?P<body>.*?)(?=(?:{DAY_WORD}(?:\s*(?:-|to)\s*{DAY_WORD})?|Daily)\b|$)",
+        flags=re.I,
+    )
+    time_range = re.compile(
+        r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*(?:-|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)",
+        flags=re.I,
+    )
+    specs = []
+    for match in pattern.finditer(text):
+        days = _day_span(match.group("days"))
+        body = match.group("body") or ""
+        if not days:
+            return []
+        if re.search(r"\bclosed\b", body, flags=re.I) and not time_range.search(body):
+            continue
+        ranges = []
+        for found in time_range.finditer(body):
+            opens = _clock(found.group(1), found.group(2), found.group(3))
+            closes = _clock(found.group(4), found.group(5), found.group(6))
+            if not opens or not closes:
+                return []
+            ranges.append((opens, closes))
+        if not ranges:
+            # "to close", "opens at", or another shape we will not invent.
+            if re.search(r"\d", body):
+                return []
+            continue
+        for opens, closes in ranges:
+            specs.append(
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": [DAY_LABELS[day] for day in days],
+                    "opens": opens,
+                    "closes": closes,
+                }
+            )
+    return specs
 
 
 def closure_notice(restaurant: dict) -> str:
@@ -920,8 +1067,8 @@ def gallery_tile(restaurant: dict, src: str, index: int) -> str:
         )
     return (
         f'<figure class="profile-gallery-tile"{hidden}>'
-        f'<img src="{e(src)}" alt="{e(photo_alt(restaurant))}" loading="{loading}"{onerror}>'
-        f"{fallback}</figure>"
+        + sized_img(src, photo_alt(restaurant), loading=loading, extra=onerror.strip())
+        + f"{fallback}</figure>"
     )
 
 
@@ -954,9 +1101,13 @@ def media_block(image: str | None, alt: str, tone: str, label: str, eager: bool 
         return placeholder(tone, label, mark_name)
     loading = "eager" if eager else "lazy"
     return (
-        f'<img src="{e(image)}" alt="{e(alt)}" loading="{loading}" '
-        'onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector(\'.ph\');if(f)f.hidden=false">'
-        f"{placeholder(tone, label, mark_name, hidden=True)}"
+        sized_img(
+            image,
+            alt,
+            loading=loading,
+            extra='onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector(\'.ph\');if(f)f.hidden=false"',
+        )
+        + placeholder(tone, label, mark_name, hidden=True)
     )
 
 
@@ -976,9 +1127,11 @@ def listing_mark(restaurant: dict, *, hero: bool = False) -> str:
     if restaurant.get("logo"):
         klass = "hero-logo" if hero else "card-logo"
         loading = "eager" if hero else "lazy"
-        return (
-            f'<img class="{klass}" src="{e(restaurant["logo"])}" alt="{e(restaurant["name"])} logo" '
-            f'loading="{loading}">'
+        return sized_img(
+            restaurant["logo"],
+            f'{restaurant["name"]} logo',
+            loading=loading,
+            class_name=klass,
         )
     return placeholder(restaurant["tone"], label, restaurant["name"])
 
@@ -1039,16 +1192,23 @@ def road_label(restaurant: dict) -> str:
     return restaurant.get("subarea") or "US 98"
 
 
+def place_town(restaurant: dict) -> str:
+    """Town used in titles, H1s, and descriptions. Nearby is a US 98 group, not a town."""
+    if is_nearby(restaurant):
+        return restaurant.get("city") or "Santa Rosa Beach"
+    return restaurant["area"]
+
+
 def photo_alt(restaurant: dict) -> str:
     if is_nearby(restaurant):
-        return f"{restaurant['name']} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A"
-    return f"{restaurant['name']} in {restaurant['area']} on Scenic Highway 30A"
+        return f"{restaurant['name']} in {place_town(restaurant)} on {road_label(restaurant)}, near Scenic Highway 30A"
+    return f"{restaurant['name']} in {place_town(restaurant)} on Scenic Highway 30A"
 
 
 def area_image_alt(area: dict) -> str:
-    """Town photo alt. Nearby is the US 98 plazas, not a beach town on 30A."""
+    """Town photo alt. The US 98 group is not a beach town on 30A."""
     if area["slug"] == "nearby":
-        return "Nearby on US 98, near Scenic Highway 30A"
+        return "US 98 near Scenic Highway 30A"
     return f"{area['fullName']} on Scenic Highway 30A"
 
 
@@ -1057,8 +1217,8 @@ def fit_meta(lead: str, identity: str, pad: str = "Hours, address, and map are o
     lead = clean_text(lead).rstrip(".")
     identity = clean_text(identity)
     text = f"{lead}. {identity}" if lead else identity
-    if len(text) > 165:
-        room = 165 - len(identity) - 2
+    if len(text) > 160:
+        room = 160 - len(identity) - 2
         cut = ""
         if lead and room >= 40:
             # Keep a whole sentence from the listing note. A mid-sentence cut reads as a fragment.
@@ -1068,8 +1228,8 @@ def fit_meta(lead: str, identity: str, pad: str = "Hours, address, and map are o
         text = f"{cut}. {identity}" if cut else identity
     if len(text) < 110 and pad:
         text = f"{text} {pad}"
-    if len(text) > 165:
-        text = identity if len(identity) <= 165 else text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
+    if len(text) > 160:
+        text = clamp_meta(text)
     return text
 
 
@@ -1099,24 +1259,26 @@ def name_has_30a(restaurant: dict) -> bool:
 
 
 def title_place(restaurant: dict) -> str:
+    town = place_town(restaurant)
     if is_nearby(restaurant):
-        return f"in {restaurant['area']}, near 30A"
+        return f"in {town}, near 30A"
     if name_has_area(restaurant):
         return "on 30A"
     if name_has_30a(restaurant):
-        return f"in {restaurant['area']}"
-    return f"in {restaurant['area']}, 30A"
+        return f"in {town}"
+    return f"in {town}, 30A"
 
 
 def listing_where(restaurant: dict) -> str:
     """Local cue for meta descriptions. Always keeps 30A and Walton County available."""
+    town = place_town(restaurant)
     if is_nearby(restaurant):
-        return f"in {restaurant['area']} near 30A ({road_label(restaurant)}), Walton County, Florida"
+        return f"in {town} near 30A ({road_label(restaurant)}), Walton County, Florida"
     if name_has_area(restaurant):
         return "on 30A, Walton County, Florida"
     if name_has_30a(restaurant):
-        return f"in {restaurant['area']}, Walton County, Florida"
-    return f"in {restaurant['area']} on 30A, Walton County, Florida"
+        return f"in {town}, Walton County, Florida"
+    return f"in {town} on 30A, Walton County, Florida"
 
 
 def listing_identity(restaurant: dict) -> str:
@@ -1167,7 +1329,26 @@ def food_phrase(restaurant: dict, cuisine: str) -> str:
 
 
 def meta_ok(text: str) -> bool:
-    return 110 <= len(text) <= 165 and "30A" in text and "Walton County" in text
+    return 110 <= len(text) <= 160 and "30A" in text and "Walton County" in text
+
+
+def clamp_meta(text: str, limit: int = 155) -> str:
+    """Shorten a description that ran past 160. No ellipsis, and no mid-word cut."""
+    text = clean_text(text)
+    if len(text) <= 160:
+        return text
+    cut = text[:limit]
+    if " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    cut = cut.rstrip(" ,;:-")
+    if cut and cut[-1] not in ".!?":
+        if len(cut) + 1 <= limit:
+            cut += "."
+        else:
+            cut = cut.rsplit(" ", 1)[0].rstrip(" ,;:-")
+            if cut and cut[-1] not in ".!?":
+                cut += "."
+    return cut
 
 
 def listing_description(restaurant: dict) -> str:
@@ -1216,9 +1397,25 @@ def listing_description(restaurant: dict) -> str:
         if meta_ok(text):
             return text
     text = clean_text(options[-1]) if options else identity
-    if len(text) > 165:
-        text = text[:165].rsplit(" ", 1)[0].rstrip(".,;:")
-    return text
+    return clamp_meta(text)
+
+
+def fit_title(name: str, town: str, *, near: bool = False) -> str:
+    """Shorten a listing title that ran past 60 characters. Hours, not a cut-off word."""
+    cue = "near 30A" if near else "on 30A"
+    options = [f"{name} in {town} {cue}"]
+    if near:
+        options.append(f"{name}, {town}")
+    if town.endswith(" Beach"):
+        options.append(f"{name} in {town[: -len(' Beach')]} {cue}")
+    if not near:
+        options.append(f"{name}, {town}")
+    options.append(f"{name}: Hours")
+    for option in options:
+        if 20 <= len(option) <= 60:
+            return option
+    trimmed = options[-1][:60].rsplit(" ", 1)[0].rstrip(".,;:|")
+    return trimmed if len(trimmed) >= 20 else name[:60]
 
 
 def listing_title(restaurant: dict) -> str:
@@ -1226,35 +1423,34 @@ def listing_title(restaurant: dict) -> str:
     if override and "title" in override:
         return override["title"]
     name = restaurant["name"]
-    area = restaurant["area"]
+    town = place_town(restaurant)
+    near = is_nearby(restaurant)
     cuisine = lead_cuisine(restaurant["cuisines"])
     place = title_place(restaurant)
-    options = []
+    primary = ""
     if cuisine and place:
-        options.append(f"{name} | {cuisine} {place}")
+        primary = f"{name} | {cuisine} {place}"
+    elif cuisine and not near:
+        primary = f"{name} | {cuisine} on 30A"
     elif cuisine:
-        options.append(f"{name} | {cuisine} on 30A")
-    options.extend(
-        [
-            f"{name} in {area} | 30A restaurants",
-            f"{name} in {area} | Eating on 30A",
-            f"{name} | {area} on 30A",
-            f"{name} | Eating on 30A",
-        ]
-    )
-    for option in options:
-        if 20 <= len(option) <= 70:
-            return option
-    trimmed = options[-1][:70].rsplit(" ", 1)[0].rstrip(".,;:|")
-    return trimmed if len(trimmed) >= 20 else options[-1][:70]
+        primary = f"{name} | {cuisine} near 30A"
+    if primary and 20 <= len(primary) <= 60:
+        return primary
+    shortened = fit_title(name, town, near=near)
+    if 20 <= len(shortened) <= 60:
+        return shortened
+    fallback = f"{name} | Eating on 30A"
+    if 20 <= len(fallback) <= 60:
+        return fallback
+    return shortened
 
 
 def intro_place(restaurant: dict) -> str:
     if is_nearby(restaurant):
-        return f"in {restaurant['area']} near Scenic Highway 30A, on {road_label(restaurant)}"
+        return f"in {place_town(restaurant)} near Scenic Highway 30A, on {road_label(restaurant)}"
     if name_has_area(restaurant):
         return "on Scenic Highway 30A"
-    return f"in {restaurant['area']} on Scenic Highway 30A"
+    return f"in {place_town(restaurant)} on Scenic Highway 30A"
 
 
 CUISINE_INTRO = {
@@ -1335,9 +1531,9 @@ def area_cuisines(group: list[dict], limit: int = 3) -> list[str]:
 
 
 def restaurants_heading(area: dict, *, lower: bool = False) -> str:
-    """Town-page label. Nearby is not a place name, so the heading drops "in"."""
+    """Town-page label. The US 98 group is not a town named Nearby."""
     if area.get("slug") == "nearby":
-        return "restaurants Nearby" if lower else "Restaurants Nearby"
+        return "restaurants on US 98" if lower else "Restaurants on US 98"
     name = area["fullName"]
     return f"restaurants in {name}" if lower else f"Restaurants in {name}"
 
@@ -1345,23 +1541,23 @@ def restaurants_heading(area: dict, *, lower: bool = False) -> str:
 def area_description(area: dict, group: list[dict]) -> str:
     label = restaurants_heading(area)
     if area["slug"] == "nearby":
-        identity = f"{label} on US 98, near Scenic Highway 30A, Walton County, Florida."
-        return fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
+        identity = "Restaurants on US 98, near Scenic Highway 30A, Walton County, Florida."
+        return clamp_meta(fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant."))
     identity = f"{label} on Scenic Highway 30A, Walton County, Florida."
     text = fit_meta(area["description"], identity, "Addresses and hours are listed with each restaurant.")
     top = area_cuisines(group, 2)
     count = f" {area['count']} {restaurant_count_word(area['count'])}"
     extra = count + (f", including {', '.join(top)}." if top else ".")
-    if len(text) + len(extra) <= 165:
+    if len(text) + len(extra) <= 160:
         text += extra
-    return text
+    return clamp_meta(text)
 
 
 def area_intro(area: dict, group: list[dict]) -> str:
     phrase = restaurants_heading(area, lower=True)
     if area["slug"] == "nearby":
         return (
-            f"Find {phrase} on US 98, near Scenic Highway 30A. "
+            "Find restaurants on US 98, near Scenic Highway 30A. "
             "Open a card for the address and the hours."
         )
     top = area_cuisines(group)
@@ -1377,16 +1573,12 @@ def area_intro(area: dict, group: list[dict]) -> str:
 def area_title(area: dict) -> str:
     label = restaurants_heading(area)
     if area["slug"] == "nearby":
-        title = f"{label}, near 30A | Eating on 30A"
-        if len(title) <= 70:
-            return title
-        shorter = "Nearby restaurants near 30A | Eating on 30A"
-        return shorter if len(shorter) <= 70 else "Nearby restaurants | Eating on 30A"
+        return "Restaurants on US 98 near 30A | Eating on 30A"
     title = f"{label} on 30A | Eating on 30A"
-    if len(title) <= 70:
+    if len(title) <= 60:
         return title
-    shorter = f"{area['fullName']} restaurants on 30A | Eating on 30A"
-    return shorter if len(shorter) <= 70 else f"{area['fullName']} restaurants | Eating on 30A"
+    shorter = f"{area['fullName']} restaurants on 30A"
+    return shorter if len(shorter) <= 60 else f"{area['fullName']} restaurants"
 
 
 def newest(dates) -> str:
@@ -1413,6 +1605,21 @@ def local_image_info(path: Path) -> tuple[int, int, str] | None:
     data = path.read_bytes()
     if data.startswith(b"\x89PNG") and len(data) >= 24:
         return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"), "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP" and len(data) >= 30:
+        chunk = data[12:16]
+        if chunk == b"VP8X":
+            width = 1 + int.from_bytes(data[24:27], "little")
+            height = 1 + int.from_bytes(data[27:30], "little")
+            return width, height, "image/webp"
+        if chunk == b"VP8 " and len(data) >= 30:
+            width = int.from_bytes(data[26:28], "little") & 0x3FFF
+            height = int.from_bytes(data[28:30], "little") & 0x3FFF
+            return width, height, "image/webp"
+        if chunk == b"VP8L" and len(data) >= 25:
+            bits = int.from_bytes(data[21:25], "little")
+            width = (bits & 0x3FFF) + 1
+            height = ((bits >> 14) & 0x3FFF) + 1
+            return width, height, "image/webp"
     if data[:2] != b"\xff\xd8":
         return None
     index = 2
@@ -1435,6 +1642,44 @@ def local_image_info(path: Path) -> tuple[int, int, str] | None:
             break
         index += 2 + length
     return None
+
+
+def image_size(src: str | None) -> tuple[int, int] | None:
+    if not src:
+        return None
+    if src.startswith("/"):
+        info = local_image_info(ROOT / src.lstrip("/"))
+        if info:
+            return info[0], info[1]
+    match = re.search(r"w_(\d+),h_(\d+)", src)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+    return None
+
+
+def sized_img(
+    src: str,
+    alt: str,
+    *,
+    loading: str = "",
+    class_name: str = "",
+    extra: str = "",
+) -> str:
+    """Content image with dimensions. loading is omitted for the hero and other LCP images."""
+    attrs = []
+    if class_name:
+        attrs.append(f'class="{class_name}"')
+    attrs.append(f'src="{e(src)}"')
+    attrs.append(f'alt="{e(alt)}"')
+    size = image_size(src)
+    if size:
+        attrs.append(f'width="{size[0]}"')
+        attrs.append(f'height="{size[1]}"')
+    if loading:
+        attrs.append(f'loading="{loading}"')
+    if extra:
+        attrs.append(extra)
+    return "<img " + " ".join(attrs) + ">"
 
 
 def image_facts(url: str | None) -> dict:
@@ -1461,6 +1706,7 @@ def social_tags(
     image: str | None,
     image_alt: str,
     include_url: bool = True,
+    og_type: str = "website",
 ) -> str:
     facts = image_facts(image)
     alt = image_alt or SHARE_ALT
@@ -1482,7 +1728,7 @@ def social_tags(
         tags.append(f'<meta property="og:image:type" content="{facts["type"]}">')
     tags.extend(
         [
-            '<meta property="og:type" content="website">',
+            f'<meta property="og:type" content="{e(og_type)}">',
             '<meta property="og:site_name" content="Eating on 30A">',
             '<meta property="og:locale" content="en_US">',
             '<meta name="twitter:card" content="summary_large_image">',
@@ -1505,8 +1751,50 @@ def breadcrumbs(crumbs: list[tuple[str, str]]) -> dict:
     }
 
 
+def organization_node() -> dict:
+    return {
+        "@type": "Organization",
+        "@id": ORIGIN + "/#organization",
+        "name": "Eating on 30A",
+        "url": ORIGIN + "/",
+        "description": ABOUT,
+        "logo": ORIGIN + "/images/eating-on-30a-logo.png",
+        "areaServed": {
+            "@type": "Place",
+            "name": "Scenic Highway 30A, Walton County, Florida",
+        },
+    }
+
+
+def website_node() -> dict:
+    return {
+        "@type": "WebSite",
+        "@id": ORIGIN + "/#website",
+        "name": "Eating on 30A",
+        "url": ORIGIN + "/",
+        "description": PAGE_SEO["/"]["description"],
+        "inLanguage": "en",
+        "publisher": {"@id": ORIGIN + "/#organization"},
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": ORIGIN + "/restaurants/?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+        },
+    }
+
+
 def graph(*nodes: dict) -> dict:
-    return {"@context": "https://schema.org", "@graph": list(nodes)}
+    """Every public graph carries the site and the organization once."""
+    ordered = [organization_node(), website_node(), *nodes]
+    seen = set()
+    unique = []
+    for node in ordered:
+        ident = node.get("@id") or (node.get("@type"), node.get("url"), node.get("name"))
+        if ident in seen:
+            continue
+        seen.add(ident)
+        unique.append(node)
+    return {"@context": "https://schema.org", "@graph": unique}
 
 
 def layout(
@@ -1522,6 +1810,7 @@ def layout(
     noindex: bool = False,
     extra_scripts: str = "",
     include_canonical: bool = True,
+    og_type: str = "website",
 ) -> str:
     canonical = ORIGIN + path
     scripts = '<script src="/header.js"></script>\n<script src="/footer.js"></script>\n'
@@ -1529,7 +1818,13 @@ def layout(
         scripts += '<script type="module" src="/site.js"></script>'
     body_attr = ' class="home"' if active == "home" else ""
     banner = "" if active == "home" else sample_banner()
-    robots = '<meta name="robots" content="noindex">\n' if noindex else ""
+    if noindex:
+        robots = '<meta name="robots" content="noindex">\n'
+    else:
+        robots = (
+            '<meta name="robots" content="index,follow,max-image-preview:large,'
+            'max-snippet:-1,max-video-preview:-1">\n'
+        )
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n'
@@ -1541,7 +1836,15 @@ def layout(
         f'<meta name="description" content="{e(description)}">\n'
         + (f'<link rel="canonical" href="{e(canonical)}">\n' if include_canonical else "")
         + robots
-        + social_tags(title, description, canonical, image, image_alt, include_url=include_canonical)
+        + social_tags(
+            title,
+            description,
+            canonical,
+            image,
+            image_alt,
+            include_url=include_canonical,
+            og_type=og_type,
+        )
         + '<meta name="theme-color" content="#102825">\n'
         '<link rel="icon" href="/favicon.ico" sizes="any">\n'
         '<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">\n'
@@ -2065,9 +2368,9 @@ def home_categories(restaurants: list[dict]) -> str:
             raise SystemExit(f"homepage category has no restaurants: {name}")
         items.append(
             f'<a href="{e(href)}">'
-            f'<img src="{e(image)}" alt="{e(photo_alt(source))}" loading="lazy">'
-            f'<span class="meal-copy"><span class="meal-name">{e(name)}</span>'
-            f'<span class="meal-count">{count}</span></span></a>'
+            + sized_img(image, photo_alt(source), loading="lazy")
+            + f'<span class="meal-copy"><span class="meal-name">{e(name)}</span>'
+            + f'<span class="meal-count">{count}</span></span></a>'
         )
     return f'<nav class="meal-index" aria-label="Browse by category">{"".join(items)}</nav>'
 
@@ -2076,7 +2379,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
     towns = []
     for area in areas:
         if area["image"]:
-            photo = f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
+            photo = sized_img(area["image"], area_image_alt(area), loading="lazy")
         else:
             photo = placeholder("gulf", area["name"], area["name"])
         word = restaurant_count_word(area["count"], label=True)
@@ -2108,7 +2411,7 @@ def build_home(restaurants: list[dict], areas: list[dict], hero: str | None) -> 
         '<p class="issue-line">A restaurant guide for the Emerald Coast.</p>'
         '<p class="eyebrow">Scenic Highway 30A · South Walton</p>'
         "<h1>Where to eat<br> on 30A.</h1>"
-        '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A — from Dune Allen to Inlet Beach.</p>'
+        '<p class="lede">Find breakfast, lunch, and dinner along Scenic Highway 30A, from Dune Allen to Inlet Beach.</p>'
         f"{hero_search(areas, restaurants)}"
         "</div></div></section>"
         f"{home_categories(restaurants)}"
@@ -2365,11 +2668,12 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         '<span aria-hidden="true">/</span> '
         '<a href="/list-your-restaurant/">List your restaurant</a></p>'
     )
+    shown_town = place_town(restaurant)
     if nearby_html:
         more = (
-            f'<section class="wrap more"><h2>Also in {e(restaurant["area"])}</h2>'
+            f'<section class="wrap more"><h2>Also in {e(shown_town)}</h2>'
             f'<div class="map-list">{nearby_html}</div>'
-            f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(restaurant["area"])}</a></p>'
+            f'<p><a class="text-link" href="{e(area_page)}">All restaurants in {e(shown_town)}</a></p>'
             f"{claim}</section>"
         )
     else:
@@ -2391,12 +2695,12 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         '<div class="wrap profile-head">'
         f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/restaurants/">Restaurants</a> <span aria-hidden="true">/</span> <a href="{e(area_page)}">{e(restaurant["area"])}</a> <span aria-hidden="true">/</span> {e(restaurant["name"])}</p>'
         f'<p class="eyebrow"><a href="{e(area_href)}">{e(area_line)}</a>{price_bit}{category_bit}</p>'
-        f"<h1>{e(restaurant['name'])}</h1>"
+        f"<h1>{e(LISTING_H1.get(restaurant['slug'], restaurant['name']))}</h1>"
         f"{closed_html}"
         f"{website_cta(restaurant)}"
         f'<ul class="chips">{"".join(chips)}</ul>'
         + (
-            '<p class="music-note">Live music is seasonal and subject to change — confirm with the restaurant.</p>'
+            '<p class="music-note">Live music is seasonal and subject to change, confirm with the restaurant.</p>'
             if restaurant["music"]
             else ""
         )
@@ -2420,11 +2724,11 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         "address": postal_address(restaurant),
         "areaServed": {
             "@type": "Place",
-            "name": restaurant["area"],
+            "name": place_town(restaurant),
         },
         "containedInPlace": {
             "@type": "Place",
-            "name": restaurant["area"],
+            "name": "US 98" if is_nearby(restaurant) else restaurant["area"],
             "url": ORIGIN + area_page,
         },
         "isPartOf": {"@id": ORIGIN + "/#website"},
@@ -2447,15 +2751,18 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         schema["logo"] = logo_url if logo_url.startswith(("http://", "https://")) else ORIGIN + logo_url
     if same_as:
         schema["sameAs"] = same_as
+    hours_spec = [] if closure_notice(restaurant) else opening_hours_specification(restaurant.get("hours") or "")
+    if hours_spec:
+        schema["openingHoursSpecification"] = hours_spec
     if closure_notice(restaurant):
         schema["additionalProperty"] = {
             "@type": "PropertyValue",
             "name": "Status",
             "value": CLOSURE_STATUS,
         }
-    # Hours stay in the visible facts list. CSV hours are free text, so they are not
-    # copied into openingHours. A temporary closure keeps the listing and does not
-    # add opening hours. Ratings and reviews are never invented.
+    # Hours text that parses becomes openingHoursSpecification. Closures, "check
+    # website", and open-ended "to close" lines stay in the visible facts only.
+    # Ratings and reviews are never invented. Menu URLs are not in the schema.
     title = listing_title(restaurant)
     webpage = {
         "@type": "WebPage",
@@ -2474,7 +2781,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
                 [
                     ("Home", "/"),
                     ("Restaurants", "/restaurants/"),
-                    (restaurant["area"], area_page),
+                    (place_town(restaurant), area_page),
                     (restaurant["name"], f"/restaurants/{restaurant['slug']}/"),
                 ]
             ),
@@ -2493,6 +2800,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             image=restaurant["heroImage"],
             image_alt=photo_alt(restaurant) if restaurant["heroImage"] else SHARE_ALT,
             extra_scripts=gallery_script,
+            og_type="restaurant.restaurant",
         ),
     )
 
@@ -2548,7 +2856,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
     cards = []
     for area in areas:
         photo = (
-            f'<img src="{e(area["image"])}" alt="{e(area_image_alt(area))}" loading="lazy">'
+            sized_img(area["image"], area_image_alt(area), loading="lazy")
             if area["image"]
             else placeholder("gulf", area["name"], area["name"])
         )
@@ -2609,7 +2917,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
         photo = ""
         if area["image"]:
             hero_alt = area_image_alt(area) if area["slug"] == "nearby" else area["fullName"]
-            photo = f'<img src="{e(area["image"])}" alt="{e(hero_alt)}" loading="eager">'
+            photo = sized_img(area["image"], hero_alt, loading="eager")
         neighbors = []
         index = areas.index(area)
         if index > 0:
@@ -2625,7 +2933,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
             '<article class="profile">'
             f'<div class="profile-hero">{photo or placeholder("gulf", area["name"], area["name"])}</div>'
             '<div class="wrap page-intro">'
-            f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e(area["fullName"])}</p>'
+            f'<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/areas/">Towns</a> <span aria-hidden="true">/</span> {e("US 98" if area["slug"] == "nearby" else area["fullName"])}</p>'
             f'<h1 class="town-title">{e(restaurants_heading(area))}</h1>'
             f'<p class="lede">{e(area["description"])}</p>'
             f'<p class="lede">{e(area_intro(area, group))}</p>'
@@ -2669,7 +2977,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                         },
                         {
                             "@type": "Place",
-                            "name": area["fullName"],
+                            "name": "US 98" if area["slug"] == "nearby" else area["fullName"],
                             "url": f'{ORIGIN}/areas/{area["slug"]}/',
                             "description": description,
                             "containedInPlace": {
@@ -2685,7 +2993,7 @@ def build_areas(areas: list[dict], restaurants: list[dict]) -> None:
                             [
                                 ("Home", "/"),
                                 ("Towns", "/areas/"),
-                                (area["fullName"], f"/areas/{area['slug']}/"),
+                                ("US 98" if area["slug"] == "nearby" else area["fullName"], f"/areas/{area['slug']}/"),
                             ]
                         ),
                     )
@@ -2718,22 +3026,29 @@ GUIDES_INDEX_DESCRIPTION = (
     "each drawn from the restaurant directory and the map."
 )
 WALKABLE_AREAS = ("seaside", "alys-beach", "rosemary-beach")
-SEAFOOD_GUIDE_TITLE = "Best seafood on 30A | Eating on 30A"
+SEAFOOD_GUIDE_TITLE = "Best Seafood on 30A: Where Locals Eat in 2026"
 SEAFOOD_GUIDE_DESCRIPTION = (
-    "Best seafood restaurants on Scenic Highway 30A in Walton County, Florida, "
-    "from Dune Allen to Inlet Beach, with the directory and a map."
+    "The best seafood on 30A, from Dune Allen to Inlet Beach: oyster bars, "
+    "fish markets and waterfront dinners, with hours, menus and a map."
 )
 
 
 def require_meta(title: str, description: str, *, manual: bool = False) -> None:
-    if not 20 <= len(title) <= 70:
+    if not 20 <= len(title) <= 60:
         raise SystemExit(f"title length {len(title)}: {title}")
     if manual:
-        if not 80 <= len(description) <= 165 or "30A" not in description:
+        if not 80 <= len(description) <= 160:
             raise SystemExit(f"description length {len(description)}: {description}")
+        if restaurant_needs_30a(description) and "30A" not in description:
+            raise SystemExit(f"description missing 30A: {description}")
         return
-    if not 110 <= len(description) <= 165 or "30A" not in description or "Walton County" not in description:
+    if not 110 <= len(description) <= 160 or "30A" not in description or "Walton County" not in description:
         raise SystemExit(f"description length {len(description)}: {description}")
+
+
+def restaurant_needs_30a(description: str) -> bool:
+    """Louis Louis uses the approved brief copy, which names the bayou instead of 30A."""
+    return not description.startswith("Waterfront dinner on Mussett Bayou")
 
 
 def or_list(items: list[str]) -> str:
@@ -2954,7 +3269,7 @@ def seafood_faq(picked: list[dict], areas: list[dict]) -> list[dict]:
 def guide_teaser(title: str, href: str, area: str, meta: str, note: str, image: str, image_alt: str) -> str:
     return (
         f'<a class="card" href="{e(href)}">'
-        f'<div class="card-media"><img src="{e(image)}" alt="{e(image_alt)}" loading="lazy"></div>'
+        f'<div class="card-media">{sized_img(image, image_alt, loading="lazy")}</div>'
         f'<div class="card-body"><p class="card-area">{e(area)}</p>'
         f"<h2>{e(title)}</h2>"
         f'<p class="meta">{e(meta)}</p>'
@@ -3190,7 +3505,7 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     if nearby_area.get("image"):
         nearby_hero = (
             nearby_area["image"],
-            "Nearby on US 98, a short drive from Scenic Highway 30A",
+            "US 98, a short drive from Scenic Highway 30A",
         )
     elif stock_and_brew.get("cardImage"):
         nearby_hero = (stock_and_brew["cardImage"], photo_alt(stock_and_brew))
@@ -3219,7 +3534,7 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
     specs = [
         guide_spec(
             "best-seafood-30a",
-            "Best seafood on 30A",
+            "Best Seafood on 30A",
             SEAFOOD_GUIDE_TITLE,
             SEAFOOD_GUIDE_DESCRIPTION,
             "Seafood",
@@ -3947,7 +4262,11 @@ def guide_picks(restaurants: list[dict], areas: list[dict]) -> list[dict]:
         ),
     ]
     for spec in specs:
-        require_meta(spec["title"], spec["description"])
+        if spec["slug"] == "best-seafood-30a":
+            if not 20 <= len(spec["title"]) <= 60 or not 80 <= len(spec["description"]) <= 160 or "30A" not in spec["description"]:
+                raise SystemExit(f"seafood guide meta {len(spec['title'])}/{len(spec['description'])}")
+        else:
+            require_meta(spec["title"], spec["description"])
         if not 2 <= len(spec["faqs"]) <= 4:
             raise SystemExit(f"{spec['slug']} needs 2 to 4 FAQ questions, got {len(spec['faqs'])}")
     return specs
@@ -3967,7 +4286,7 @@ def write_guide_page(spec: dict) -> None:
     body = (
         '<article class="profile">'
         '<div class="profile-hero">'
-        f'<img src="{e(hero_image)}" alt="{e(hero_alt)}" loading="eager">'
+        f'{sized_img(hero_image, hero_alt, loading="eager")}'
         "</div>"
         '<div class="wrap page-intro">'
         '<p class="crumbs"><a href="/">Home</a> <span aria-hidden="true">/</span> '
@@ -4662,7 +4981,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
     for area in areas:
         label = restaurants_heading(area)
         if area["slug"] == "nearby":
-            place = f"{label} on US 98, near Scenic Highway 30A."
+            place = "Restaurants on US 98, near Scenic Highway 30A."
         else:
             place = f"{label} on Scenic Highway 30A."
         lines.append(f"- [{area['fullName']}]({ORIGIN}/areas/{area['slug']}/): {area['description']} {place}")
@@ -4676,7 +4995,7 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
     for restaurant in restaurants:
         cuisine = cuisine_phrase(restaurant["cuisines"]) or restaurant["category"] or "Restaurant"
         if is_nearby(restaurant):
-            where = f"{cuisine} in {restaurant['area']} on {road_label(restaurant)}, near Scenic Highway 30A."
+            where = f"{cuisine} in {place_town(restaurant)} on {road_label(restaurant)}, near Scenic Highway 30A."
         else:
             where = f"{cuisine} in {restaurant['area']} on Scenic Highway 30A."
         notice = closure_notice(restaurant)

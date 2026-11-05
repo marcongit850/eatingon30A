@@ -1,6 +1,6 @@
 # Eating on 30A: architecture
 
-Last checked against the code and Cloudflare on Nov 4, 2026.
+Last checked against the code on Nov 5, 2026.
 
 ## What it does
 
@@ -48,6 +48,15 @@ None. There is no scheduled handler in the code, and neither `eatingon30a` nor `
 - Exception: `eating-accounts` (shared accounts, admin API, magic links for both food sites). Its code is in `accounts/` here (`worker.js`, `listings.js`, `schema.js`, `migrations/`, `wrangler.jsonc`), and it imports `../listing-model.js` from the repo root. It has no Workers Builds trigger, so merging changes to `accounts/` does NOT deploy it.
 - Hand deploy from `accounts/` with `npx wrangler deploy`. That file's `database_id` is the live D1 database `eating-accounts` (`f3ae29af-a929-4185-b5bd-b349cc015a3f`). Do not create another database and do not change secrets as part of a code deploy.
 - After any accounts change, hard reload the admin page (https://www.eatingon30a.com/admin/) before saving. A cached admin page can submit a listing without the fields the new Worker expects.
+
+## SEO
+
+- Public pages share one layout in `scripts/build.py`. It writes the robots meta (`index,follow` with large image preview, except pages marked noindex), Open Graph, Twitter card, theme color, favicon, and apple touch icon. Listing pages use `og:type` `restaurant.restaurant`. Every public JSON-LD graph includes the site `WebSite` (with the `/restaurants/?q=` search action) and `Organization`. There is no brand social profile in the repo, so `Organization` has no `sameAs`.
+- Restaurant schema adds `openingHoursSpecification` only when the hours already on the page parse to clock times. "Check website", temporary closures, and open-ended "to close" lines stay in the visible hours and are left out of the schema. The schema does not include a menu URL, `hasMenu`, or ratings.
+- Old restaurant slugs 301 in `worker.js` (`legacyAmpersandRedirect`). The same function folds curly apostrophes, accents, and `&` / `%26`, then uses a small explicit map. Seagrove Village Market Café stays deactivated. Its old slug 301s to `/areas/seagrove-beach/` and is not turned back on. `/explore30a` 301s to the homepage. `/terms-and-conditions` 301s to `/about/` because the site has no terms page. Blue Mabel Smokehouse has no current listing and stays a real 404.
+- The restaurant directory at `/restaurants/` prints every name and link in the server HTML. Filters still hide cards in the browser.
+- Listing titles and descriptions use the town from the address. The US 98 group is not called Nearby in a title, H1, or description.
+- Preview hosts (`*.workers.dev`) keep `noindex` in the response header and in the HTML robots meta.
 
 ## Known gotchas
 
