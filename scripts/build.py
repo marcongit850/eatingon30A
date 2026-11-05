@@ -1885,6 +1885,18 @@ def area_names(areas: list[dict]) -> str:
     return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
 
 
+def directory_town_label(area: dict) -> str:
+    """Directory chip label. Nearby listings are in Santa Rosa Beach. The query value stays nearby."""
+    if area["slug"] == "nearby":
+        return "Santa Rosa Beach"
+    return area["fullName"]
+
+
+def directory_area_names(areas: list[dict]) -> str:
+    payload = {area["slug"]: directory_town_label(area) for area in areas}
+    return json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
+
+
 VIDEO_TOUR_SCRIPT = """
 !function(){
   var root=document.querySelector(".video-tour");
@@ -2008,7 +2020,7 @@ def browse_by_area(areas: list[dict]) -> str:
 
 
 def flag_check(name: str, label: str, *, hidden: bool = False) -> str:
-    """Directory amenity checkbox. Waterfront and Bar Scene stay out of the tab order while unused."""
+    """Map amenity checkbox. Waterfront and Bar Scene stay out of the tab order while unused."""
     hidden_attr = " hidden" if hidden else ""
     flag_attr = f' data-filter-flag="{e(name)}"' if name in {"waterfront", "bar"} else ""
     return (
@@ -2288,6 +2300,112 @@ def hero_group(label: str, chips: list[str]) -> str:
     )
 
 
+DIRECTORY_CHIP_FIELDS = (
+    "area",
+    "meal",
+    "cuisine",
+    "price",
+    "outdoor",
+    "waterfront",
+    "bar",
+    "kids",
+    "music",
+    "reservations",
+    "groups",
+    "happyhour",
+    "happyfood",
+    "happydrinks",
+    "laurensFavorite",
+)
+
+
+def chip_filter_form(areas: list[dict], cuisines: list[str], restaurants: list[dict]) -> str:
+    """Directory filters. Same chip buttons as the homepage, plus the extras that page does not show."""
+    towns = [
+        hero_chip(directory_town_label(area), "area", area["slug"], group="area")
+        for area in areas
+    ]
+    waterfront_count = sum(1 for restaurant in restaurants if restaurant["waterfront"])
+    bar_count = sum(1 for restaurant in restaurants if restaurant["bar"])
+    quick_specs = (
+        ("bar", "Bar Scene", True, bar_count == 0),
+        ("waterfront", "Waterfront", True, waterfront_count == 0),
+        ("outdoor", "Outdoor dining", False, False),
+        ("music", "Live music", False, False),
+        ("happyhour", "Happy hour", False, False),
+        ("kids", "Kid friendly", False, False),
+        ("laurensFavorite", "Lauren’s Favorites", False, False),
+    )
+    quick = [
+        hero_chip(label, param, "yes", hidden=hidden, flag=flag)
+        for param, label, flag, hidden in quick_specs
+    ]
+    meals = []
+    for meal in MEAL_ORDER:
+        count = category_count(restaurants, "meal", meal)
+        meals.append(hero_chip(meal, "meal", meal, group="meal", count=count))
+    cuisine_chips = [
+        hero_chip(cuisine, "cuisine", cuisine, group="cuisine")
+        for cuisine in cuisines
+    ]
+    used_prices = {restaurant["price"] for restaurant in restaurants if restaurant["price"]}
+    prices = [
+        hero_chip(price, "price", price, group="price")
+        for price in HOME_PRICE_ORDER
+        if price in used_prices
+    ]
+    good_for = [
+        hero_chip("Takes reservations", "reservations", "yes"),
+        hero_chip("Good for groups 12+", "groups", "yes"),
+        hero_chip("Happy hour food", "happyfood", "yes"),
+        hero_chip("Happy hour drinks", "happydrinks", "yes"),
+    ]
+    fields = "".join(
+        f'<input type="hidden" id="{e(name)}" name="{e(name)}" data-hero-field="{e(name)}" value="" disabled>'
+        if name == "price"
+        else f'<input type="hidden" name="{e(name)}" data-hero-field="{e(name)}" value="" disabled>'
+        for name in DIRECTORY_CHIP_FIELDS
+    )
+    script = (
+        "<script>!function(){var root=document.getElementById('filters');if(!root)return;"
+        "var p=new URLSearchParams(location.search);"
+        "var chips=root.querySelectorAll('[data-hero-chip]');"
+        "for(var i=0;i<chips.length;i++){var c=chips[i];"
+        "var raw=p.get(c.getAttribute('data-param'));"
+        "var v=raw?raw.trim().toLowerCase():'';"
+        "var want=(c.getAttribute('data-value')||'yes').toLowerCase();"
+        "if(v&&v===want)c.setAttribute('aria-pressed','true');}"
+        "var q=root.querySelector('input[name=\"q\"]');"
+        "if(q){var query=p.get('q');if(query)q.value=query;}"
+        "var panel=document.getElementById('filters-more-panel');"
+        "var more=root.querySelector('[data-hero-more]');"
+        "if(panel&&more&&panel.querySelector('[aria-pressed=\"true\"]')){"
+        "panel.hidden=false;more.setAttribute('aria-expanded','true');}"
+        "}();</script>"
+    )
+    return (
+        '<form id="filters" class="filters filters-chips" action="/restaurants/" method="get" aria-label="Restaurant filters">'
+        '<label class="field"><span>Search</span>'
+        '<input id="q" name="q" type="search" placeholder="Oysters, coffee, pizza" autocomplete="off"></label>'
+        f"{hero_group('Town', towns)}"
+        '<p class="hero-looking" id="filter-looking">What are you looking for?</p>'
+        f'<div class="hero-chips" role="group" aria-labelledby="filter-looking">{"".join(quick)}</div>'
+        '<div class="hero-search-tools">'
+        '<button type="button" class="hero-more" data-hero-more aria-expanded="false" aria-controls="filters-more-panel">'
+        f"More filters {HERO_CHEVRON}</button>"
+        '<button type="button" class="hero-clear" data-hero-clear>Clear all</button></div>'
+        '<div id="filters-more-panel" class="hero-more-panel" hidden>'
+        f"{hero_group('Meal', meals)}"
+        f"{hero_group('Cuisine', cuisine_chips)}"
+        f"{hero_group('Price', prices)}"
+        f"{hero_group('Good for', good_for)}"
+        "</div>"
+        f"{fields}</form>"
+        f"{script}"
+        f'<script type="application/json" id="area-names">{directory_area_names(areas)}</script>'
+    )
+
+
 def hero_search(areas: list[dict], restaurants: list[dict]) -> str:
     """The one homepage search. Chips set the same query params as the directory."""
     area_options = ['<option value="">All of 30A</option>']
@@ -2523,7 +2641,7 @@ def build_directory(restaurants: list[dict], areas: list[dict], cuisines: list[s
         '<p class="lede">Find restaurants along Scenic Highway 30A in Walton County. Filter by beach town, meal, or a few words.</p>'
         "</div>"
         f"{view_switch('list')}"
-        f"{filter_form(areas, cuisines, restaurants)}"
+        f"{chip_filter_form(areas, cuisines, restaurants)}"
         f'<p id="result-count" class="count" aria-live="polite">{len(restaurants)} restaurants</p>'
         f'<p id="empty" class="empty" hidden>No restaurants match. <a href="/restaurants/">Clear the filters</a>.</p>'
         f'<div id="cards" class="card-grid">{cards}</div>'
