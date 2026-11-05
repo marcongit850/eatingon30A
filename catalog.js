@@ -73,18 +73,29 @@ function overlayPayload(previous, payload) {
   return next;
 }
 
+// Admin rows saved under a retired public slug still belong to that restaurant.
+const SLUG_CONTINUATIONS = {
+  "la-cocina-seacrest": "laco-seacrest",
+};
+
+export function canonicalListingSlug(slug) {
+  const value = String(slug || "");
+  return SLUG_CONTINUATIONS[value] || value;
+}
+
 export function mergeCatalog(baseline, rows) {
   const map = new Map();
   for (const item of baseline || []) {
     map.set(item.slug, presentListing({ ...item, status: "live", deleted: false, source: "baseline" }));
   }
   for (const row of rows || []) {
-    const previous = map.get(row.slug);
+    const slug = canonicalListingSlug(row.slug);
+    const previous = map.get(slug);
     const payload = row.payload || {};
-    map.set(row.slug, presentListing({
+    map.set(slug, presentListing({
       ...overlayPayload(previous, payload),
       logo: payload.logo || (previous && previous.logo) || "",
-      slug: row.slug,
+      slug,
       status: row.status === "draft" ? "draft" : row.status === "inactive" ? "inactive" : "live",
       deleted: Boolean(row.deleted),
       source: previous ? "override" : "created",
