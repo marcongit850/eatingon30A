@@ -506,6 +506,28 @@ assert.equal(grayton.status, 301);
 assert.equal(grayton.headers.get("location"), "https://www.eatingon30a.com/restaurants/grayton-seafood-co-grayton-beach/");
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
 
+const lacoTarget = "https://www.eatingon30a.com/restaurants/laco-seacrest/";
+for (const path of [
+  "/restaurants/la-cocina-seacrest",
+  "/restaurants/la-cocina-seacrest/",
+  "/restaurants/la-cocina-seacrest/index.html",
+  "/restaurants/la-cocina",
+  "/restaurants/la-cocina/",
+  "/restaurants/la-cocina/index.html",
+]) {
+  const moved = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(moved.status, 301);
+  assert.equal(moved.headers.get("location"), lacoTarget);
+}
+const lacoQuery = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/la-cocina-seacrest?ref=old"));
+assert.equal(lacoQuery.headers.get("location"), `${lacoTarget}?ref=old`);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/laco-seacrest/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/laco-seacrest")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/la-cocina-seacrest/"), "POST"), null);
+const lacoBare = trailingSlashRedirect(new URL("https://www.eatingon30a.com/restaurants/laco-seacrest"));
+assert.equal(lacoBare.status, 301);
+assert.equal(lacoBare.headers.get("location"), lacoTarget);
+
 for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-garage-30a/"]) {
   const growler = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
   assert.equal(growler.status, 301);

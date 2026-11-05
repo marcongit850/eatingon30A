@@ -724,6 +724,9 @@ export const LEGACY_SLUG_REDIRECTS = {
   "growler-garage-30a": "/restaurants/growler-garage-30a-dune-allen-beach/",
   "idyll-hounds-proper": "/restaurants/proper-restaurant-and-bar-inlet-beach/",
   "idyll-hounds-proper-inlet-beach": "/restaurants/proper-restaurant-and-bar-inlet-beach/",
+  // LaCo's public slug changed. Both old paths go straight to the new page.
+  "la-cocina": "/restaurants/laco-seacrest/",
+  "la-cocina-seacrest": "/restaurants/laco-seacrest/",
 };
 
 // Fold curly apostrophes, accents, and "&" / "%26" so one key covers the

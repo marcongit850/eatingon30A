@@ -388,6 +388,31 @@ expected_monograms = [
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
 check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+laco = full_by_slug["laco-seacrest"]
+laco_page = (ROOT / "restaurants" / "laco-seacrest" / "index.html").read_text(encoding="utf-8")
+laco_canonical = f"{build.ORIGIN}/restaurants/laco-seacrest/"
+check(not (ROOT / "restaurants" / "la-cocina-seacrest").exists(), "old LaCo directory should not stay as a second page")
+check(f"/restaurants/la-cocina-seacrest/" not in sitemap, "sitemap should not list the old LaCo URL")
+check(f"<loc>{laco_canonical}</loc>" in sitemap, "sitemap should list the LaCo URL")
+check(f'rel="canonical" href="{laco_canonical}"' in laco_page, "LaCo canonical should be the new URL")
+check(f'property="og:url" content="{laco_canonical}"' in laco_page, "LaCo Open Graph URL should be the new URL")
+check(f'"url": "{laco_canonical}"' in laco_page, "LaCo schema URL should be the new URL")
+check("eatingon30a.com/restaurants/la-cocina-seacrest" not in laco_page, "LaCo page should not canonicalize the old URL")
+check('href="/restaurants/la-cocina-seacrest' not in laco_page, "LaCo page should not link the old URL")
+check("/images/restaurants/la-cocina-seacrest/01.jpg" in laco_page, "LaCo page should keep the existing cover path")
+check(laco["cuisines"] == ["Latin Coastal"], f"LaCo cuisine should stay Latin Coastal, got {laco['cuisines']}")
+check(laco["foods"] == ["Tacos", "Ceviches", "Authentic Latin"], f"LaCo foods changed, got {laco['foods']}")
+check(laco["hours"] == "Daily 11am-9pm", f"LaCo hours changed, got {laco['hours']}")
+check(laco["instagram"] == "https://www.instagram.com/laco30a/", f"LaCo Instagram changed, got {laco['instagram']}")
+check(laco["phone"] == "(850) 231-4021", "LaCo phone should stay")
+check(
+    laco["photos"] == [f"/images/restaurants/la-cocina-seacrest/0{n}.jpg" for n in range(1, 7)],
+    f"LaCo photos should stay in the existing folder, got {laco['photos']}",
+)
+check('id="r-laco-seacrest"' in directory and 'href="/restaurants/laco-seacrest/"' in directory, "directory card should use the new LaCo URL")
+check('href="/restaurants/la-cocina-seacrest/"' not in directory, "directory should not link the old LaCo URL")
+check('"la-cocina-seacrest": "/restaurants/laco-seacrest/"' in worker_src, "old LaCo slug should 301 to the new URL")
+check('"la-cocina": "/restaurants/laco-seacrest/"' in worker_src, "older La Cocina path should 301 to the new URL")
 check(build.gallery_label(9) == "4 of 9 photos", "a full first window should read 4 of 9 photos")
 check(build.gallery_label(9, 1) == "5 of 9 photos", "stepping one photo should advance the counter")
 check(build.gallery_label(9, 20) == "9 of 9 photos", "the counter should stop on the last photo")

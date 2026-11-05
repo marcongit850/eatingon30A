@@ -10,7 +10,7 @@ import { LISTINGS_SQL, SCHEMA_SQL } from "../accounts/schema.js";
 import { handleAccounts, resetLimits } from "../accounts/worker.js";
 import { invalidateCatalog } from "../catalog-store.js";
 import baseline from "../data/catalog.json" with { type: "json" };
-import { mergeCatalog, publicRecords } from "../catalog.js";
+import { canonicalListingSlug, mergeCatalog, publicRecords } from "../catalog.js";
 import { patchHtml, patchLlms, patchSitemap } from "../public-html.js";
 import worker from "../worker.js";
 
@@ -177,6 +177,23 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(source.includes('>View</a>'), false);
     assert.equal(source.includes('state.site === "30a"'), false);
     assert.equal(source.split("publicLink(").length - 1, 4);
+  });
+
+  test("a LaCo override saved under the old slug stays on the new listing", () => {
+    const base = [{ slug: "laco-seacrest", name: "LaCo", area: "Seacrest", phone: "(850) 231-4021", hours: "Daily 11am-9pm" }];
+    const merged = mergeCatalog(base, [{
+      slug: "la-cocina-seacrest",
+      status: "live",
+      deleted: false,
+      payload: { notes: "Patio seating", phone: "(850) 231-4021" },
+    }]);
+    assert.equal(canonicalListingSlug("la-cocina-seacrest"), "laco-seacrest");
+    assert.equal(merged.length, 1);
+    assert.equal(merged[0].slug, "laco-seacrest");
+    assert.equal(merged[0].source, "override");
+    assert.equal(merged[0].notes, "Patio seating");
+    assert.equal(merged[0].phone, "(850) 231-4021");
+    assert.equal(merged.some((item) => item.slug === "la-cocina-seacrest"), false);
   });
 
   test("an override without waterfront or bar keeps the baseline tags", () => {

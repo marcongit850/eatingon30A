@@ -513,23 +513,35 @@ PARTNERS = {
 }
 
 
+# The public slug can change without moving the photo files.
+PHOTO_FOLDERS = {
+    "laco-seacrest": "la-cocina-seacrest",
+}
+
+
+def photo_folder(slug: str) -> str:
+    return PHOTO_FOLDERS.get(slug, slug)
+
+
 def local_listing_photo(slug: str) -> str | None:
     """Use images/restaurants/<slug>.<ext> when someone drops a single cover in that folder."""
+    folder = photo_folder(slug)
     for ext in PHOTO_EXTS:
-        if (PHOTO_DIR / f"{slug}{ext}").is_file():
-            return f"/images/restaurants/{slug}{ext}"
+        if (PHOTO_DIR / f"{folder}{ext}").is_file():
+            return f"/images/restaurants/{folder}{ext}"
     return None
 
 
 def listing_photos(slug: str) -> list[str]:
     """Photos for one listing. 01 is the cover; later frames follow it in the profile gallery."""
-    folder = PHOTO_DIR / slug
+    folder_name = photo_folder(slug)
+    folder = PHOTO_DIR / folder_name
     found: list[str] = []
     if folder.is_dir():
         for stem in PHOTO_FRAMES:
             for ext in PHOTO_EXTS:
                 if (folder / f"{stem}{ext}").is_file():
-                    found.append(f"/images/restaurants/{slug}/{stem}{ext}")
+                    found.append(f"/images/restaurants/{folder_name}/{stem}{ext}")
                     break
     if found:
         return found
