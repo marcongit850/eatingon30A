@@ -798,9 +798,13 @@ export async function markNotFound(response) {
 // redirects /name to /name/ with a 307, and that status is not configurable.
 // Return the slashed path for a directory request, or "" when the path should
 // stay as it is (a file, an API route, or a URL that already ends in /).
+// Flat files such as includes/header.html are served at /includes/header, with
+// no slash. The same mode 307s /includes/header.html and /includes/header/
+// back to that path. A 301 onto the slash loops, so the header and footer
+// fetches never receive HTML.
 export function directorySlashPath(pathname) {
   const path = String(pathname || "/");
-  if (path === "/" || path.startsWith("/api/") || path.startsWith("/media/")) return "";
+  if (path === "/" || path.startsWith("/api/") || path.startsWith("/media/") || path.startsWith("/includes/")) return "";
   const index = path.match(/^(.*)\/index\.html$/i);
   if (index) return `${index[1]}/`;
   if (path.endsWith("/")) return "";
