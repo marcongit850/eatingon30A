@@ -267,6 +267,8 @@ Eating in Destin is a separate repo. Copy these files and keep them in step with
 
 Point Destin's `data/catalog.json` at its own build (the same `catalog_record()` shape). Until that Worker reads the overlay, Destin listings saved from this admin are stored and waiting, and they do not change the Destin public site. Give the Destin area list to `areasFor()` in `admin-api.js` (an empty list is a free-text town field). Set `ACCOUNT_SITE` to `destin` in that repo. Do not give Destin a second accounts database or a second photo bucket.
 
+Switching guides loads the other site's public `/data/catalog.json` from the Worker. Deploy the same `catalog-store.js`, `catalog.js`, `admin-api.js`, and `admin.js` on Eating in Destin or the Destin admin still cannot open the 30A list. No browser CORS change is involved.
+
 ## Pages
 
 - `/` meal and town entry points that filter the directory
