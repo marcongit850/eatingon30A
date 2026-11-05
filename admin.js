@@ -198,7 +198,11 @@
         : '<button type="button" class="button secondary admin-list-toggle" data-set-active="false" data-slug="' + escapeHtml(listing.slug) + '">Deactivate</button>';
       return "<tr><td><a href=\"#\" data-edit=\"" + escapeHtml(listing.slug) + "\">" + escapeHtml(listing.name) + "</a></td><td>" + escapeHtml(listing.area) + "</td><td><span class=\"" + badge + "\">" + label + "</span></td><td>" + listing.photoCount + "</td><td>" + publicLink(listing.slug, listing.name) + "</td><td>" + toggle + "</td></tr>";
     }).join("");
-    if (!body) body = '<tr><td colspan="6">No listings match.</td></tr>';
+    if (!body) {
+      body = state.error
+        ? '<tr><td colspan="6">Listings could not be loaded.</td></tr>'
+        : '<tr><td colspan="6">No listings match.</td></tr>';
+    }
     var sites = (state.options ? state.options.sites : []).map(function (site) {
       var pressed = site.id === state.site ? "true" : "false";
       return '<button type="button" class="button secondary" data-site="' + site.id + '" aria-pressed="' + pressed + '">' + escapeHtml(site.label) + "</button>";
@@ -375,6 +379,7 @@
   function loadList() {
     return api("/api/admin/listings?site=" + encodeURIComponent(state.site)).then(function (result) {
       if (!result.ok) {
+        state.listings = [];
         showMessage(result.body.error || "The listings could not be loaded.", true);
         return;
       }

@@ -22,6 +22,7 @@ export function presentListing(raw) {
   const area = raw.area || "";
   return {
     ...raw,
+    name: raw.name || "",
     area,
     areaSlug: slugify(area),
     subarea: raw.subarea || "",
@@ -102,7 +103,7 @@ export function mergeCatalog(baseline, rows) {
       updatedAt: row.updatedAt || null,
     }));
   }
-  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  return [...map.values()].sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }));
 }
 
 export function isPublicListing(listing) {

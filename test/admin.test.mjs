@@ -128,7 +128,15 @@ function siteEnv(db, bucket, { assets = "mock" } = {}) {
     ACCOUNTS_ORIGIN: "http://127.0.0.1:8787",
     ACCOUNTS: { fetch: (request) => handleAccounts(request, shared) },
     ASSETS: assets === "disk" ? diskAssets() : mockAssets,
+    CATALOG_FETCH: async () => new Response("[]", { headers: { "content-type": "application/json" } }),
   };
+}
+
+function jsonCatalog(rows, status = 200) {
+  return new Response(JSON.stringify(rows), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 }
 
 function cookieValue(header, name) {
@@ -508,5 +516,88 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(liveJson.some((item) => item.slug === target.slug), true);
     const livePage = await worker.fetch(new Request(`https://www.eatingon30a.com/restaurants/${target.slug}/`), env);
     assert.equal(livePage.status, 200);
+  });
+
+  test("an override with no name and no baseline does not crash the merge", () => {
+    const merged = mergeCatalog([], [
+      { slug: "seagrove-village-market-cafe-seagrove-beach", status: "inactive", deleted: false, payload: {} },
+      { slug: "the-daytrader-tiki-bar-and-restaurant-seaside", status: "live", deleted: false, payload: { name: "The Daytrader Tiki Bar & Restaurant", area: "Seaside" } },
+    ]);
+    assert.equal(merged.length, 2);
+    const cafe = merged.find((item) => item.slug === "seagrove-village-market-cafe-seagrove-beach");
+    assert.equal(cafe.name, "");
+    assert.equal(cafe.status, "inactive");
+  });
+
+  test("each admin can load the other guide, and a failed sister catalog stays JSON", async () => {
+    invalidateCatalog();
+    resetLimits();
+    const db = memoryDb();
+    const bucket = memoryBucket();
+    const daytrader = {
+      slug: "the-daytrader-tiki-bar-and-restaurant-seaside",
+      name: "The Daytrader Tiki Bar & Restaurant",
+      area: "Seaside",
+    };
+    const harbor = { slug: "harbor-baseline", name: "Harbor Baseline", area: "Destin Harbor" };
+    const fromDestin = siteEnv(db, bucket);
+    fromDestin.ACCOUNT_SITE = "destin";
+    let fetched = [];
+    fromDestin.CATALOG_FETCH = async (url) => {
+      fetched.push(String(url));
+      return jsonCatalog([
+        daytrader,
+        { slug: "seagrove-village-market-cafe-seagrove-beach", name: "Seagrove Village Market Café", area: "Seagrove Beach" },
+      ]);
+    };
+    const marc = await signIn(db, fromDestin, "marc@whpinc.com");
+    await db.prepare(
+      "INSERT INTO listings (site, slug, status, deleted, payload, updated_at, updated_by) VALUES (?, ?, 'inactive', 0, '{}', 0, 'migration')",
+    ).bind("30a", "seagrove-village-market-cafe-seagrove-beach").run();
+    const anonymous = await handleAdmin(adminRequest("/api/admin/listings?site=30a"), fromDestin);
+    assert.equal(anonymous.status, 401);
+    assert.equal(fetched.length, 0);
+    const switched = await handleAdmin(adminRequest("/api/admin/listings?site=30a", marc), fromDestin);
+    const switchedBody = await switched.json();
+    assert.equal(switched.status, 200, JSON.stringify(switchedBody));
+    assert.equal(switched.headers.get("content-type").includes("json"), true);
+    const found = switchedBody.listings.find((item) => item.slug === daytrader.slug);
+    assert.equal(found.name, daytrader.name);
+    assert.equal(found.area, "Seaside");
+    assert.equal(found.status, "live");
+    const cafe = switchedBody.listings.find((item) => item.slug === "seagrove-village-market-cafe-seagrove-beach");
+    assert.equal(cafe.status, "inactive");
+    assert.equal(cafe.name, "Seagrove Village Market Café");
+    assert.ok(fetched.some((url) => url === "https://www.eatingon30a.com/data/catalog.json"));
+
+    invalidateCatalog();
+    const from30a = siteEnv(db, bucket);
+    from30a.CATALOG_FETCH = async (url) => {
+      assert.equal(url, "https://www.eatingindestin.com/data/catalog.json");
+      return jsonCatalog([harbor]);
+    };
+    const marc30a = await signIn(db, from30a, "marc@whpinc.com");
+    const otherWay = await handleAdmin(adminRequest("/api/admin/listings?site=destin", marc30a), from30a);
+    const otherBody = await otherWay.json();
+    assert.equal(otherWay.status, 200, JSON.stringify(otherBody));
+    assert.equal(otherBody.listings.some((item) => item.slug === harbor.slug && item.name === harbor.name), true);
+    const local = await handleAdmin(adminRequest("/api/admin/listings?site=30a", marc30a), from30a);
+    const localBody = await local.json();
+    assert.equal(local.status, 200);
+    assert.equal(localBody.listings.some((item) => item.slug === daytrader.slug), true);
+
+    invalidateCatalog();
+    from30a.CATALOG_FETCH = async () => new Response("<html>challenge</html>", {
+      status: 403,
+      headers: { "content-type": "text/html" },
+    });
+    const blocked = await handleAdmin(adminRequest("/api/admin/listings?site=destin", marc30a), from30a);
+    const blockedBody = await blocked.json();
+    assert.equal(blocked.status, 503);
+    assert.equal(blocked.headers.get("content-type").includes("json"), true);
+    assert.match(blockedBody.error, /Eating in Destin listings could not be loaded/);
+    const guest = await signIn(db, from30a, "guest@example.com");
+    const forbidden = await handleAdmin(adminRequest("/api/admin/listings?site=destin", guest), from30a);
+    assert.equal(forbidden.status, 403);
   });
 });
