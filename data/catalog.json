@@ -4527,16 +4527,18 @@
     "website": "https://laco30a.com/",
     "price": "$$",
     "notes": "LaCo, formerly La Cocina, serves Latin-inspired lunch and dinner with a coastal twist in Seacrest Beach.",
-    "hours": "Mon-Fri: 11am-3pm & 5pm-9pm Sat & Sun: 11am-3pm & 5pm-9pm",
+    "hours": "Daily 11am-9pm",
     "cuisines": [
-      "Mexican"
+      "Latin Coastal"
     ],
     "meals": [
       "Lunch",
       "Dinner"
     ],
     "foods": [
-      "Tacos"
+      "Tacos",
+      "Ceviches",
+      "Authentic Latin"
     ],
     "vibes": [
       "Casual Dining"
@@ -4553,7 +4555,7 @@
     "reservations": false,
     "groups": true,
     "facebook": "https://www.facebook.com/LaCo30A",
-    "instagram": "https://www.instagram.com/lacocina30a/",
+    "instagram": "https://www.instagram.com/laco30a/",
     "photos": [
       {
         "id": null,
@@ -4566,10 +4568,22 @@
       {
         "id": null,
         "src": "/images/restaurants/la-cocina-seacrest/03.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/la-cocina-seacrest/04.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/la-cocina-seacrest/05.jpg"
+      },
+      {
+        "id": null,
+        "src": "/images/restaurants/la-cocina-seacrest/06.jpg"
       }
     ],
     "logo": null,
-    "search": "laco seacrest  seacrest beach mexican lunch dinner tacos restaurant laco, formerly la cocina, serves latin-inspired lunch and dinner with a coastal twist in seacrest beach. laco la cocina restaurant tacos mexican latin casual dining seacrest $$"
+    "search": "laco seacrest  seacrest beach latin coastal lunch dinner tacos ceviches authentic latin restaurant laco, formerly la cocina, serves latin-inspired lunch and dinner with a coastal twist in seacrest beach. laco la cocina restaurant tacos ceviches authentic latin coastal casual dining seacrest $$"
   },
   {
     "slug": "local-cantina",
