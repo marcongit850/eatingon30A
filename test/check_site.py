@@ -57,7 +57,29 @@ check((ROOT / "videos" / "eating-on-30a-tour.mp4").is_file(), "tour video file s
 check((ROOT / "images" / "eating-on-30a-tour-poster.jpg").is_file(), "tour poster file should be in the repo")
 check('class="video-tour"' not in home, "homepage should not include the video tour")
 check('aria-label="Town guides"' not in directory, "town pages should not sit in a row above the filters")
-check('<select id="area"' in directory and ">All towns</option>" in directory, "directory should keep the town dropdown")
+check(
+    'data-group="area"' in directory
+    and 'data-value="nearby"' in directory
+    and 'data-param="area"' in directory
+    and '<select id="area"' not in directory
+    and ">All towns</option>" not in directory,
+    "directory town filter should be chips",
+)
+check(
+    'class="hero-chip"' in directory
+    and "data-hero-chip" in directory
+    and 'aria-pressed="false"' in directory
+    and "More filters" in directory
+    and "Clear all" in directory
+    and 'data-hero-more' in directory
+    and 'data-hero-clear' in directory
+    and 'id="filters-more-panel"' in directory,
+    "directory filters should reuse the homepage chips",
+)
+filter_html = directory.split('id="filters"', 1)[1].split('id="result-count"', 1)[0]
+check("<select" not in filter_html and 'type="checkbox"' not in filter_html, "directory filters should not use dropdowns or checkboxes")
+check("—" not in filter_html and "–" not in filter_html, "directory filter copy should not use em or en dashes")
+check("bindFilterChips" in site_js and "writeChipForm" in site_js, "directory chips should share the homepage chip binding")
 switch_at = directory.find('class="view-switch"')
 filters_at = directory.find('id="filters"')
 cards_at = directory.find('id="cards"')
@@ -96,13 +118,21 @@ detail_with_tour = [
 check(not detail_with_tour, "video tour should stay off restaurant detail pages")
 check(
     'name="laurensFavorite"' in directory and ">Lauren’s Favorites</span>" in directory,
-    "directory should offer a Lauren’s Favorites checkbox",
+    "directory should offer a Lauren’s Favorites filter",
 )
 check(
     'name="laurensFavorite"' in map_page and ">Lauren’s Favorites</span>" in map_page,
     "map should offer a Lauren’s Favorites checkbox",
 )
-check('id="price"' in directory and ">Any price</option>" in directory, "directory should offer a price filter")
+check(
+    'data-group="price"' in directory
+    and 'data-value="$"' in directory
+    and 'data-value="$$"' in directory
+    and 'data-value="$$$"' in directory
+    and 'id="price"' in directory
+    and ">Any price</option>" not in directory,
+    "directory price filter should be chips",
+)
 check('id="price"' in map_page and ">Any price</option>" in map_page, "map should offer a price filter")
 check('data-filter-flag="waterfront" hidden' not in directory and 'data-filter-flag="bar" hidden' not in directory, "tagged flags should stay visible on the directory")
 for name, label in (
@@ -116,7 +146,7 @@ for name, label in (
 ):
     check(
         f'name="{name}"' in directory and f">{label}</span>" in directory,
-        f"directory should offer a {label} checkbox",
+        f"directory should offer a {label} filter",
     )
     check(
         f'name="{name}"' in map_page and f">{label}</span>" in map_page,
