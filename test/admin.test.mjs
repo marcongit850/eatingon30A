@@ -165,6 +165,20 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     assert.equal(file, LISTINGS_SQL);
   });
 
+  test("the listing editor and table link to the public page for the selected guide", () => {
+    const source = readFileSync(new URL("../admin.js", import.meta.url), "utf8");
+    assert.match(source, /"30a": "https:\/\/www\.eatingon30a\.com"/);
+    assert.match(source, /destin: "https:\/\/www\.eatingindestin\.com"/);
+    assert.match(source, /\/restaurants\/" \+ encodeURIComponent\(slug\) \+ "\//);
+    assert.match(source, /class="button secondary admin-public-link"/);
+    assert.match(source, /target="_blank" rel="noopener noreferrer"/);
+    assert.match(source, />Link<\/a>/);
+    assert.equal(source.includes('href="/restaurants/'), false);
+    assert.equal(source.includes('>View</a>'), false);
+    assert.equal(source.includes('state.site === "30a"'), false);
+    assert.equal(source.split("publicLink(").length - 1, 4);
+  });
+
   test("an override without waterfront or bar keeps the baseline tags", () => {
     const red = baseline.find((item) => item.slug === "the-red-bar-grayton-beach");
     const redd = baseline.find((item) => item.slug === "redds-pub");
