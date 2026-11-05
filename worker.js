@@ -681,6 +681,32 @@ export const AMPERSAND_REDIRECTS = {
   "edward’s-fine-food-&-wine": "/restaurants/edwards-fine-food-and-wine-rosemary-beach/",
   "local-catch-bar-&-grill": "/restaurants/local-catch-bar-and-grill-dune-allen-beach/",
   "fonville-press-market-&-café": "/restaurants/fonville-press-market-and-cafe-alys-beach/",
+  "bud-&-alley’s": "/restaurants/bud-and-alleys-seaside/",
+};
+
+// Old slugs that do not match a live page after curly-apostrophe, accent, and
+// "&" normalization. Seagrove Village Market Café stays deactivated: the old
+// slug goes to the Seagrove Beach town page, not back onto the guide.
+// An empty target means the URL should stay a real 404 (no current listing).
+export const EXPLICIT_REDIRECTS = {
+  "the-summer-kitchen-cafe": "/restaurants/the-summer-kitchen-cafe-rosemary-beach/",
+  "grayton-seafood-co": "/restaurants/grayton-seafood-co-grayton-beach/",
+  "pickles-burger-and-shake": "/restaurants/pickles-burger-and-shake-seaside/",
+  "gallions": "/restaurants/gallions-rosemary-beach/",
+  "bud-and-alleys": "/restaurants/bud-and-alleys-seaside/",
+  "basmatis-asian-cuisine": "/restaurants/basmatis-asian-cuisine-blue-mountain-beach/",
+  "ajs-grayton-beach": "/restaurants/ajs-grayton-beach-grayton-beach/",
+  "georges-at-alys-beach": "/restaurants/georges-at-alys-beach-alys-beach/",
+  "cafe-thirty-a": "/restaurants/cafe-thirty-a-seagrove-beach/",
+  "wild-bills-beach-dogs": "/restaurants/wild-bills-beach-dogs-seaside/",
+  "seagrove-village-market-cafe": "/areas/seagrove-beach/",
+  "obscure-wine-company": "/restaurants/obscure-wine-company-inlet-beach/",
+  "the-shrimp-shack": "/restaurants/the-shrimp-shack-seaside/",
+  "johnny-mctighes-irish-pub": "/restaurants/johnny-mctighes-irish-pub-dune-allen-beach/",
+  "black-bear-bread-co": "/restaurants/black-bear-bread-co-seaside/",
+  "explore30a": "/",
+  "terms-and-conditions": "/about/",
+  "blue-mabel-smokehouse-and-provisions": "",
 };
 
 function decodedRestaurantSlug(pathname) {
@@ -700,11 +726,48 @@ export const LEGACY_SLUG_REDIRECTS = {
   "idyll-hounds-proper-inlet-beach": "/restaurants/proper-restaurant-and-bar-inlet-beach/",
 };
 
+// Fold curly apostrophes, accents, and "&" / "%26" so one key covers the
+// encoded and literal forms Google still requests.
+export function normalizeLegacySlug(value) {
+  let text = "";
+  try {
+    text = decodeURIComponent(String(value || ""));
+  } catch {
+    text = String(value || "");
+  }
+  text = text.normalize("NFKD").replace(/\p{M}/gu, "");
+  text = text.replace(/[\u2018\u2019\u201A\u201B\u2032\u02BC']/g, "");
+  text = text.replace(/&/g, " and ");
+  text = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return text;
+}
+
+function redirectTargetForSlug(slug) {
+  const normalized = normalizeLegacySlug(slug);
+  if (!normalized) return "";
+  const maps = [EXPLICIT_REDIRECTS, AMPERSAND_REDIRECTS, LEGACY_SLUG_REDIRECTS];
+  for (const map of maps) {
+    if (Object.prototype.hasOwnProperty.call(map, slug)) return map[slug];
+    for (const [key, path] of Object.entries(map)) {
+      if (normalizeLegacySlug(key) === normalized) return path;
+    }
+  }
+  return "";
+}
+
 export function legacyAmpersandRedirect(url, method = "GET") {
   const verb = String(method || "GET").toUpperCase();
   if (verb !== "GET" && verb !== "HEAD") return null;
-  const slug = decodedRestaurantSlug(url.pathname);
-  const path = slug.includes("&") ? AMPERSAND_REDIRECTS[slug] : LEGACY_SLUG_REDIRECTS[slug];
+  const bare = String(url.pathname || "").replace(/\/+$/, "") || "/";
+  let path = "";
+  if (bare === "/explore30a" || bare === "/terms-and-conditions") {
+    path = EXPLICIT_REDIRECTS[bare.slice(1)] || "";
+  } else {
+    const slug = decodedRestaurantSlug(url.pathname);
+    if (!slug) return null;
+    path = redirectTargetForSlug(slug);
+  }
+  // An empty mapped target, or no mapping, stays a real 404.
   if (!path) return null;
   const target = new URL(url.toString());
   target.pathname = path;
@@ -751,13 +814,23 @@ export function robotsTagForHost(hostname) {
   return "";
 }
 
-function withPreviewRobots(url, response) {
+async function withPreviewRobots(url, response) {
   const preview = robotsTagForHost(url.hostname);
   const admin = url.pathname === "/admin" || url.pathname.startsWith("/admin/");
   const tag = preview || (admin ? "noindex" : "");
   if (!tag) return response;
   const headers = new Headers(response.headers);
   if (!headers.has("x-robots-tag")) headers.set("x-robots-tag", tag);
+  const type = headers.get("content-type") || "";
+  // Preview hosts are noindex. Drop the public index,follow meta so the HTML
+  // does not contradict the header.
+  if (preview && type.includes("text/html")) {
+    const html = (await response.text()).replace(
+      /<meta name="robots" content="(?!noindex)[^"]*">/i,
+      '<meta name="robots" content="noindex">',
+    );
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
+  }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -859,6 +932,6 @@ export default {
     if (url.pathname.startsWith("/api/admin/") || url.pathname.startsWith("/media/photos/")) {
       return handleAdmin(request, env);
     }
-    return withPreviewRobots(url, await markNotFound(await servePublic(request, await env.ASSETS.fetch(request), env)));
+    return await withPreviewRobots(url, await markNotFound(await servePublic(request, await env.ASSETS.fetch(request), env)));
   },
 };

@@ -57,6 +57,12 @@ const descriptions = new Set();
 const manualSeoPages = new Set([
   join(root, "index.html"),
   join(root, "restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html"),
+  join(root, "restaurants/louis-louis/index.html"),
+  join(root, "restaurants/the-donut-hole-inlet-beach/index.html"),
+  join(root, "guides/best-seafood-30a/index.html"),
+]);
+const skip30a = new Set([
+  join(root, "restaurants/louis-louis/index.html"),
 ]);
 
 for (const path of htmlPages) {
@@ -68,15 +74,30 @@ for (const path of htmlPages) {
   assert.equal(descriptions.has(description), false, "duplicate description " + description);
   titles.add(title);
   descriptions.add(description);
-  assert.ok(title.length >= 20 && title.length <= 70, rel + " title length " + title.length + " " + title);
+  assert.ok(title.length >= 20 && title.length <= 60, rel + " title length " + title.length + " " + title);
+  assert.equal(/\bNearby\b/.test(title), false, rel + " title uses Nearby " + title);
+  assert.equal(/\bNearby\b/.test(description), false, rel + " description uses Nearby " + description);
   const manualSeo = manualSeoPages.has(path);
   if (manualSeo) {
-    assert.ok(description.length >= 80 && description.length <= 165, rel + " description length " + description.length);
-    assert.match(description, /30A/);
+    assert.ok(description.length >= 80 && description.length <= 160, rel + " description length " + description.length);
+    if (!skip30a.has(path)) assert.match(description, /30A/);
   } else {
-    assert.ok(description.length >= 110 && description.length <= 165, rel + " description length " + description.length);
+    assert.ok(description.length >= 110 && description.length <= 160, rel + " description length " + description.length);
     assert.match(description, /30A/);
     assert.match(description, /Walton County/);
+  }
+  const h1Text = decode((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || ["", ""])[1].replace(/<[^>]+>/g, ""));
+  assert.equal(/\bNearby\b/.test(h1Text), false, rel + " h1 uses Nearby " + h1Text);
+  const listingPage = /restaurants\/[^/]+\/index\.html$/.test(rel);
+  const noindexPage = /(?:^|\/)(?:404\.html|account\/|my-places\/|admin\/)/.test(rel);
+  if (noindexPage) {
+    assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.equal(html.includes("max-image-preview:large"), false, rel);
+  } else {
+    assert.match(html, /<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">/);
+  }
+  if (listingPage) {
+    assert.equal(attr(html, /<meta property="og:type" content="([^"]+)">/), "restaurant.restaurant");
   }
   if (path.endsWith("404.html")) {
     assert.match(html, /<meta name="robots" content="noindex">/);
@@ -99,7 +120,9 @@ for (const path of htmlPages) {
   assert.equal(attr(html, /<meta property="og:url" content="([^"]+)">/), canonical);
   assert.equal(attr(html, /<meta property="og:site_name" content="([^"]+)">/), "Eating on 30A");
   assert.equal(attr(html, /<meta property="og:locale" content="([^"]+)">/), "en_US");
-  assert.equal(attr(html, /<meta property="og:type" content="([^"]+)">/), "website");
+  if (!/restaurants\/[^/]+\/index\.html$/.test(rel)) {
+    assert.equal(attr(html, /<meta property="og:type" content="([^"]+)">/), "website");
+  }
   const image = attr(html, /<meta property="og:image" content="([^"]+)">/);
   assert.ok(image.startsWith("https://"), rel);
   assert.equal(attr(html, /<meta name="twitter:card" content="([^"]+)">/), "summary_large_image");
@@ -134,6 +157,10 @@ const list = directory["@graph"].find((node) => node["@type"] === "ItemList");
 assert.equal(list.numberOfItems, 155);
 assert.equal(directory["@graph"].some((node) => node["@type"] === "BreadcrumbList"), true);
 const directoryHtml = read("restaurants/index.html");
+const directoryCards = directoryHtml.split('id="cards"')[1].split('id="browse-areas"')[0];
+assert.equal((directoryCards.match(/class="card-link"/g) || []).length, 155);
+assert.match(directoryCards, /href="\/restaurants\/o-ku-alys-beach\/"/);
+assert.match(directoryCards, />O-Ku</);
 assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
 assert.match(directoryHtml, /href="\/areas\/seaside\/"/);
 assert.match(directoryHtml, /Scenic Highway 30A/);
@@ -167,6 +194,12 @@ const crumbs = typed(profile["@graph"], "BreadcrumbList");
 assert.deepEqual(crumbs.itemListElement.map((item) => item.name), ["Home", "Restaurants", "Alys Beach", "O-Ku"]);
 assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$/);
 assert.match(profileHtml, /<title>O-Ku \| Japanese in Alys Beach, 30A<\/title>/);
+assert.match(profileHtml, /width="\d+"/);
+assert.match(profileHtml, /<img[^>]+loading="eager"/);
+assert.match(read("restaurants/louis-louis/index.html"), /<title>Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours<\/title>/);
+assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<title>The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A<\/title>/);
+assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<h1>The Donut Hole Inlet Beach<\/h1>/);
+assert.match(read("guides/best-seafood-30a/index.html"), /<title>Best Seafood on 30A: Where Locals Eat in 2026<\/title>/);
 assert.match(profileHtml, /<h1>O-Ku<\/h1>/);
 assert.equal(profileHtml.includes('class="place"'), false);
 assert.match(profileHtml, /Scenic Highway 30A/);
@@ -174,8 +207,11 @@ assert.match(profileHtml, /href="\/areas\/alys-beach\/"/);
 assert.equal(profileHtml.includes('aria-label="Related guides"'), false);
 assert.equal(restaurant.aggregateRating, undefined);
 assert.equal(restaurant.review, undefined);
+assert.equal(restaurant.menu, undefined);
+assert.equal(restaurant.hasMenu, undefined);
 assert.equal(restaurant.openingHours, undefined);
-assert.equal(restaurant.openingHoursSpecification, undefined);
+assert.ok(Array.isArray(restaurant.openingHoursSpecification));
+assert.ok(restaurant.openingHoursSpecification.some((row) => row.dayOfWeek.includes("Monday") && row.opens && row.closes));
 const profilePage = typed(profile["@graph"], "WebPage");
 assert.equal(profilePage.mainEntity["@id"], restaurant["@id"]);
 assert.equal(profilePage.url, restaurant.url);
@@ -332,6 +368,34 @@ assert.equal(literalAmp.headers.get("location"), "https://eatingon30a.com/restau
 assert.equal(canonicalRedirect(new URL("https://eatingon30a.com/restaurants/raw-%26-juicy/")).headers.get("location"), "https://www.eatingon30a.com/restaurants/raw-%26-juicy/");
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/closed-%26-cafe/")), null);
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/vue-on-30a/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/salty-butcher/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/charlies-delights/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/blue-mabel-smokehouse-%26-provisions/")), null);
+
+const summer = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/the-summer-kitchen-cafe"));
+assert.equal(summer.status, 301);
+assert.equal(summer.headers.get("location"), "https://www.eatingon30a.com/restaurants/the-summer-kitchen-cafe-rosemary-beach/");
+const curlyPickle = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/pickle%E2%80%99s-burger-and-shake/"));
+assert.equal(curlyPickle.status, 301);
+assert.equal(curlyPickle.headers.get("location"), "https://www.eatingon30a.com/restaurants/pickles-burger-and-shake-seaside/");
+const accentCafe = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/caf%C3%A9-thirty-a"));
+assert.equal(accentCafe.status, 301);
+assert.equal(accentCafe.headers.get("location"), "https://www.eatingon30a.com/restaurants/cafe-thirty-a-seagrove-beach/");
+const bud = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/bud-%26-alley%E2%80%99s/"));
+assert.equal(bud.status, 301);
+assert.equal(bud.headers.get("location"), "https://www.eatingon30a.com/restaurants/bud-and-alleys-seaside/");
+const market = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/seagrove-village-market-caf%C3%A9"));
+assert.equal(market.status, 301);
+assert.equal(market.headers.get("location"), "https://www.eatingon30a.com/areas/seagrove-beach/");
+const explore = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/explore30a"));
+assert.equal(explore.status, 301);
+assert.equal(explore.headers.get("location"), "https://www.eatingon30a.com/");
+const terms = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/terms-and-conditions/"));
+assert.equal(terms.status, 301);
+assert.equal(terms.headers.get("location"), "https://www.eatingon30a.com/about/");
+const grayton = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/grayton-seafood-co."));
+assert.equal(grayton.status, 301);
+assert.equal(grayton.headers.get("location"), "https://www.eatingon30a.com/restaurants/grayton-seafood-co-grayton-beach/");
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
 
 for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-garage-30a/"]) {

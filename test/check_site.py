@@ -7,6 +7,7 @@ import csv
 import json
 import re
 import sys
+from html import unescape
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -131,7 +132,7 @@ check("Takes reservations" not in daytrader_page, "Daytrader should not claim re
 check('class="listing-claim"' in fish_page, "Fish Out of Water should keep the claim link")
 fish = next(item for item in restaurants if item["slug"] == "fish-out-of-water-watercolor")
 check(fish.get("music") is True, "Fish Out of Water should keep live music as yes")
-music_note = "Live music is seasonal and subject to change — confirm with the restaurant."
+music_note = "Live music is seasonal and subject to change, confirm with the restaurant."
 for item in restaurants:
     page = (ROOT / "restaurants" / item["slug"] / "index.html").read_text(encoding="utf-8")
     if item.get("music"):
@@ -208,7 +209,8 @@ for restaurant in restaurants:
     check(f"{build.ORIGIN}/restaurants/{restaurant['slug']}/" in sitemap, f"sitemap missing {restaurant['slug']}")
     page = path.read_text(encoding="utf-8")
     full = full_by_slug[restaurant["slug"]]
-    check(f"<h1>{build.e(restaurant['name'])}</h1>" in page, f"detail h1 should be the name only {restaurant['slug']}")
+    expected_h1 = build.LISTING_H1.get(restaurant["slug"], restaurant["name"])
+    check(f"<h1>{build.e(expected_h1)}</h1>" in page, f"detail h1 {restaurant['slug']}")
     check('class="place"' not in page and "Other locations" not in page, f"detail page picked up listing chrome {restaurant['slug']}")
     check('aria-label="Related guides"' not in page, f"detail page should not add a guides nav {restaurant['slug']}")
     story = page.split('class="prose profile-story"', 1)[1].split("</div>", 1)[0]
@@ -248,7 +250,12 @@ for restaurant in restaurants:
             check(str(place.get("url", "")).startswith(f"{build.ORIGIN}/restaurants/"), f"schema url {restaurant['slug']}")
             check(place.get("address", {}).get("addressCountry") == "US", f"schema address {restaurant['slug']}")
             check("aggregateRating" not in place and "review" not in place, f"schema invented a rating {restaurant['slug']}")
-            check("openingHours" not in place and "openingHoursSpecification" not in place, f"schema invented hours {restaurant['slug']}")
+            check("menu" not in place and "hasMenu" not in place, f"schema should not invent a menu {restaurant['slug']}")
+            expected_hours = [] if build.closure_notice(full) else build.opening_hours_specification(full.get("hours") or "")
+            if expected_hours:
+                check(place.get("openingHoursSpecification") == expected_hours, f"schema hours {restaurant['slug']}")
+            else:
+                check("openingHours" not in place and "openingHoursSpecification" not in place, f"schema invented hours {restaurant['slug']}")
             if restaurant.get("phone"):
                 check(place.get("telephone") == restaurant["phone"], f"schema phone {restaurant['slug']}")
             if restaurant.get("cuisines"):
@@ -672,7 +679,7 @@ check("Find breakfast, lunch, and dinner along Scenic Highway 30A" in home, "hom
 check('src="/images/hero-beachside-dining.jpg"' in home, "homepage hero should use the beachside dining photo")
 check('srcset="/images/hero-beachside-dining.webp"' in home, "homepage hero should offer the WebP photo")
 check(
-    "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf in the background." in home,
+    "A beachside table set with oysters, fish tacos, brunch, a cocktail, and coffee, with the Gulf of America in the background." in home,
     "homepage hero alt should describe beachside dining",
 )
 check("de29ed_1473adbe1b4b4c068a746d2bd7c0fc46" not in home, "homepage should drop the old Wix hero")
@@ -1018,13 +1025,13 @@ check(nearby_file.read_bytes() == storefront.read_bytes(), "Nearby town photo sh
 nearby_page = (ROOT / "areas" / "nearby" / "index.html").read_text(encoding="utf-8")
 nearby_hero = nearby_page.split('class="profile-hero"', 1)[1].split('class="wrap page-intro"', 1)[0]
 check(f'src="{nearby_src}"' in nearby_hero and 'class="ph"' not in nearby_hero, "Nearby hero should be the storefront photo")
-check('alt="Nearby on US 98, near Scenic Highway 30A"' in nearby_hero, "Nearby hero alt should name US 98 near 30A")
+check('alt="US 98 near Scenic Highway 30A"' in nearby_hero, "Nearby hero alt should name US 98 near 30A")
 check(f'content="https://www.eatingon30a.com{nearby_src}"' in nearby_page, "Nearby Open Graph image should be the town photo")
 check("og-scenic-30a.jpg" not in nearby_page, "Nearby page should not use the generic scenic image")
-check("<h1 class=\"town-title\">Restaurants Nearby</h1>" in nearby_page, "Nearby town page heading")
+check("<h1 class=\"town-title\">Restaurants on US 98</h1>" in nearby_page, "Nearby town page heading")
 check("Restaurants in Nearby" not in nearby_page and "restaurants in Nearby" not in nearby_page, "Nearby page should not say restaurants in Nearby")
-check("Find restaurants Nearby on US 98, near Scenic Highway 30A." in nearby_page, "Nearby intro should say restaurants Nearby")
-check("Restaurants Nearby on US 98, near Scenic Highway 30A." in llms, "llms.txt should say Restaurants Nearby")
+check("Find restaurants on US 98, near Scenic Highway 30A." in nearby_page, "Nearby intro should name US 98")
+check("Restaurants on US 98, near Scenic Highway 30A." in llms, "llms.txt should say Restaurants on US 98")
 check("Restaurants in Nearby" not in llms, "llms.txt should not say Restaurants in Nearby")
 seaside_page = (ROOT / "areas" / "seaside" / "index.html").read_text(encoding="utf-8")
 check("<h1 class=\"town-title\">Restaurants in Seaside</h1>" in seaside_page, "other towns keep Restaurants in {Town}")
@@ -1061,7 +1068,7 @@ check(len(seafood) == 33, f"seafood guide should list every Seafood cuisine row,
 guide_index = (ROOT / "guides" / "index.html").read_text(encoding="utf-8")
 seafood_page = (ROOT / "guides" / "best-seafood-30a" / "index.html").read_text(encoding="utf-8")
 check("<h1>Guides along 30A</h1>" in guide_index, "guides index heading")
-check('<h1 class="guide-title">Best seafood on 30A</h1>' in seafood_page, "seafood guide heading")
+check('<h1 class="guide-title">Best Seafood on 30A</h1>' in seafood_page, "seafood guide heading")
 check('href="/restaurants/?cuisine=Seafood"' in seafood_page, "seafood guide should link the directory filter")
 check('href="/map/?cuisine=Seafood"' in seafood_page, "seafood guide should link the map filter")
 check('href="/restaurants/?cuisine=Seafood&amp;kids=yes"' in seafood_page, "seafood guide should link kid-friendly seafood")
@@ -1259,6 +1266,23 @@ for page in html_pages:
     check('src="/header.js"' in text and 'src="/footer.js"' in text, f"{rel} does not load the shared header and footer scripts")
     check("<header class=\"site-header\">" not in text, f"{rel} still inlines the header")
     check("footer-mark" not in text, f"{rel} still inlines the footer")
+
+cards = directory.split('id="cards"', 1)[1].split('id="browse-areas"', 1)[0]
+check(cards.count('class="card-link"') == len(restaurants), "directory should render every restaurant link in the server HTML")
+check('href="/restaurants/o-ku-alys-beach/"' in cards and ">O-Ku</" in cards, "directory server HTML should name O-Ku")
+check("max-image-preview:large" in home and "noindex" not in home.split("</title>", 1)[0], "home robots meta should allow indexing")
+for page_path in (ROOT / "restaurants").glob("*/index.html"):
+    page = page_path.read_text(encoding="utf-8")
+    title = unescape(page.split("<title>", 1)[1].split("</title>", 1)[0])
+    description = unescape(page.split('name="description" content="', 1)[1].split('"', 1)[0])
+    h1 = unescape(re.search(r"<h1[^>]*>(.*?)</h1>", page, re.S).group(1))
+    h1 = re.sub(r"<[^>]+>", "", h1)
+    check(len(title) <= 60, f"title over 60 {page_path.parent.name}: {title}")
+    check(len(description) <= 160, f"description over 160 {page_path.parent.name}")
+    for label, value in (("title", title), ("description", description), ("h1", h1)):
+        check("Nearby" not in value, f"{page_path.parent.name} {label} should not call a town Nearby: {value}")
+check('property="og:type" content="restaurant.restaurant"' in (ROOT / "restaurants" / "the-red-bar-grayton-beach" / "index.html").read_text(encoding="utf-8"), "Red Bar should use restaurant Open Graph type")
+check('property="og:image"' in (ROOT / "restaurants" / "redds-pub" / "index.html").read_text(encoding="utf-8"), "Redd's Pub should have an og:image")
 
 blob = "\n".join([home, directory, site_js, styles, (ROOT / "map" / "index.html").read_text(encoding="utf-8")])
 for banned in ("maps.googleapis", "places.googleapis", "airtable.com", "maps.google.com"):
