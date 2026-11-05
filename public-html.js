@@ -6,6 +6,7 @@
  */
 
 import siteConfig from "./site.config.json" with { type: "json" };
+import imageSizes from "./data/image-sizes.json" with { type: "json" };
 
 const ORIGIN = String(siteConfig.origin || "https://www.eatingon30a.com").replace(/\/$/, "");
 const WALKABLE = new Set(["seaside", "alys-beach", "rosemary-beach"]);
@@ -195,7 +196,9 @@ export function openingHoursSpecification(raw) {
     const body = text.slice(mark.index + mark[0].length, marks[index + 1] ? marks[index + 1].index : text.length);
     if (!days) return [];
     if (/\bclosed\b/i.test(body) && !/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i.test(body)) continue;
+    const fromClose = /from\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*,?\s*close\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)/ig;
     const ranges = [...body.matchAll(timeRange)];
+    if (!ranges.length) ranges.push(...body.matchAll(fromClose));
     if (!ranges.length) {
       if (/\d/.test(body)) return [];
       continue;
@@ -219,6 +222,15 @@ function yesNo(flag) {
   return flag ? "yes" : "no";
 }
 
+export function imageDimensionAttrs(src) {
+  const size = imageSizes[src];
+  if (!size || size.length < 2) return "";
+  const width = Number(size[0]);
+  const height = Number(size[1]);
+  if (!width || !height) return "";
+  return ` width="${width}" height="${height}"`;
+}
+
 export function renderCard(listing) {
   const meals = (listing.meals || []).join(" · ");
   const cuisines = (listing.cuisines || []).join(", ");
@@ -232,10 +244,10 @@ export function renderCard(listing) {
   let media;
   let mediaClass = "card-media";
   if (image) {
-    media = `<img src="${escapeHtml(image)}" alt="${escapeHtml(photoAlt(listing))}" loading="lazy" onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector('.ph');if(f)f.hidden=false">${placeholder(tone, label, listing.name, true)}`;
+    media = `<img src="${escapeHtml(image)}" alt="${escapeHtml(photoAlt(listing))}"${imageDimensionAttrs(image)} loading="lazy" onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector('.ph');if(f)f.hidden=false">${placeholder(tone, label, listing.name, true)}`;
   } else if (listing.logo) {
     mediaClass = "card-media logo-media";
-    media = `<img class="card-logo" src="${escapeHtml(listing.logo)}" alt="${escapeHtml(listing.name)} logo" loading="lazy">`;
+    media = `<img class="card-logo" src="${escapeHtml(listing.logo)}" alt="${escapeHtml(listing.name)} logo"${imageDimensionAttrs(listing.logo)} loading="lazy">`;
   } else {
     media = placeholder(tone, label, listing.name);
   }
@@ -378,14 +390,56 @@ function appendCards(html, pathname, listings) {
   return html.slice(0, bounds.innerEnd) + cards + html.slice(bounds.innerEnd);
 }
 
+function listItemPattern(slug) {
+  const url = `${ORIGIN}/restaurants/${slug}/`.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return `\\{"@type": "ListItem", "position": \\d+, "name": "(?:\\\\.|[^"\\\\])*", "url": "${url}"\\}`;
+}
+
 function stripListItems(html, slugs) {
   let next = html;
   for (const slug of slugs) {
-    const url = `${ORIGIN}/restaurants/${slug}/`;
-    const pattern = new RegExp(`\\{"@type": "ListItem", "position": \\d+, "name": "(?:\\\\.|[^"\\\\])*", "url": "${url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"\\},?`, "g");
-    next = next.replace(pattern, "");
+    const item = listItemPattern(slug);
+    // Drop the separator comma too. Removing only the object left a trailing
+    // comma when the listing was the last item in the array.
+    next = next.replace(new RegExp(`${item}\\s*,\\s*`, "g"), "");
+    next = next.replace(new RegExp(`\\s*,\\s*${item}`, "g"), "");
+    next = next.replace(new RegExp(item, "g"), "");
   }
   return next;
+}
+
+function repairJsonLdScripts(html) {
+  return html.replace(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g, (full, body) => {
+    let text = body;
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      text = text.replace(/,\s*([}\]])/g, "$1");
+      try {
+        data = JSON.parse(text);
+      } catch {
+        return full;
+      }
+    }
+    let changed = text !== body;
+    const graph = Array.isArray(data["@graph"]) ? data["@graph"] : [];
+    for (const node of graph) {
+      if (node["@type"] !== "ItemList" || !Array.isArray(node.itemListElement)) continue;
+      node.itemListElement.forEach((item, index) => {
+        if (item.position !== index + 1) {
+          item.position = index + 1;
+          changed = true;
+        }
+      });
+      if (node.numberOfItems !== node.itemListElement.length) {
+        node.numberOfItems = node.itemListElement.length;
+        changed = true;
+      }
+    }
+    if (!changed) return full;
+    return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
+  });
 }
 
 function stripAnchors(html, slugs) {
@@ -403,6 +457,7 @@ export function patchHtml(html, pathname, { hidden = [], placed = [] } = {}) {
   let next = removeArticles(html, hiddenSlugs);
   next = stripAnchors(next, hiddenSlugs);
   next = stripListItems(next, hiddenSlugs);
+  if (hiddenSlugs.length) next = repairJsonLdScripts(next);
   next = eachCover(next, (chunk) => {
     const slug = coverSlug(chunk);
     if (hiddenSlugs.includes(slug)) return "";
@@ -496,7 +551,7 @@ function gallery(listing) {
     const fallback = index === 0
       ? ` onerror="var p=this.parentElement;this.remove();var f=p&&p.querySelector('.ph');if(f)f.hidden=false">${placeholder(toneFor(listing), shotLabel(listing), listing.name, true)}`
       : ">";
-    return `<figure class="profile-gallery-tile"${hidden}><img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photoAlt(listing))}" loading="${loading}"${fallback}</figure>`;
+    return `<figure class="profile-gallery-tile"${hidden}><img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photoAlt(listing))}"${imageDimensionAttrs(photo.src)} loading="${loading}"${fallback}</figure>`;
   }).join("");
   const noun = photos.length === 1 ? "photo" : "photos";
   const shown = Math.min(4, photos.length);
@@ -578,6 +633,7 @@ export function renderProfile(listing, nearby = []) {
     restaurantSchema.geo = { "@type": "GeoCoordinates", latitude: listing.lat, longitude: listing.lng };
   }
   if (image) restaurantSchema.image = imageUrl;
+  else if (listing.logo) restaurantSchema.image = String(listing.logo).startsWith("http") ? listing.logo : ORIGIN + listing.logo;
   const hours = closureNotice(listing) ? [] : openingHoursSpecification(listing.hours);
   if (hours.length) restaurantSchema.openingHoursSpecification = hours;
   const graph = {

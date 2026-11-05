@@ -39,6 +39,10 @@ async function notFound(request, env) {
 }
 
 export async function servePublic(request, response, env) {
+  // A static-asset trailing-slash redirect must keep its Location header.
+  // Rebuilding the body below used to copy the 307 and drop Location, which
+  // left /restaurants and /map as a dead end.
+  if (response && response.status >= 300 && response.status < 400) return response;
   const url = new URL(request.url);
   if (!isCatalogPath(url.pathname)) return response;
   if (request.method !== "GET" && request.method !== "HEAD") return response;

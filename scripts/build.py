@@ -409,16 +409,22 @@ def opening_hours_specification(raw: str) -> list[dict]:
         r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*(?:-|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)",
         flags=re.I,
     )
+    # "from 6pm, close 10pm" is a full range already written on the page.
+    from_close = re.compile(
+        r"from\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*,?\s*close\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)",
+        flags=re.I,
+    )
     specs = []
     for match in pattern.finditer(text):
         days = _day_span(match.group("days"))
         body = match.group("body") or ""
         if not days:
             return []
-        if re.search(r"\bclosed\b", body, flags=re.I) and not time_range.search(body):
+        if re.search(r"\bclosed\b", body, flags=re.I) and not time_range.search(body) and not from_close.search(body):
             continue
         ranges = []
-        for found in time_range.finditer(body):
+        found_ranges = list(time_range.finditer(body)) or list(from_close.finditer(body))
+        for found in found_ranges:
             opens = _clock(found.group(1), found.group(2), found.group(3))
             closes = _clock(found.group(4), found.group(5), found.group(6))
             if not opens or not closes:
@@ -1957,7 +1963,7 @@ def coast_360() -> str:
     return (
         '<a class="coast-360" href="https://www.youtube.com/watch?v=55EsjB_V_L8&amp;t=2720s" '
         'target="_blank" rel="noopener">'
-        '<img src="/images/30a-360.webp" alt="" width="896" height="512">'
+        '<img src="/images/30a-360.webp" alt="Map of restaurants along Scenic Highway 30A" width="896" height="512">'
         "<span>Click to see 30A in 360 degrees.</span>"
         '<span class="sr-only">Opens in a new tab.</span>'
         "</a>"
@@ -2637,7 +2643,11 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             fact("Also", " · ".join(socials)),
         ]
     )
-    logo = f'<img class="logo" src="{e(restaurant["logo"])}" alt="{e(restaurant["name"])} logo">' if restaurant["logo"] else ""
+    logo = (
+        sized_img(restaurant["logo"], f'{restaurant["name"]} logo', class_name="logo")
+        if restaurant.get("logo")
+        else ""
+    )
     nearby = [
         other
         for other in restaurants
@@ -2746,6 +2756,10 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     if restaurant["heroImage"]:
         image = restaurant["heroImage"]
         schema["image"] = image if image.startswith(("http://", "https://")) else ORIGIN + image
+    elif restaurant.get("logo"):
+        # The page shows the logo in place of a photograph. Use that file, not a guessed photo.
+        logo_src = restaurant["logo"]
+        schema["image"] = logo_src if logo_src.startswith(("http://", "https://")) else ORIGIN + logo_src
     if restaurant["logo"]:
         logo_url = restaurant["logo"]
         schema["logo"] = logo_url if logo_url.startswith(("http://", "https://")) else ORIGIN + logo_url
@@ -2760,8 +2774,9 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
             "name": "Status",
             "value": CLOSURE_STATUS,
         }
-    # Hours text that parses becomes openingHoursSpecification. Closures, "check
-    # website", and open-ended "to close" lines stay in the visible facts only.
+    # Hours text that parses becomes openingHoursSpecification, including
+    # "from 6pm, close 10pm". Closures, "check website", and open-ended
+    # "to close" lines stay in the visible facts only.
     # Ratings and reviews are never invented. Menu URLs are not in the schema.
     title = listing_title(restaurant)
     webpage = {
@@ -5057,6 +5072,21 @@ def build_llms(restaurants: list[dict], areas: list[dict], guides: list[dict]) -
     write(ROOT / "llms-full.txt", "\n".join(full) + "\n")
 
 
+def write_image_sizes() -> None:
+    """Pixel sizes for local images. The Worker uses this when it redraws a card."""
+    sizes = {}
+    images = ROOT / "images"
+    if images.is_dir():
+        for path in images.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+                continue
+            info = local_image_info(path)
+            if not info:
+                continue
+            sizes["/" + path.relative_to(ROOT).as_posix()] = [info[0], info[1]]
+    write(DATA / "image-sizes.json", json.dumps(sizes, indent=2, sort_keys=True) + "\n")
+
+
 def main() -> None:
     restaurants = published_restaurants()
     areas = load_areas(restaurants)
@@ -5067,6 +5097,7 @@ def main() -> None:
     shutil.rmtree(ROOT / "guides", ignore_errors=True)
     write(DATA / "restaurants.json", json.dumps([public_record(item) for item in restaurants], indent=2) + "\n")
     write(DATA / "catalog.json", json.dumps([catalog_record(item) for item in restaurants], indent=2) + "\n")
+    write_image_sizes()
     write(
         DATA / "locations.json",
         json.dumps(

@@ -52,7 +52,9 @@ None. There is no scheduled handler in the code, and neither `eatingon30a` nor `
 ## SEO
 
 - Public pages share one layout in `scripts/build.py`. It writes the robots meta (`index,follow` with large image preview, except pages marked noindex), Open Graph, Twitter card, theme color, favicon, and apple touch icon. Listing pages use `og:type` `restaurant.restaurant`. Every public JSON-LD graph includes the site `WebSite` (with the `/restaurants/?q=` search action) and `Organization`. There is no brand social profile in the repo, so `Organization` has no `sameAs`.
-- Restaurant schema adds `openingHoursSpecification` only when the hours already on the page parse to clock times. "Check website", temporary closures, and open-ended "to close" lines stay in the visible hours and are left out of the schema. The schema does not include a menu URL, `hasMenu`, or ratings.
+- Restaurant schema adds `openingHoursSpecification` only when the hours already on the page parse to clock times, including a line like "from 6pm, close 10pm". "Check website", temporary closures, and open-ended "to close" lines stay in the visible hours and are left out of the schema. A listing with a logo and no photograph uses that logo as `image`. The schema does not include a menu URL, `hasMenu`, or ratings. `scripts/check-jsonld.py` parses every page's JSON-LD. Hiding a listing removes its `ListItem` without leaving a trailing comma.
+- `assets.html_handling` stays `auto-trailing-slash` so `/restaurants/` serves `restaurants/index.html`. That mode's own redirect is a 307 and the status cannot be set to 301. `trailingSlashRedirect` in `worker.js` answers a directory URL with a 301 before assets run. Do not switch `html_handling` to `none`. The catalog overlay also returns a 3xx from assets unchanged, so a redirect keeps its `Location` header.
+- HTML responses from the Worker use `Content-Type: text/html; charset=utf-8`. Static asset HTML that arrives without a charset gets one in `withHtmlCharset`.
 - Old restaurant slugs 301 in `worker.js` (`legacyAmpersandRedirect`). The same function folds curly apostrophes, accents, and `&` / `%26`, then uses a small explicit map. Seagrove Village Market Café stays deactivated. Its old slug 301s to `/areas/seagrove-beach/` and is not turned back on. `/explore30a` 301s to the homepage. `/terms-and-conditions` 301s to `/about/` because the site has no terms page. Blue Mabel Smokehouse has no current listing and stays a real 404.
 - The restaurant directory at `/restaurants/` prints every name and link in the server HTML. Filters still hide cards in the browser.
 - Listing titles and descriptions use the town from the address. The US 98 group is not called Nearby in a title, H1, or description.
@@ -61,7 +63,7 @@ None. There is no scheduled handler in the code, and neither `eatingon30a` nor `
 ## Known gotchas
 
 - Do not add a custom domain or route to `wrangler.jsonc`. The domains are attached in the dashboard.
-- `run_worker_first` is `true` on purpose, so the apex to www redirect runs before static HTML. An `/api/*` only route list breaks form POSTs from apex pages (CORS preflight).
+- `run_worker_first` is `true` on purpose, so the apex to www redirect and the trailing-slash 301 run before static HTML. An `/api/*` only route list breaks form POSTs from apex pages (CORS preflight).
 - Shared accounts: `eatingon30a`, `eatingindestin`, and `eating-accounts` must all hold the same `ACCOUNTS_SHARED_SECRET`. Change it on all three together.
 - Cookies: `ea_central` lives on the accounts host and `ea_session` on each guide host. Never set a `Domain` attribute; the two guides share no parent domain.
 - `accounts/wrangler.jsonc` binds D1 `eating-accounts` (`f3ae29af-a929-4185-b5bd-b349cc015a3f`). Deploy from `accounts/` so Wrangler reads that file. A placeholder `database_id` makes `wrangler deploy` fail.
