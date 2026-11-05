@@ -600,4 +600,120 @@ describe("restaurant admin", { concurrency: 1 }, () => {
     const forbidden = await handleAdmin(adminRequest("/api/admin/listings?site=destin", guest), from30a);
     assert.equal(forbidden.status, 403);
   });
+
+  test("guide choices keep a stored selection that the other guide does not list", async () => {
+    const source = readFileSync(new URL("../admin.js", import.meta.url), "utf8");
+    const start = source.indexOf("function escapeHtml");
+    const end = source.indexOf("function flag");
+    const ui = Function(`${source.slice(start, end)}; return { choiceList: choiceList, checks: checks };`)();
+    const boxes = ui.checks(
+      "cuisines",
+      "Cuisines",
+      ui.choiceList(["American", "Seafood"], ["Latin Coastal", "Seafood"]),
+      ["Latin Coastal", "Seafood"],
+    );
+    assert.match(boxes, /value="Latin Coastal"[^>]*checked/);
+    assert.match(boxes, /value="Seafood"[^>]*checked/);
+    assert.equal(/value="American"[^>]*checked/.test(boxes), false);
+    assert.match(source, /value: "inactive"/);
+
+    invalidateCatalog();
+    resetLimits();
+    const db = memoryDb();
+    const bucket = memoryBucket();
+    const env = siteEnv(db, bucket);
+    env.CATALOG_FETCH = async (url) => {
+      assert.equal(url, "https://www.eatingindestin.com/data/catalog.json");
+      return jsonCatalog([{
+        slug: "harbor-grill",
+        name: "Harbor Grill",
+        area: "Destin Harbor",
+        cuisines: ["Gulf Market"],
+        meals: ["Late Night"],
+        foods: ["Grouper Dip"],
+      }]);
+    };
+    const marc = await signIn(db, env, "marc@whpinc.com");
+    const options = await handleAdmin(adminRequest("/api/admin/options", marc), env);
+    const optionsBody = await options.json();
+    assert.equal(options.status, 200, JSON.stringify(optionsBody));
+    assert.equal(optionsBody.guides["30a"].cuisines.includes("Latin Coastal"), true);
+    assert.equal(optionsBody.guides["30a"].cuisines.includes("Gulf Market"), false);
+    assert.equal(optionsBody.guides.destin.cuisines.includes("Gulf Market"), true);
+    assert.equal(optionsBody.guides.destin.cuisines.includes("Latin Coastal"), false);
+    assert.equal(optionsBody.guides.destin.meals.includes("Late Night"), true);
+    assert.equal(optionsBody.guides.destin.foods.includes("Grouper Dip"), true);
+    assert.deepEqual(optionsBody.guides.destin.areas, []);
+    assert.equal(optionsBody.sites.find((site) => site.id === "30a").areas.includes("Seacrest"), true);
+    assert.equal(optionsBody.cuisines.includes("Latin Coastal"), true);
+
+    const created = await handleAdmin(adminRequest("/api/admin/listings", marc, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        site: "destin",
+        status: "inactive",
+        name: "Harbor Grill",
+        area: "Destin Harbor",
+        cuisines: ["Gulf Market"],
+        meals: ["Late Night"],
+        foods: ["Grouper Dip"],
+      }),
+    }), env);
+    const createdBody = await created.json();
+    assert.equal(created.status, 200, JSON.stringify(createdBody));
+    const slug = createdBody.listing.slug;
+    const loaded = await (await handleAdmin(adminRequest(`/api/admin/listings/${slug}?site=destin`, marc), env)).json();
+    assert.equal(loaded.listing.status, "inactive");
+    assert.deepEqual(loaded.listing.cuisines, ["Gulf Market"]);
+    assert.deepEqual(loaded.listing.meals, ["Late Night"]);
+    assert.deepEqual(loaded.listing.foods, ["Grouper Dip"]);
+    const saved = await handleAdmin(adminRequest(`/api/admin/listings/${slug}`, marc, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...loaded.listing, phone: "(850) 555-0100" }),
+    }), env);
+    assert.equal(saved.status, 200, JSON.stringify(await saved.clone().json()));
+    const again = await (await handleAdmin(adminRequest(`/api/admin/listings/${slug}?site=destin`, marc), env)).json();
+    assert.equal(again.listing.status, "inactive");
+    assert.deepEqual(again.listing.cuisines, ["Gulf Market"]);
+    assert.deepEqual(again.listing.meals, ["Late Night"]);
+    assert.deepEqual(again.listing.foods, ["Grouper Dip"]);
+    assert.equal(again.listing.phone, "(850) 555-0100");
+
+    const laco = await (await handleAdmin(adminRequest("/api/admin/listings/laco-seacrest?site=30a", marc), env)).json();
+    assert.equal(laco.listing.cuisines.includes("Latin Coastal"), true);
+    const lacoSaved = await handleAdmin(adminRequest("/api/admin/listings/laco-seacrest", marc, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...laco.listing, site: "30a" }),
+    }), env);
+    assert.equal(lacoSaved.status, 200, JSON.stringify(await lacoSaved.clone().json()));
+    const lacoAgain = await (await handleAdmin(adminRequest("/api/admin/listings/laco-seacrest?site=30a", marc), env)).json();
+    assert.equal(lacoAgain.listing.cuisines.includes("Latin Coastal"), true);
+    assert.equal(lacoAgain.listing.foods.includes("Authentic Latin"), true);
+    assert.equal(lacoAgain.listing.status, "live");
+    const trimmed = await handleAdmin(adminRequest("/api/admin/listings/laco-seacrest", marc, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...lacoAgain.listing, site: "30a", meals: ["Dinner"] }),
+    }), env);
+    assert.equal(trimmed.status, 200, JSON.stringify(await trimmed.clone().json()));
+    const trimmedBody = await (await handleAdmin(adminRequest("/api/admin/listings/laco-seacrest?site=30a", marc), env)).json();
+    assert.deepEqual(trimmedBody.listing.meals, ["Dinner"]);
+    assert.equal(trimmedBody.listing.cuisines.includes("Latin Coastal"), true);
+
+    invalidateCatalog();
+    env.CATALOG_FETCH = async () => new Response("<html>challenge</html>", {
+      status: 403,
+      headers: { "content-type": "text/html" },
+    });
+    const degraded = await handleAdmin(adminRequest("/api/admin/options", marc), env);
+    const degradedBody = await degraded.json();
+    assert.equal(degraded.status, 200, JSON.stringify(degradedBody));
+    assert.equal(degradedBody.guides["30a"].cuisines.includes("Latin Coastal"), true);
+    assert.deepEqual(degradedBody.guides.destin.cuisines, []);
+    const guest = await signIn(db, env, "guest@example.com");
+    assert.equal((await handleAdmin(adminRequest("/api/admin/options", guest), env)).status, 403);
+  });
 });

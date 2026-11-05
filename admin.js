@@ -130,6 +130,25 @@
     return '<label class="field' + (wide ? " wide" : "") + '"><span>' + label + '</span><select name="' + name + '">' + html + "</select></label>";
   }
 
+  function guideChoices(key) {
+    var guides = state.options && state.options.guides;
+    var guide = guides && guides[state.site];
+    if (guide && Array.isArray(guide[key])) return guide[key];
+    var fallback = state.options && state.options[key];
+    return Array.isArray(fallback) ? fallback : [];
+  }
+
+  function choiceList(options, selected) {
+    var base = options || [];
+    var extra = [];
+    var current = selected || [];
+    for (var i = 0; i < current.length; i++) {
+      var value = current[i];
+      if (value && base.indexOf(value) === -1 && extra.indexOf(value) === -1) extra.push(value);
+    }
+    return base.concat(extra);
+  }
+
   function checks(name, label, options, selected) {
     var current = selected || [];
     var boxes = options.map(function (option) {
@@ -275,9 +294,9 @@
       field("notes", "Description", listing.notes, { type: "textarea", rows: 6 }) +
       field("vibes", "Vibes", (listing.vibes || []).join(", "), { wide: true, placeholder: "Comma separated" }) +
       "</div>" +
-      checks("cuisines", "Cuisines", state.options.cuisines, listing.cuisines) +
-      checks("meals", "Meals", state.options.meals, listing.meals) +
-      checks("foods", "Foods", state.options.foods, listing.foods) +
+      checks("cuisines", "Cuisines", choiceList(guideChoices("cuisines"), listing.cuisines), listing.cuisines) +
+      checks("meals", "Meals", choiceList(guideChoices("meals"), listing.meals), listing.meals) +
+      checks("foods", "Foods", choiceList(guideChoices("foods"), listing.foods), listing.foods) +
       '<fieldset><legend>Details</legend><div class="checks admin-checks">' +
       flag("outdoor", "Outdoor dining", listing.outdoor) +
       flag("waterfront", "Waterfront", listing.waterfront) +
