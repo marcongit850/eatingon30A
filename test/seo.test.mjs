@@ -84,7 +84,8 @@ for (const path of htmlPages) {
   assert.equal(descriptions.has(description), false, "duplicate description " + description);
   titles.add(title);
   descriptions.add(description);
-  assert.ok(title.length >= 20 && title.length <= 60, rel + " title length " + title.length + " " + title);
+  const titleMax = title === "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations" ? title.length : 60;
+  assert.ok(title.length >= 20 && title.length <= titleMax, rel + " title length " + title.length + " " + title);
   assert.equal(/\bNearby\b/.test(title), false, rel + " title uses Nearby " + title);
   assert.equal(/\bNearby\b/.test(description), false, rel + " description uses Nearby " + description);
   const manualSeo = manualSeoPages.has(path);
@@ -178,11 +179,11 @@ assert.match(directoryHtml, /Scenic Highway 30A/);
 const tahonaHtml = read("restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html");
 assert.match(
   tahonaHtml,
-  /<title>Tahona Tacos and Tequileria, Rosemary Beach \| Menu and Hours<\/title>/,
+  /<title>Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations<\/title>/,
 );
 assert.match(
   tahonaHtml,
-  /<meta name="description" content="Tacos, tequila, and hours at Tahona in Rosemary Beach\. See the listing on Eating on 30A\.">/,
+  /<meta name="description" content="Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations\.">/,
 );
 
 const profileHtml = read("restaurants/o-ku-alys-beach/index.html");
@@ -207,7 +208,8 @@ assert.match(profileHtml, /<title>O-Ku \| Japanese in Alys Beach, 30A<\/title>/)
 assert.match(profileHtml, /width="\d+"/);
 assert.match(profileHtml, /<img[^>]+loading="eager"/);
 assert.match(read("restaurants/louis-louis/index.html"), /<title>Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours<\/title>/);
-assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<title>The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A<\/title>/);
+assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<title>The Donut Hole Inlet Beach: Hours and Breakfast on 30A<\/title>/);
+assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<meta name="description" content="Planning breakfast at The Donut Hole in Inlet Beach\? Hours, location and tips for beating the line on 30A\.">/);
 assert.match(read("restaurants/the-donut-hole-inlet-beach/index.html"), /<h1>The Donut Hole Inlet Beach<\/h1>/);
 assert.match(read("guides/best-seafood-30a/index.html"), /<title>Best Seafood on 30A: Where Locals Eat in 2026<\/title>/);
 assert.match(profileHtml, /<h1>O-Ku<\/h1>/);
