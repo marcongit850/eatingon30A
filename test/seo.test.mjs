@@ -84,7 +84,7 @@ for (const path of htmlPages) {
   assert.equal(descriptions.has(description), false, "duplicate description " + description);
   titles.add(title);
   descriptions.add(description);
-  const titleMax = title === "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations" ? title.length : 60;
+  const titleMax = title === "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info" ? title.length : 60;
   assert.ok(title.length >= 20 && title.length <= titleMax, rel + " title length " + title.length + " " + title);
   assert.equal(/\bNearby\b/.test(title), false, rel + " title uses Nearby " + title);
   assert.equal(/\bNearby\b/.test(description), false, rel + " description uses Nearby " + description);
@@ -179,7 +179,7 @@ assert.match(directoryHtml, /Scenic Highway 30A/);
 const tahonaHtml = read("restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html");
 assert.match(
   tahonaHtml,
-  /<title>Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations<\/title>/,
+  /<title>Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info<\/title>/,
 );
 assert.match(
   tahonaHtml,

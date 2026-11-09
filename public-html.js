@@ -98,7 +98,7 @@ const PAGE_SEO = {
     description: "Waterfront dinner on Mussett Bayou from the Red Bar's sister restaurant. Blackened grouper, crab cakes, live music, open daily 4:30 to 9pm.",
   },
   "tahona-tacos-and-tequileria-rosemary-beach": {
-    title: "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations",
+    title: "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info",
     description: "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations.",
     schemaTitle: "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
     schemaDescription: "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A.",
