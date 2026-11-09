@@ -128,7 +128,7 @@ PAGE_SEO: dict[str, dict[str, str]] = {
         ),
     },
     "tahona-tacos-and-tequileria-rosemary-beach": {
-        "title": "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations",
+        "title": "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info",
         "description": (
             "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations."
         ),
@@ -3193,7 +3193,7 @@ SEAFOOD_GUIDE_DESCRIPTION = (
 
 def title_limit(title: str) -> int:
     """Listing titles stay within 60 characters, except Tahona's approved title."""
-    if title == "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations":
+    if title == "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info":
         return len(title)
     return 60
 
