@@ -97,9 +97,17 @@ const PAGE_SEO = {
     title: "Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours",
     description: "Waterfront dinner on Mussett Bayou from the Red Bar's sister restaurant. Blackened grouper, crab cakes, live music, open daily 4:30 to 9pm.",
   },
+  "tahona-tacos-and-tequileria-rosemary-beach": {
+    title: "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations",
+    description: "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations.",
+    schemaTitle: "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
+    schemaDescription: "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A.",
+  },
   "the-donut-hole-inlet-beach": {
-    title: "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
-    description: "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. See hours, address and what to order.",
+    title: "The Donut Hole Inlet Beach: Hours and Breakfast on 30A",
+    description: "Planning breakfast at The Donut Hole in Inlet Beach? Hours, location and tips for beating the line on 30A.",
+    schemaTitle: "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
+    schemaDescription: "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. See hours, address and what to order.",
     h1: "The Donut Hole Inlet Beach",
   },
 };
@@ -600,7 +608,10 @@ export function renderProfile(listing, nearby = []) {
   const image = listing.photos && listing.photos[0] ? listing.photos[0].src : "";
   const title = listingTitle(listing);
   const description = listingDescription(listing);
-  const h1 = (PAGE_SEO[listing.slug] && PAGE_SEO[listing.slug].h1) || listing.name;
+  const seo = PAGE_SEO[listing.slug] || {};
+  const schemaTitle = seo.schemaTitle || title;
+  const schemaDescription = seo.schemaDescription || description;
+  const h1 = seo.h1 || listing.name;
   const town = placeTown(listing);
   const areaLabel = listing.areaSlug === "nearby" ? "US 98" : listing.area;
   const path = `/restaurants/${listing.slug}/`;
@@ -616,7 +627,7 @@ export function renderProfile(listing, nearby = []) {
     "@id": `${pageUrl}#restaurant`,
     name: listing.name,
     url: pageUrl,
-    description,
+    description: schemaDescription,
     address: {
       "@type": "PostalAddress",
       streetAddress: listing.address || "",
@@ -662,8 +673,8 @@ export function renderProfile(listing, nearby = []) {
         "@type": "WebPage",
         "@id": `${pageUrl}#webpage`,
         url: pageUrl,
-        name: title,
-        description,
+        name: schemaTitle,
+        description: schemaDescription,
         isPartOf: { "@id": `${ORIGIN}/#website` },
         mainEntity: { "@id": `${pageUrl}#restaurant` },
       },

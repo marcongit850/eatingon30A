@@ -1340,7 +1340,7 @@ for page_path in (ROOT / "restaurants").glob("*/index.html"):
     description = unescape(page.split('name="description" content="', 1)[1].split('"', 1)[0])
     h1 = unescape(re.search(r"<h1[^>]*>(.*?)</h1>", page, re.S).group(1))
     h1 = re.sub(r"<[^>]+>", "", h1)
-    check(len(title) <= 60, f"title over 60 {page_path.parent.name}: {title}")
+    check(len(title) <= build.title_limit(title), f"title over {build.title_limit(title)} {page_path.parent.name}: {title}")
     check(len(description) <= 160, f"description over 160 {page_path.parent.name}")
     for label, value in (("title", title), ("description", description), ("h1", h1)):
         check("Nearby" not in value, f"{page_path.parent.name} {label} should not call a town Nearby: {value}")

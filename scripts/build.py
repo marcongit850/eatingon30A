@@ -118,7 +118,8 @@ PHOTO_DIR = ROOT / "images" / "restaurants"
 AREA_PHOTO_DIR = ROOT / "images" / "areas"
 PHOTO_EXTS = (".jpg", ".jpeg", ".webp", ".png")
 
-# Hand-tuned title and description for specific pages. layout() and social_tags() use these.
+# Hand-tuned title and description for specific pages. layout() and social_tags() use
+# title and description. schemaTitle and schemaDescription keep the existing JSON-LD.
 PAGE_SEO: dict[str, dict[str, str]] = {
     "/": {
         "title": "Best Restaurants on 30A (2026) | Maps, Menus, Neighborhoods",
@@ -127,8 +128,12 @@ PAGE_SEO: dict[str, dict[str, str]] = {
         ),
     },
     "tahona-tacos-and-tequileria-rosemary-beach": {
-        "title": "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
+        "title": "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations",
         "description": (
+            "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations."
+        ),
+        "schemaTitle": "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
+        "schemaDescription": (
             "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A."
         ),
     },
@@ -140,8 +145,12 @@ PAGE_SEO: dict[str, dict[str, str]] = {
         ),
     },
     "the-donut-hole-inlet-beach": {
-        "title": "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
+        "title": "The Donut Hole Inlet Beach: Hours and Breakfast on 30A",
         "description": (
+            "Planning breakfast at The Donut Hole in Inlet Beach? Hours, location and tips for beating the line on 30A."
+        ),
+        "schemaTitle": "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
+        "schemaDescription": (
             "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. "
             "See hours, address and what to order."
         ),
@@ -2854,6 +2863,10 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         "</article>"
     )
     description = listing_description(restaurant)
+    title = listing_title(restaurant)
+    seo_override = PAGE_SEO.get(restaurant["slug"]) or {}
+    schema_description = seo_override.get("schemaDescription", description)
+    schema_title = seo_override.get("schemaTitle", title)
     page_url = f"{ORIGIN}/restaurants/{restaurant['slug']}/"
     same_as = [url for url in (restaurant["website"], restaurant["instagram"], restaurant["facebook"]) if url]
     schema = {
@@ -2861,7 +2874,7 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
         "@id": page_url + "#restaurant",
         "name": restaurant["name"],
         "url": page_url,
-        "description": description,
+        "description": schema_description,
         "address": postal_address(restaurant),
         "areaServed": {
             "@type": "Place",
@@ -2909,13 +2922,12 @@ def build_detail(restaurant: dict, restaurants: list[dict]) -> None:
     # "from 6pm, close 10pm". Closures, "check website", and open-ended
     # "to close" lines stay in the visible facts only.
     # Ratings and reviews are never invented. Menu URLs are not in the schema.
-    title = listing_title(restaurant)
     webpage = {
         "@type": "WebPage",
         "@id": page_url + "#webpage",
         "url": page_url,
-        "name": title,
-        "description": description,
+        "name": schema_title,
+        "description": schema_description,
         "isPartOf": {"@id": ORIGIN + "/#website"},
         "mainEntity": {"@id": page_url + "#restaurant"},
     }
@@ -3179,8 +3191,15 @@ SEAFOOD_GUIDE_DESCRIPTION = (
 )
 
 
+def title_limit(title: str) -> int:
+    """Listing titles stay within 60 characters, except Tahona's approved title."""
+    if title == "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Reservations":
+        return len(title)
+    return 60
+
+
 def require_meta(title: str, description: str, *, manual: bool = False) -> None:
-    if not 20 <= len(title) <= 60:
+    if not 20 <= len(title) <= title_limit(title):
         raise SystemExit(f"title length {len(title)}: {title}")
     if manual:
         if not 80 <= len(description) <= 160:
