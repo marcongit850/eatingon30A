@@ -128,11 +128,11 @@ PAGE_SEO: dict[str, dict[str, str]] = {
         ),
     },
     "tahona-tacos-and-tequileria-rosemary-beach": {
-        "title": "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info",
+        # Approved title uses "and", not the listing's "&", and keeps the full ending past 60 characters.
+        "title": "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome",
         "description": (
             "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations."
         ),
-        "schemaTitle": "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
         "schemaDescription": (
             "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A."
         ),
@@ -149,7 +149,6 @@ PAGE_SEO: dict[str, dict[str, str]] = {
         "description": (
             "Planning breakfast at The Donut Hole in Inlet Beach? Hours, location and tips for beating the line on 30A."
         ),
-        "schemaTitle": "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
         "schemaDescription": (
             "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. "
             "See hours, address and what to order."
@@ -273,6 +272,16 @@ def parse_list(raw: str) -> list[str]:
 
 def is_yes(raw: str) -> bool:
     return any(item.lower() in {"yes", "occasional"} for item in parse_list(raw))
+
+
+def reservation_policy(raw: str) -> str:
+    """yes, no, or blank. "In Review" and an empty cell are not a walk-in or a reservation claim."""
+    items = [item.lower() for item in parse_list(raw)]
+    if any(item in {"yes", "occasional"} for item in items):
+        return "yes"
+    if any(item == "no" for item in items):
+        return "no"
+    return ""
 
 
 def clean_text(raw: str) -> str:
@@ -885,6 +894,7 @@ def load_restaurants() -> list[dict]:
                 "happyDrinks": is_yes(row.get("Happy Hour (drinks)")),
                 "happyFood": is_yes(row.get("Happy Hour (food)")),
                 "reservations": is_yes(row.get("Reservations")),
+                "reservationPolicy": reservation_policy(row.get("Reservations")),
                 "groups": is_yes(row.get("Groups of 12")),
                 "facebook": website_href(row.get("Facebook URL") or ""),
                 "instagram": website_href(row.get("Instagram") or ""),
@@ -908,12 +918,15 @@ def published_restaurants() -> list[dict]:
     """Listings that should appear on the site. The shell uses SAMPLE_SLUGS."""
     restaurants = load_restaurants()
     if not SAMPLE_SLUGS:
+        assign_title_plazas(restaurants)
         return restaurants
     by_slug = {restaurant["slug"]: restaurant for restaurant in restaurants}
     missing = [slug for slug in SAMPLE_SLUGS if slug not in by_slug]
     if missing:
         raise SystemExit("Sample slugs missing from data/restaurants.csv: " + ", ".join(missing))
-    return [by_slug[slug] for slug in SAMPLE_SLUGS]
+    picked = [by_slug[slug] for slug in SAMPLE_SLUGS]
+    assign_title_plazas(picked)
+    return picked
 
 
 def sample_banner() -> str:
@@ -1285,17 +1298,6 @@ def name_has_30a(restaurant: dict) -> bool:
     return "30a" in restaurant["name"].lower()
 
 
-def title_place(restaurant: dict) -> str:
-    town = place_town(restaurant)
-    if is_nearby(restaurant):
-        return f"in {town}, near 30A"
-    if name_has_area(restaurant):
-        return "on 30A"
-    if name_has_30a(restaurant):
-        return f"in {town}"
-    return f"in {town}, 30A"
-
-
 def listing_where(restaurant: dict) -> str:
     """Local cue for meta descriptions. Always keeps 30A and Walton County available."""
     town = place_town(restaurant)
@@ -1378,21 +1380,61 @@ def clamp_meta(text: str, limit: int = 155) -> str:
     return cut
 
 
+MENU_WORD = re.compile(r"\bmenus?\b", re.I)
+
+
+def drop_menu_claim(text: str) -> str:
+    """Remove menu wording from an SEO sentence and keep the rest of the fact."""
+    if not text or not MENU_WORD.search(text):
+        return text
+    cleaned = text
+    cleaned = re.sub(r"\s+(?:and|or)\s+(?:a|an)\s+(?:[\w’'-]+\s+){0,3}menus?\b", "", cleaned, flags=re.I)
+    cleaned = re.sub(r"\s+with\s+(?:a|an)\s+(?:[\w’'-]+\s+){0,3}menus?\b", "", cleaned, flags=re.I)
+    cleaned = re.sub(r",?\s*\b(?:including\s+)?(?:a\s+|an\s+)?kids?\s+menus?\b", "", cleaned, flags=re.I)
+    cleaned = re.sub(r"\b(breakfast|lunch|dinner|brunch|tasting)\s+menus?\b", r"\1", cleaned, flags=re.I)
+    cleaned = MENU_WORD.sub("", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    cleaned = re.sub(r"\s+([,.!?])", r"\1", cleaned)
+    cleaned = re.sub(r"\(\s*\)", "", cleaned)
+    cleaned = re.sub(r"\s+,", ",", cleaned)
+    return clean_text(cleaned).strip(" ,;")
+
+
+def finish_listing_description(text: str) -> str:
+    """Listing pages do not publish menus. Pad a sentence that got short once the word is gone."""
+    text = clean_text(text)
+    if not MENU_WORD.search(text):
+        return text
+    stripped = drop_menu_claim(text)
+    if meta_ok(stripped):
+        return stripped
+    if "30A" in stripped and "Walton County" in stripped:
+        for pad in (
+            "Hours, address, and map are on the profile.",
+            "Address, hours, and map are on this page.",
+            "See the address and hours on this page.",
+        ):
+            padded = clean_text(f"{stripped} {pad}")
+            if meta_ok(padded):
+                return padded
+    return clamp_meta(stripped) if stripped else text
+
+
 def listing_description(restaurant: dict) -> str:
     """Unique meta description from the listing. No invented hours, ratings, or counts."""
     override = PAGE_SEO.get(restaurant["slug"])
     if override and "description" in override:
-        return override["description"]
+        return finish_listing_description(override["description"])
     notice = closure_notice(restaurant)
     if notice:
         identity = listing_identity(restaurant).rstrip(".")
         closed = clean_text(f"{identity}. {notice.rstrip('.')}.")
         if meta_ok(closed):
-            return closed
+            return finish_listing_description(closed)
         shorter = clean_text(f"{restaurant['name']} {listing_where(restaurant)}. {notice.rstrip('.')}.")
         if meta_ok(shorter):
-            return shorter
-        return closed
+            return finish_listing_description(shorter)
+        return finish_listing_description(closed)
     identity = listing_identity(restaurant)
     cuisine = lead_cuisine(restaurant["cuisines"])
     note = first_sentence(restaurant["notes"])
@@ -1422,54 +1464,81 @@ def listing_description(restaurant: dict) -> str:
     for option in options:
         text = clean_text(option)
         if meta_ok(text):
-            return text
+            return finish_listing_description(text)
     text = clean_text(options[-1]) if options else identity
-    return clamp_meta(text)
+    return finish_listing_description(clamp_meta(text))
 
 
-def fit_title(name: str, town: str, *, near: bool = False) -> str:
-    """Shorten a listing title that ran past 60 characters. Hours, not a cut-off word."""
-    cue = "near 30A" if near else "on 30A"
-    options = [f"{name} in {town} {cue}"]
-    if near:
-        options.append(f"{name}, {town}")
-    if town.endswith(" Beach"):
-        options.append(f"{name} in {town[: -len(' Beach')]} {cue}")
-    if not near:
-        options.append(f"{name}, {town}")
-    options.append(f"{name}: Hours")
-    for option in options:
-        if 20 <= len(option) <= 60:
-            return option
-    trimmed = options[-1][:60].rsplit(" ", 1)[0].rstrip(".,;:|")
-    return trimmed if len(trimmed) >= 20 else name[:60]
+TITLE_CHAR_LIMIT = 60
+ROAD_SUBAREA = re.compile(r"^(?:US|U\.S\.|CR|Hwy|Highway)\b", re.I)
+
+
+def plaza_name(restaurant: dict) -> str:
+    """A plaza or center already on the listing. Roads are not plazas."""
+    subarea = (restaurant.get("subarea") or "").strip()
+    if not subarea or ROAD_SUBAREA.match(subarea):
+        return ""
+    town = place_town(restaurant)
+    if subarea.lower() == town.lower() or subarea.lower() in restaurant["name"].lower():
+        return ""
+    return subarea
+
+
+def assign_title_plazas(restaurants: list[dict]) -> None:
+    """Add a plaza only when two listings share a name and a town and the plazas differ."""
+    groups: dict[tuple[str, str], list[dict]] = {}
+    for restaurant in restaurants:
+        key = (restaurant["name"].lower(), place_town(restaurant).lower())
+        groups.setdefault(key, []).append(restaurant)
+    for group in groups.values():
+        if len(group) < 2:
+            continue
+        plazas = [plaza_name(restaurant) for restaurant in group]
+        if any(not plaza for plaza in plazas):
+            continue
+        if len(set(plazas)) != len(plazas):
+            continue
+        for restaurant, plaza in zip(group, plazas):
+            restaurant["titlePlaza"] = plaza
+
+
+def title_endings(restaurant: dict) -> list[str]:
+    """First supported fact, then shorter endings that still name it. Never 'Hours and Location'."""
+    if "Breakfast" in restaurant.get("meals") or []:
+        return ["Hours and Breakfast", "Breakfast"]
+    policy = restaurant.get("reservationPolicy") or ""
+    if policy == "no":
+        return ["Hours and Walk-Ins Welcome", "Walk-Ins Welcome", "Walk-Ins"]
+    if policy == "yes":
+        return ["Hours and Reservations", "Reservations"]
+    cuisine = lead_cuisine(restaurant.get("cuisines") or [])
+    if cuisine:
+        return [f"{cuisine} and Hours", cuisine]
+    return ["Hours"]
+
+
+def listing_head(restaurant: dict) -> str:
+    name = restaurant["name"]
+    town = place_town(restaurant)
+    plaza = restaurant.get("titlePlaza") or ""
+    place = f"{name} at {plaza}" if plaza else name
+    if town and town.lower() in place.lower():
+        return place
+    return f"{place}, {town}"
 
 
 def listing_title(restaurant: dict) -> str:
+    """{Name}, {Town}: Hours and Breakfast / Walk-Ins Welcome / Reservations / {Cuisine} and Hours."""
     override = PAGE_SEO.get(restaurant["slug"])
     if override and "title" in override:
         return override["title"]
-    name = restaurant["name"]
-    town = place_town(restaurant)
-    near = is_nearby(restaurant)
-    cuisine = lead_cuisine(restaurant["cuisines"])
-    place = title_place(restaurant)
-    primary = ""
-    if cuisine and place:
-        primary = f"{name} | {cuisine} {place}"
-    elif cuisine and not near:
-        primary = f"{name} | {cuisine} on 30A"
-    elif cuisine:
-        primary = f"{name} | {cuisine} near 30A"
-    if primary and 20 <= len(primary) <= 60:
-        return primary
-    shortened = fit_title(name, town, near=near)
-    if 20 <= len(shortened) <= 60:
-        return shortened
-    fallback = f"{name} | Eating on 30A"
-    if 20 <= len(fallback) <= 60:
-        return fallback
-    return shortened
+    head = listing_head(restaurant)
+    endings = title_endings(restaurant)
+    for ending in endings:
+        title = f"{head}: {ending}"
+        if 20 <= len(title) <= TITLE_CHAR_LIMIT:
+            return title
+    return f"{head}: {endings[-1]}"
 
 
 def intro_place(restaurant: dict) -> str:
@@ -3192,8 +3261,12 @@ SEAFOOD_GUIDE_DESCRIPTION = (
 
 
 def title_limit(title: str) -> int:
-    """Listing titles stay within 60 characters, except Tahona's approved title."""
-    if title == "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info":
+    """Stay near 60 characters. A few names cannot fit the town and the supported ending inside 60."""
+    if title in {
+        "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome",
+        "Cowgirl Kitchen (Blue Mountain), Blue Mountain Beach: Breakfast",
+        "Pescado Seafood Grill & Rooftop Bar, Rosemary Beach: Reservations",
+    }:
         return len(title)
     return 60
 

@@ -6,6 +6,7 @@ import { patchHtml, renderCard, renderProfile } from "../public-html.js";
 import worker, {
   canonicalRedirect,
   directorySlashPath,
+  coverageRedirect,
   legacyAmpersandRedirect,
   markNotFound,
   robotsTagForHost,
@@ -84,7 +85,12 @@ for (const path of htmlPages) {
   assert.equal(descriptions.has(description), false, "duplicate description " + description);
   titles.add(title);
   descriptions.add(description);
-  const titleMax = title === "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info" ? title.length : 60;
+  const longTitles = new Set([
+    "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome",
+    "Cowgirl Kitchen (Blue Mountain), Blue Mountain Beach: Breakfast",
+    "Pescado Seafood Grill & Rooftop Bar, Rosemary Beach: Reservations",
+  ]);
+  const titleMax = longTitles.has(title) ? title.length : 60;
   assert.ok(title.length >= 20 && title.length <= titleMax, rel + " title length " + title.length + " " + title);
   assert.equal(/\bNearby\b/.test(title), false, rel + " title uses Nearby " + title);
   assert.equal(/\bNearby\b/.test(description), false, rel + " description uses Nearby " + description);
@@ -172,6 +178,7 @@ const directoryCards = directoryHtml.split('id="cards"')[1].split('id="browse-ar
 assert.equal((directoryCards.match(/class="card-link"/g) || []).length, 155);
 assert.match(directoryCards, /href="\/restaurants\/o-ku-alys-beach\/"/);
 assert.match(directoryCards, />O-Ku</);
+assert.match(directoryHtml, /<title>Restaurants on Scenic Highway 30A \| Eating on 30A<\/title>/);
 assert.match(directoryHtml, /<h1 id="listing-title">Restaurants on 30A<\/h1>/);
 assert.match(directoryHtml, /href="\/areas\/seaside\/"/);
 assert.match(directoryHtml, /Scenic Highway 30A/);
@@ -179,7 +186,7 @@ assert.match(directoryHtml, /Scenic Highway 30A/);
 const tahonaHtml = read("restaurants/tahona-tacos-and-tequileria-rosemary-beach/index.html");
 assert.match(
   tahonaHtml,
-  /<title>Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info<\/title>/,
+  /<title>Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome<\/title>/,
 );
 assert.match(
   tahonaHtml,
@@ -204,7 +211,7 @@ assert.equal(profile["@graph"].some((node) => node["@type"] === "BreadcrumbList"
 const crumbs = typed(profile["@graph"], "BreadcrumbList");
 assert.deepEqual(crumbs.itemListElement.map((item) => item.name), ["Home", "Restaurants", "Alys Beach", "O-Ku"]);
 assert.match(restaurant.image, /\/images\/restaurants\/o-ku-alys-beach\/01\.jpg$/);
-assert.match(profileHtml, /<title>O-Ku \| Japanese in Alys Beach, 30A<\/title>/);
+assert.match(profileHtml, /<title>O-Ku, Alys Beach: Hours and Reservations<\/title>/);
 assert.match(profileHtml, /width="\d+"/);
 assert.match(profileHtml, /<img[^>]+loading="eager"/);
 assert.match(read("restaurants/louis-louis/index.html"), /<title>Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours<\/title>/);
@@ -229,7 +236,7 @@ assert.equal(profilePage.mainEntity["@id"], restaurant["@id"]);
 assert.equal(profilePage.url, restaurant.url);
 
 const redHtml = read("restaurants/the-red-bar-grayton-beach/index.html");
-assert.match(redHtml, /<title>The Red Bar \| American in Grayton Beach, 30A<\/title>/);
+assert.match(redHtml, /<title>The Red Bar, Grayton Beach: American and Hours<\/title>/);
 assert.match(redHtml, /<h1>The Red Bar<\/h1>/);
 assert.equal(redHtml.includes('class="place"'), false);
 assert.equal(redHtml.includes("Other locations"), false);
@@ -249,13 +256,108 @@ assert.match(redSchema.image, /\/images\/restaurants\/the-red-bar-grayton-beach\
 assert.equal(redSchema.aggregateRating, undefined);
 
 const amavidaHtml = read("restaurants/amavida-coffee-roasters-seaside/index.html");
-assert.match(amavidaHtml, /<title>Amavida Coffee Roasters \| Cafe in Seaside, 30A<\/title>/);
+assert.match(amavidaHtml, /<title>Amavida Coffee Roasters, Seaside: Cafe and Hours<\/title>/);
 assert.match(amavidaHtml, /<h1>Amavida Coffee Roasters<\/h1>/);
 assert.equal(amavidaHtml.includes("Other locations"), false);
 assert.equal(amavidaHtml.includes('aria-label="Related guides"'), false);
 
 const pigHtml = read("restaurants/the-perfect-pig-watercolor/index.html");
+assert.match(pigHtml, /<title>The Perfect Pig, WaterColor: Hours and Breakfast<\/title>/);
 assert.match(pigHtml, /<h1>The Perfect Pig<\/h1>/);
+assert.match(read("restaurants/the-perfect-pig-gulf-place/index.html"), /<title>The Perfect Pig, Gulf Place: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/the-perfect-pig-seagrove-beach/index.html"), /<title>The Perfect Pig, Seagrove Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/amavida-coffee-roasters-rosemary-beach/index.html"), /<title>Amavida Coffee Roasters, Rosemary Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/canopy-road-cafe-inlet-beach/index.html"), /<title>Canopy Road Café, Inlet Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/canopy-road-cafe-seagrove-beach/index.html"), /<title>Canopy Road Café, Seagrove Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/black-bear-bread-co-grayton-beach/index.html"), /<title>Black Bear Bread Co\., Grayton Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/black-bear-bread-co-seaside/index.html"), /<title>Black Bear Bread Co\., Seaside: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/big-bad-breakfast-inlet-beach/index.html"), /<title>Big Bad Breakfast, Inlet Beach: Hours and Breakfast<\/title>/);
+assert.match(read("restaurants/cafe-thirty-a-seagrove-beach/index.html"), /<title>Café Thirty-A, Seagrove Beach: Hours and Reservations<\/title>/);
+assert.match(read("restaurants/3-sons-bar-b-q-dune-allen-beach/index.html"), /<title>3 Sons Bar-B-Q, Dune Allen Beach: Hours and Walk-Ins Welcome<\/title>/);
+assert.match(read("restaurants/fish-out-of-water-watercolor/index.html"), /<title>Fish Out of Water, WaterColor: Hours and Walk-Ins Welcome<\/title>/);
+assert.match(read("restaurants/ajs-grayton-beach-grayton-beach/index.html"), /<title>AJ’s Grayton Beach: Seafood and Hours<\/title>/);
+assert.match(read("restaurants/the-donut-hole-us-98/index.html"), /<title>The Donut Hole \(US 98\), Santa Rosa Beach: Breakfast<\/title>/);
+assert.match(read("restaurants/cajun-corner-sports-bar-and-grill/index.html"), /<title>Cajun Corner Sports Bar and Grill, Grayton Beach: American<\/title>/);
+
+const restaurants = JSON.parse(read("data/restaurants.json"));
+const specialListingTitles = new Set([
+  "The Donut Hole Inlet Beach: Hours and Breakfast on 30A",
+  "Louis Louis Santa Rosa Beach: Waterfront Seafood and Hours",
+  "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome",
+]);
+const listingEndings = /^(?:Hours and Breakfast|Breakfast|Hours and Walk-Ins Welcome|Walk-Ins Welcome|Walk-Ins|Hours and Reservations|Reservations|Hours)$/;
+for (const listing of restaurants) {
+  const page = read(`restaurants/${listing.slug}/index.html`);
+  const title = attr(page, /<title>([^<]+)<\/title>/);
+  const description = attr(page, /<meta name="description" content="([^"]+)">/);
+  const town = listing.areaSlug === "nearby"
+    ? ((listing.address || "").match(/,\s*([^,]+),\s*FL\b/i) || [])[1]?.trim() || "Santa Rosa Beach"
+    : listing.area;
+  assert.equal(title.includes(town), true, `${listing.slug} title missing town ${town}: ${title}`);
+  assert.equal(/\bmenus?\b/i.test(title), false, `${listing.slug} title says menu: ${title}`);
+  assert.equal(/\bmenus?\b/i.test(description), false, `${listing.slug} description says menu: ${description}`);
+  assert.equal(title.includes("Hours and Location"), false, title);
+  assert.equal(/[—–]/.test(title + description), false, `${listing.slug} uses a dash: ${title}`);
+  if (!specialListingTitles.has(title)) {
+    const ending = title.slice(title.lastIndexOf(": ") + 2);
+    const cuisineEnding = (listing.cuisines || []).some((cuisine) => ending === cuisine || ending === `${cuisine} and Hours`);
+    assert.ok(listingEndings.test(ending) || cuisineEnding, `${listing.slug} ending ${ending}`);
+  }
+  const webpage = typed(jsonLd(page)["@graph"], "WebPage");
+  assert.equal(/\bmenus?\b/i.test(webpage.name), false, `${listing.slug} schema title says menu`);
+  assert.equal(/\bmenus?\b/i.test(webpage.description), false, `${listing.slug} schema description says menu`);
+}
+
+const breakfastPage = renderProfile({
+  slug: "sample-breakfast",
+  name: "Sample Cafe",
+  area: "Seaside",
+  areaSlug: "seaside",
+  meals: ["Breakfast", "Lunch"],
+  cuisines: ["Cafe", "American"],
+  reservations: false,
+}, []);
+assert.match(breakfastPage, /<title>Sample Cafe, Seaside: Hours and Breakfast<\/title>/);
+assert.match(breakfastPage, /property="og:title" content="Sample Cafe, Seaside: Hours and Breakfast"/);
+assert.match(breakfastPage, /name="twitter:title" content="Sample Cafe, Seaside: Hours and Breakfast"/);
+const reservePage = renderProfile({
+  slug: "sample-reserve",
+  name: "Sample Sushi",
+  area: "Alys Beach",
+  areaSlug: "alys-beach",
+  meals: ["Dinner"],
+  cuisines: ["Japanese", "American"],
+  reservations: true,
+}, []);
+assert.match(reservePage, /<title>Sample Sushi, Alys Beach: Hours and Reservations<\/title>/);
+const walkInPage = renderProfile({
+  slug: "sample-walkin",
+  name: "Sample Tacos",
+  area: "Rosemary Beach",
+  areaSlug: "rosemary-beach",
+  meals: ["Lunch", "Dinner"],
+  cuisines: ["Mexican"],
+  reservations: false,
+}, []);
+assert.match(walkInPage, /<title>Sample Tacos, Rosemary Beach: Hours and Walk-Ins Welcome<\/title>/);
+const cuisinePage = renderProfile({
+  slug: "sample-cuisine",
+  name: "Sample Grill",
+  area: "Grayton Beach",
+  areaSlug: "grayton-beach",
+  meals: ["Dinner"],
+  cuisines: ["American", "Seafood"],
+}, []);
+assert.match(cuisinePage, /<title>Sample Grill, Grayton Beach: Seafood and Hours<\/title>/);
+const namedTown = renderProfile({
+  slug: "sample-named-town",
+  name: "AJ’s Grayton Beach",
+  area: "Grayton Beach",
+  areaSlug: "grayton-beach",
+  meals: ["Dinner"],
+  cuisines: ["Seafood", "American"],
+}, []);
+assert.match(namedTown, /<title>AJ’s Grayton Beach: Seafood and Hours<\/title>/);
 assert.equal(pigHtml.includes("Other locations"), false);
 assert.match(pigHtml, /serves Southern food/);
 assert.match(pigHtml, /Also in WaterColor/);
@@ -507,6 +609,82 @@ const grayton = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/res
 assert.equal(grayton.status, 301);
 assert.equal(grayton.headers.get("location"), "https://www.eatingon30a.com/restaurants/grayton-seafood-co-grayton-beach/");
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
+
+const coveragePairs = {
+  "/location/inlet-beach": "/areas/inlet-beach/",
+  "/location/blue-mountain-beach": "/areas/blue-mountain-beach/",
+  "/location/rosemary-beach": "/areas/rosemary-beach/",
+  "/location/seaside": "/areas/seaside/",
+  "/location/dune-allen-beach": "/areas/dune-allen-beach/",
+  "/location/watercolor": "/areas/watercolor/",
+  "/location/all-of-30a": "/areas/",
+  "/terms-and-conditions-1": "/about/",
+  "/restaurants/mr.-gyro-hero": "/restaurants/mr-gyro-hero-seaside/",
+  "/restaurants/mr-gyro-hero": "/restaurants/mr-gyro-hero-seaside/",
+  "/restaurants/tichelis-pizza": "/restaurants/tichelis-pizza-seacrest/",
+  "/restaurants/brunos-pizza": "/restaurants/brunos-pizza-watersound/",
+  "/restaurants/aja-30a": "/restaurants/aja-30a-inlet-beach/",
+  "/restaurants/bud-alleys-taco-bar": "/restaurants/bud-and-alleys-taco-bar-seaside/",
+  "/restaurants/o-ku": "/restaurants/o-ku-alys-beach/",
+  "/restaurants/barefoot-bbq": "/restaurants/barefoot-bbq-seaside/",
+  "/restaurants/lola-coastal-italian": "/restaurants/lola-coastal-italian-seacrest/",
+  "/restaurants/crackings": "/restaurants/crackings-grayton-beach/",
+  "/restaurants/87-central-square": "/restaurants/87-central-square-seaside/",
+  "/restaurants/cowgirl-kitchen-blue": "/restaurants/cowgirl-kitchen-blue-mountain-beach/",
+  "/restaurants/cuvee-30a": "/restaurants/cuvee-30a-inlet-beach/",
+  "/restaurants/the-citizen": "/restaurants/the-citizen-alys-beach/",
+  "/restaurants/kilwins": "/restaurants/kilwins-rosemary-beach/",
+  "/restaurants/steamboat-grill-30a": "/restaurants/steamboat-grill-30a-seagrove-beach/",
+  "/restaurants/big-bad-breakfast": "/restaurants/big-bad-breakfast-inlet-beach/",
+  "/restaurants/scratch-biscuit-kitchen": "/restaurants/scratch-biscuit-kitchen-watercolor/",
+  "/restaurants/meltdown-on-30a": "/restaurants/meltdown-on-30a-seaside/",
+  "/restaurants/seacrest-sundries": "/restaurants/seacrest-sundries-seacrest/",
+  "/restaurants/frost-bites": "/restaurants/frost-bites-seaside/",
+  "/restaurants/old-florida-fish-house": "/restaurants/old-florida-fish-house-seagrove-beach/",
+  "/restaurants/restaurant-paradis": "/restaurants/restaurant-paradis-rosemary-beach/",
+  "/restaurants/modica-market": "/restaurants/modica-market-seaside/",
+  "/restaurants/charlies-cafe": "/restaurants/charlies-cafe-rosemary-beach/",
+  "/restaurants/the-big-chill": "/restaurants/the-big-chill-watersound/",
+  "/restaurants/bud-alleys": "/restaurants/bud-and-alleys-seaside/",
+  "/restaurants/ambrosia": "/restaurants/ambrosia-watersound-origins/",
+  "/restaurants/the-perfect-pig": "/restaurants/",
+  "/restaurants/canopy-road-cafe": "/restaurants/",
+  "/restaurants/amavida-coffee-roasters": "/restaurants/",
+};
+for (const [from, to] of Object.entries(coveragePairs)) {
+  for (const path of [from, `${from}/`]) {
+    const moved = coverageRedirect(new URL(`https://www.eatingon30a.com${path}`));
+    assert.equal(moved.status, 301, path);
+    assert.equal(moved.headers.get("location"), `https://www.eatingon30a.com${to}`, path);
+  }
+}
+for (const path of [
+  "/restaurants/ticheli’s-pizza",
+  "/restaurants/ticheli’s-pizza/",
+  "/restaurants/ticheli's-pizza",
+  "/restaurants/bruno’s-pizza",
+  "/restaurants/bruno's-pizza/",
+]) {
+  const moved = coverageRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(moved.status, 301, path);
+  const expected = path.includes("bruno")
+    ? "https://www.eatingon30a.com/restaurants/brunos-pizza-watersound/"
+    : "https://www.eatingon30a.com/restaurants/tichelis-pizza-seacrest/";
+  assert.equal(moved.headers.get("location"), expected, path);
+}
+const coverageQuery = coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku?ref=old"));
+assert.equal(coverageQuery.headers.get("location"), "https://www.eatingon30a.com/restaurants/o-ku-alys-beach/?ref=old");
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku"), "POST"), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku-alys-beach/")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/brozinni-pizzeria")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/brozinni-pizzeria/")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/the-red-barn")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/blue-mabel-smokehouse-&-provisions")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/blue-mabel-smokehouse-%26-provisions/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/terms-and-conditions/")).headers.get("location"), "https://www.eatingon30a.com/about/");
+const coverageFetch = await worker.fetch(new Request("https://www.eatingon30a.com/location/seaside"));
+assert.equal(coverageFetch.status, 301);
+assert.equal(coverageFetch.headers.get("location"), "https://www.eatingon30a.com/areas/seaside/");
 
 const lacoTarget = "https://www.eatingon30a.com/restaurants/laco-seacrest/";
 for (const path of [
