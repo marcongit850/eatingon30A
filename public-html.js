@@ -98,40 +98,86 @@ const PAGE_SEO = {
     description: "Waterfront dinner on Mussett Bayou from the Red Bar's sister restaurant. Blackened grouper, crab cakes, live music, open daily 4:30 to 9pm.",
   },
   "tahona-tacos-and-tequileria-rosemary-beach": {
-    title: "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-In Info",
+    title: "Tahona Tacos and Tequileria, Rosemary Beach: Hours and Walk-Ins Welcome",
     description: "Tahona serves tacos in Rosemary Beach on 30A, with kitchen hours from 12pm to 9:30pm and no reservations.",
-    schemaTitle: "Tahona Tacos and Tequileria, Rosemary Beach | Menu and Hours",
     schemaDescription: "Tacos, tequila, and hours at Tahona in Rosemary Beach. See the listing on Eating on 30A.",
   },
   "the-donut-hole-inlet-beach": {
     title: "The Donut Hole Inlet Beach: Hours and Breakfast on 30A",
     description: "Planning breakfast at The Donut Hole in Inlet Beach? Hours, location and tips for beating the line on 30A.",
-    schemaTitle: "The Donut Hole Inlet Beach: Hours, Menu and Breakfast on 30A",
     schemaDescription: "The Donut Hole in Inlet Beach on 30A: fresh donuts, breakfast and lunch. See hours, address and what to order.",
     h1: "The Donut Hole Inlet Beach",
   },
 };
 
-function fitTitle(name, town, near) {
-  const cue = near ? "near 30A" : "on 30A";
-  const options = [`${name} in ${town} ${cue}`];
-  if (near) options.push(`${name}, ${town}`);
-  if (town.endsWith(" Beach")) options.push(`${name} in ${town.slice(0, -" Beach".length)} ${cue}`);
-  if (!near) options.push(`${name}, ${town}`);
-  options.push(`${name}: Hours`);
-  return options.find((option) => option.length >= 20 && option.length <= 60) || options[options.length - 1].slice(0, 60);
+const TITLE_CHAR_LIMIT = 60;
+
+function leadCuisine(cuisines) {
+  const list = cuisines || [];
+  for (const cuisine of list) {
+    if (cuisine && cuisine !== "American") return cuisine;
+  }
+  return list[0] || "";
 }
 
-function listingTitle(listing) {
+function reservationPolicy(listing) {
+  const policy = listing.reservationPolicy;
+  if (policy === "yes" || policy === "no") return policy;
+  if (policy === "unknown") return "";
+  if (listing.reservations === true) return "yes";
+  if (listing.reservations === false) return "no";
+  return "";
+}
+
+function titleEndings(listing) {
+  if ((listing.meals || []).includes("Breakfast")) return ["Hours and Breakfast", "Breakfast"];
+  const policy = reservationPolicy(listing);
+  if (policy === "no") return ["Hours and Walk-Ins Welcome", "Walk-Ins Welcome", "Walk-Ins"];
+  if (policy === "yes") return ["Hours and Reservations", "Reservations"];
+  const cuisine = leadCuisine(listing.cuisines);
+  if (cuisine) return [`${cuisine} and Hours`, cuisine];
+  return ["Hours"];
+}
+
+function cleanPlaza(listing) {
+  const subarea = String(listing.subarea || "").trim();
+  if (!subarea || /^(?:US|U\.S\.|CR|Hwy|Highway)\b/i.test(subarea)) return "";
+  const town = placeTown(listing);
+  const name = String(listing.name || "");
+  if (town && subarea.toLowerCase() === town.toLowerCase()) return "";
+  if (name.toLowerCase().includes(subarea.toLowerCase())) return "";
+  return subarea;
+}
+
+function titlePlaza(listing, listings) {
+  const town = placeTown(listing).toLowerCase();
+  const name = String(listing.name || "").toLowerCase();
+  const peers = (listings || []).filter((item) => item && item.slug !== listing.slug && String(item.name || "").toLowerCase() === name && placeTown(item).toLowerCase() === town);
+  if (!peers.length) return "";
+  const plaza = cleanPlaza(listing);
+  if (!plaza) return "";
+  if (peers.map(cleanPlaza).includes(plaza)) return "";
+  return plaza;
+}
+
+function listingHead(listing, listings) {
+  const town = placeTown(listing);
+  const plaza = titlePlaza(listing, listings);
+  const place = plaza ? `${listing.name} at ${plaza}` : listing.name;
+  if (town && place.toLowerCase().includes(town.toLowerCase())) return place;
+  return `${place}, ${town}`;
+}
+
+function listingTitle(listing, listings = []) {
   const seo = PAGE_SEO[listing.slug];
   if (seo && seo.title) return seo.title;
-  const town = placeTown(listing);
-  const near = listing.areaSlug === "nearby";
-  const cuisine = (listing.cuisines || [])[0] || "";
-  const place = near ? `in ${town}, near 30A` : `in ${town}, 30A`;
-  const primary = cuisine ? `${listing.name} | ${cuisine} ${place}` : "";
-  if (primary && primary.length <= 60) return primary;
-  return fitTitle(listing.name, town, near);
+  const head = listingHead(listing, listings);
+  const endings = titleEndings(listing);
+  for (const ending of endings) {
+    const title = `${head}: ${ending}`;
+    if (title.length >= 20 && title.length <= TITLE_CHAR_LIMIT) return title;
+  }
+  return `${head}: ${endings[endings.length - 1]}`;
 }
 
 function clampMeta(text) {
@@ -606,7 +652,7 @@ export function renderProfile(listing, nearby = []) {
   const also = nearby.filter((item) => item.slug !== listing.slug && item.areaSlug === listing.areaSlug).slice(0, 4);
   const alsoHtml = also.map((item) => `<a class="map-hit" href="/restaurants/${escapeHtml(item.slug)}/"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price || "")}</span></a>`).join("");
   const image = listing.photos && listing.photos[0] ? listing.photos[0].src : "";
-  const title = listingTitle(listing);
+  const title = listingTitle(listing, nearby);
   const description = listingDescription(listing);
   const seo = PAGE_SEO[listing.slug] || {};
   const schemaTitle = seo.schemaTitle || title;
