@@ -6,6 +6,7 @@ import { patchHtml, renderCard, renderProfile } from "../public-html.js";
 import worker, {
   canonicalRedirect,
   directorySlashPath,
+  coverageRedirect,
   legacyAmpersandRedirect,
   markNotFound,
   robotsTagForHost,
@@ -608,6 +609,82 @@ const grayton = legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/res
 assert.equal(grayton.status, 301);
 assert.equal(grayton.headers.get("location"), "https://www.eatingon30a.com/restaurants/grayton-seafood-co-grayton-beach/");
 assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/raw-%26-juicy/"), "POST"), null);
+
+const coveragePairs = {
+  "/location/inlet-beach": "/areas/inlet-beach/",
+  "/location/blue-mountain-beach": "/areas/blue-mountain-beach/",
+  "/location/rosemary-beach": "/areas/rosemary-beach/",
+  "/location/seaside": "/areas/seaside/",
+  "/location/dune-allen-beach": "/areas/dune-allen-beach/",
+  "/location/watercolor": "/areas/watercolor/",
+  "/location/all-of-30a": "/areas/",
+  "/terms-and-conditions-1": "/about/",
+  "/restaurants/mr.-gyro-hero": "/restaurants/mr-gyro-hero-seaside/",
+  "/restaurants/mr-gyro-hero": "/restaurants/mr-gyro-hero-seaside/",
+  "/restaurants/tichelis-pizza": "/restaurants/tichelis-pizza-seacrest/",
+  "/restaurants/brunos-pizza": "/restaurants/brunos-pizza-watersound/",
+  "/restaurants/aja-30a": "/restaurants/aja-30a-inlet-beach/",
+  "/restaurants/bud-alleys-taco-bar": "/restaurants/bud-and-alleys-taco-bar-seaside/",
+  "/restaurants/o-ku": "/restaurants/o-ku-alys-beach/",
+  "/restaurants/barefoot-bbq": "/restaurants/barefoot-bbq-seaside/",
+  "/restaurants/lola-coastal-italian": "/restaurants/lola-coastal-italian-seacrest/",
+  "/restaurants/crackings": "/restaurants/crackings-grayton-beach/",
+  "/restaurants/87-central-square": "/restaurants/87-central-square-seaside/",
+  "/restaurants/cowgirl-kitchen-blue": "/restaurants/cowgirl-kitchen-blue-mountain-beach/",
+  "/restaurants/cuvee-30a": "/restaurants/cuvee-30a-inlet-beach/",
+  "/restaurants/the-citizen": "/restaurants/the-citizen-alys-beach/",
+  "/restaurants/kilwins": "/restaurants/kilwins-rosemary-beach/",
+  "/restaurants/steamboat-grill-30a": "/restaurants/steamboat-grill-30a-seagrove-beach/",
+  "/restaurants/big-bad-breakfast": "/restaurants/big-bad-breakfast-inlet-beach/",
+  "/restaurants/scratch-biscuit-kitchen": "/restaurants/scratch-biscuit-kitchen-watercolor/",
+  "/restaurants/meltdown-on-30a": "/restaurants/meltdown-on-30a-seaside/",
+  "/restaurants/seacrest-sundries": "/restaurants/seacrest-sundries-seacrest/",
+  "/restaurants/frost-bites": "/restaurants/frost-bites-seaside/",
+  "/restaurants/old-florida-fish-house": "/restaurants/old-florida-fish-house-seagrove-beach/",
+  "/restaurants/restaurant-paradis": "/restaurants/restaurant-paradis-rosemary-beach/",
+  "/restaurants/modica-market": "/restaurants/modica-market-seaside/",
+  "/restaurants/charlies-cafe": "/restaurants/charlies-cafe-rosemary-beach/",
+  "/restaurants/the-big-chill": "/restaurants/the-big-chill-watersound/",
+  "/restaurants/bud-alleys": "/restaurants/bud-and-alleys-seaside/",
+  "/restaurants/ambrosia": "/restaurants/ambrosia-watersound-origins/",
+  "/restaurants/the-perfect-pig": "/restaurants/",
+  "/restaurants/canopy-road-cafe": "/restaurants/",
+  "/restaurants/amavida-coffee-roasters": "/restaurants/",
+};
+for (const [from, to] of Object.entries(coveragePairs)) {
+  for (const path of [from, `${from}/`]) {
+    const moved = coverageRedirect(new URL(`https://www.eatingon30a.com${path}`));
+    assert.equal(moved.status, 301, path);
+    assert.equal(moved.headers.get("location"), `https://www.eatingon30a.com${to}`, path);
+  }
+}
+for (const path of [
+  "/restaurants/ticheli’s-pizza",
+  "/restaurants/ticheli’s-pizza/",
+  "/restaurants/ticheli's-pizza",
+  "/restaurants/bruno’s-pizza",
+  "/restaurants/bruno's-pizza/",
+]) {
+  const moved = coverageRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(moved.status, 301, path);
+  const expected = path.includes("bruno")
+    ? "https://www.eatingon30a.com/restaurants/brunos-pizza-watersound/"
+    : "https://www.eatingon30a.com/restaurants/tichelis-pizza-seacrest/";
+  assert.equal(moved.headers.get("location"), expected, path);
+}
+const coverageQuery = coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku?ref=old"));
+assert.equal(coverageQuery.headers.get("location"), "https://www.eatingon30a.com/restaurants/o-ku-alys-beach/?ref=old");
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku"), "POST"), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/o-ku-alys-beach/")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/brozinni-pizzeria")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/brozinni-pizzeria/")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/the-red-barn")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/blue-mabel-smokehouse-&-provisions")), null);
+assert.equal(coverageRedirect(new URL("https://www.eatingon30a.com/restaurants/blue-mabel-smokehouse-%26-provisions/")), null);
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/terms-and-conditions/")).headers.get("location"), "https://www.eatingon30a.com/about/");
+const coverageFetch = await worker.fetch(new Request("https://www.eatingon30a.com/location/seaside"));
+assert.equal(coverageFetch.status, 301);
+assert.equal(coverageFetch.headers.get("location"), "https://www.eatingon30a.com/areas/seaside/");
 
 const lacoTarget = "https://www.eatingon30a.com/restaurants/laco-seacrest/";
 for (const path of [

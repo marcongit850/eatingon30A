@@ -729,6 +729,55 @@ export const LEGACY_SLUG_REDIRECTS = {
   "la-cocina-seacrest": "/restaurants/laco-seacrest/",
 };
 
+// Search Console coverage, separate from the maps above. These URLs only
+// gained a trailing slash and then 404. Every target is a current public page.
+// Brozinni, The Red Barn, and Blue Mabel stay 404: there is no current listing.
+export const COVERAGE_REDIRECTS = {
+  "/location/inlet-beach": "/areas/inlet-beach/",
+  "/location/blue-mountain-beach": "/areas/blue-mountain-beach/",
+  "/location/rosemary-beach": "/areas/rosemary-beach/",
+  "/location/seaside": "/areas/seaside/",
+  "/location/dune-allen-beach": "/areas/dune-allen-beach/",
+  "/location/watercolor": "/areas/watercolor/",
+  "/location/all-of-30a": "/areas/",
+  "/terms-and-conditions-1": "/about/",
+};
+
+// Short restaurant slugs, after apostrophes and dots are folded. Keys are not
+// current sitemap URLs. Multi-location names go to the restaurants index.
+export const COVERAGE_SLUG_REDIRECTS = {
+  "mr-gyro-hero": "/restaurants/mr-gyro-hero-seaside/",
+  "tichelis-pizza": "/restaurants/tichelis-pizza-seacrest/",
+  "brunos-pizza": "/restaurants/brunos-pizza-watersound/",
+  "aja-30a": "/restaurants/aja-30a-inlet-beach/",
+  "bud-alleys-taco-bar": "/restaurants/bud-and-alleys-taco-bar-seaside/",
+  "o-ku": "/restaurants/o-ku-alys-beach/",
+  "barefoot-bbq": "/restaurants/barefoot-bbq-seaside/",
+  "lola-coastal-italian": "/restaurants/lola-coastal-italian-seacrest/",
+  "crackings": "/restaurants/crackings-grayton-beach/",
+  "87-central-square": "/restaurants/87-central-square-seaside/",
+  "cowgirl-kitchen-blue": "/restaurants/cowgirl-kitchen-blue-mountain-beach/",
+  "cuvee-30a": "/restaurants/cuvee-30a-inlet-beach/",
+  "the-citizen": "/restaurants/the-citizen-alys-beach/",
+  "kilwins": "/restaurants/kilwins-rosemary-beach/",
+  "steamboat-grill-30a": "/restaurants/steamboat-grill-30a-seagrove-beach/",
+  "big-bad-breakfast": "/restaurants/big-bad-breakfast-inlet-beach/",
+  "scratch-biscuit-kitchen": "/restaurants/scratch-biscuit-kitchen-watercolor/",
+  "meltdown-on-30a": "/restaurants/meltdown-on-30a-seaside/",
+  "seacrest-sundries": "/restaurants/seacrest-sundries-seacrest/",
+  "frost-bites": "/restaurants/frost-bites-seaside/",
+  "old-florida-fish-house": "/restaurants/old-florida-fish-house-seagrove-beach/",
+  "restaurant-paradis": "/restaurants/restaurant-paradis-rosemary-beach/",
+  "modica-market": "/restaurants/modica-market-seaside/",
+  "charlies-cafe": "/restaurants/charlies-cafe-rosemary-beach/",
+  "the-big-chill": "/restaurants/the-big-chill-watersound/",
+  "bud-alleys": "/restaurants/bud-and-alleys-seaside/",
+  "ambrosia": "/restaurants/ambrosia-watersound-origins/",
+  "the-perfect-pig": "/restaurants/",
+  "canopy-road-cafe": "/restaurants/",
+  "amavida-coffee-roasters": "/restaurants/",
+};
+
 // Fold curly apostrophes, accents, and "&" / "%26" so one key covers the
 // encoded and literal forms Google still requests.
 export function normalizeLegacySlug(value) {
@@ -756,6 +805,23 @@ function redirectTargetForSlug(slug) {
     }
   }
   return "";
+}
+
+export function coverageRedirect(url, method = "GET") {
+  const verb = String(method || "GET").toUpperCase();
+  if (verb !== "GET" && verb !== "HEAD") return null;
+  const pathname = String(url.pathname || "").replace(/\/index\.html$/i, "");
+  const bare = pathname.replace(/\/+$/, "") || "/";
+  let path = COVERAGE_REDIRECTS[bare] || "";
+  if (!path) {
+    const slug = decodedRestaurantSlug(pathname.endsWith("/") ? pathname : `${pathname}/`);
+    if (slug) path = COVERAGE_SLUG_REDIRECTS[normalizeLegacySlug(slug)] || "";
+  }
+  if (!path) return null;
+  const target = new URL(url.toString());
+  target.pathname = path;
+  target.hash = "";
+  return new Response(null, { status: 301, headers: { location: target.toString() } });
 }
 
 export function legacyAmpersandRedirect(url, method = "GET") {
@@ -975,6 +1041,8 @@ export default {
     if (redirect) return redirect;
     const legacy = legacyAmpersandRedirect(url, request.method);
     if (legacy) return legacy;
+    const coverage = coverageRedirect(url, request.method);
+    if (coverage) return coverage;
     // Before static assets. auto-trailing-slash would answer these with a 307,
     // and /restaurants and /map then lose the Location header when the catalog
     // overlay rebuilds that response.
