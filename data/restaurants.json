@@ -1529,30 +1529,31 @@
     "image": "/images/restaurants/cowgirl-kitchen-blue-mountain-beach/01.jpg"
   },
   {
-    "slug": "crabby-steves-rosemary-beach",
+    "slug": "crabby-steves-seacrest",
     "name": "Crabby Steve\u2019s",
-    "area": "Rosemary Beach",
-    "areaSlug": "rosemary-beach",
+    "area": "Seacrest",
+    "areaSlug": "seacrest",
     "meals": [
       "Lunch",
       "Dinner"
     ],
     "cuisines": [
-      "Seafood"
+      "Seafood",
+      "American"
     ],
     "foods": [
       "Sandwiches"
     ],
     "price": "$$",
-    "lat": 30.28003039999999,
-    "lng": -86.0199872,
-    "address": "10254 E County Hwy 30A, Inlet Beach, FL 32461, USA",
-    "phone": "",
-    "search": "crabby steve\u2019s rosemary beach high pointe rosemary beach | high pointe seafood lunch dinner sandwiches bar & restaurant crabby steve\u2019s serves seafood right on the beach in a laid-back setting. great for waterfront dining. crabby steve\u2019s bar restaurant sandwiches seafood fine dining rosemary beach $$",
-    "label": "Rosemary Beach | High Pointe",
-    "outdoor": false,
+    "lat": 30.279411,
+    "lng": -86.0206425,
+    "address": "10254 E County Hwy 30A, Seacrest Beach, FL 32461, USA",
+    "phone": "(850) 231-0999",
+    "search": "crabby steve\u2019s seacrest high pointe seacrest beach | high pointe seafood american lunch dinner sandwiches bar & restaurant crabby steve\u2019s serves laid-back seafood on the beach behind high pointe resort in seacrest. the open-air deck looks out on the gulf of america. it may close in bad weather. crabby steve\u2019s bar restaurant sandwiches seafood casual dining seacrest beach $$",
+    "label": "Seacrest Beach | High Pointe",
+    "outdoor": true,
     "waterfront": true,
-    "bar": false,
+    "bar": true,
     "kids": true,
     "music": false,
     "reservations": false,
@@ -1560,7 +1561,7 @@
     "happyFood": false,
     "happyDrinks": false,
     "laurensFavorite": false,
-    "image": "/images/restaurants/crabby-steves-rosemary-beach/01.jpg"
+    "image": "/images/restaurants/crabby-steves-seacrest/01.jpg"
   },
   {
     "slug": "crackings-grayton-beach",
