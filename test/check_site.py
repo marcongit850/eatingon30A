@@ -376,6 +376,7 @@ expected_monograms = [
     "3-sons-bar-b-q-dune-allen-beach",
     "boggy-boys-pizza-seagrove-beach",
     "boxcar-annie-blue-mountain-beach",
+    "crabby-steves-seacrest",
     "crust-artisan-bakery",
     "dawsons-yogurt-and-fudge-seaside",
     "dough-sea-dough-seagrove-beach",
@@ -387,7 +388,7 @@ expected_monograms = [
     "pizza-by-the-sea-seacrest",
 ]
 check(sorted(missing_photos) == expected_monograms, f"listings without a photo should keep a monogram, got {missing_photos}")
-check(len(photos) == 143, f"expected 143 restaurant photos, got {len(photos)}")
+check(len(photos) == 142, f"expected 142 restaurant photos, got {len(photos)}")
 laco = full_by_slug["laco-seacrest"]
 laco_page = (ROOT / "restaurants" / "laco-seacrest" / "index.html").read_text(encoding="utf-8")
 laco_canonical = f"{build.ORIGIN}/restaurants/laco-seacrest/"
@@ -427,7 +428,14 @@ check(crabby["areaSlug"] == "seacrest", "Crabby Steve's should be filed under Se
 check(crabby["address"].startswith("10254 E County Hwy 30A, Seacrest Beach, FL 32461"), crabby["address"])
 check(crabby["phone"] == "(850) 231-0999", crabby["phone"])
 check("crabby-steves-rosemary-beach" not in crabby_page, "Crabby Steve's page should not keep the old photo path")
-check("/images/restaurants/crabby-steves-seacrest/01.jpg" in crabby_page, "Crabby Steve's cover should be the Seacrest photo")
+check("/images/restaurants/crabby-steves-seacrest/" not in crabby_page, "Crabby Steve's page should not point at a photo")
+check('class="profile-hero"' in crabby_page and 'aria-hidden="true">CS</span>' in crabby_page, "Crabby Steve's should use the monogram")
+check(
+    f'property="og:image" content="{build.ORIGIN}/images/og-scenic-30a.jpg"' in crabby_page,
+    "Crabby Steve's social image should be the site default",
+)
+check(crabby.get("photos") == [], f"Crabby Steve's catalog photos should be empty, got {crabby.get('photos')}")
+check(crabby.get("logo") in (None, ""), "Crabby Steve's should not have a logo")
 check('"crabby-steves-rosemary-beach": "/restaurants/crabby-steves-seacrest/"' in worker_src, "old Crabby Steve's slug should 301")
 check(build.gallery_label(9) == "4 of 9 photos", "a full first window should read 4 of 9 photos")
 check(build.gallery_label(9, 1) == "5 of 9 photos", "stepping one photo should advance the counter")

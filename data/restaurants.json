@@ -1561,7 +1561,7 @@
     "happyFood": false,
     "happyDrinks": false,
     "laurensFavorite": false,
-    "image": "/images/restaurants/crabby-steves-seacrest/01.jpg"
+    "image": null
   },
   {
     "slug": "crackings-grayton-beach",
