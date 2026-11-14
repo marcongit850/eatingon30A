@@ -85,11 +85,12 @@ test("price, waterfront, bar, and happy hour query params filter the directory",
   const waterfront = restaurants.filter((item) => matches(item, { ...blank, waterfront: "yes" }));
   const bar = restaurants.filter((item) => matches(item, { ...blank, bar: "yes" }));
   assert.equal(waterfront.length, 13);
-  assert.equal(bar.length, 27);
+  assert.equal(bar.length, 28);
   assert.ok(waterfront.every((item) => item.waterfront === true));
   assert.ok(bar.every((item) => item.bar === true));
   assert.ok(waterfront.some((item) => item.slug === "the-red-bar-grayton-beach"));
   assert.ok(bar.some((item) => item.slug === "redds-pub"));
+  assert.ok(bar.some((item) => item.slug === "crabby-steves-seacrest"));
   assert.ok(!bar.some((item) => item.slug === "fish-out-of-water-watercolor"));
 
   const happy = restaurants.filter((item) => matches(item, { ...blank, happyhour: "yes" }));

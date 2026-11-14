@@ -2548,22 +2548,23 @@
     "search": "cowgirl kitchen (blue mountain) blue mountain beach  blue mountain beach american breakfast lunch dinner sandwiches restaurant cowgirl kitchen market & cafe in blue mountain beach serves breakfast, lunch, and dinner, with to-go dips and a laid-back menu. open daily at 7:30am. cowgirl kitchen market cafe breakfast lunch dinner american blue mountain beach $$"
   },
   {
-    "slug": "crabby-steves-rosemary-beach",
+    "slug": "crabby-steves-seacrest",
     "name": "Crabby Steve\u2019s",
-    "area": "Rosemary Beach",
-    "areaSlug": "rosemary-beach",
+    "area": "Seacrest",
+    "areaSlug": "seacrest",
     "subarea": "High Pointe",
-    "label": "Rosemary Beach | High Pointe",
-    "address": "10254 E County Hwy 30A, Inlet Beach, FL 32461, USA",
-    "lat": 30.28003039999999,
-    "lng": -86.0199872,
-    "phone": "",
-    "website": "https://www.facebook.com/profile.php?id=100063438927011#",
+    "label": "Seacrest Beach | High Pointe",
+    "address": "10254 E County Hwy 30A, Seacrest Beach, FL 32461, USA",
+    "lat": 30.279411,
+    "lng": -86.0206425,
+    "phone": "(850) 231-0999",
+    "website": "https://www.facebook.com/pages/Crabby-Steves-Bar-Gulfside-Restaurant/151074171632615",
     "price": "$$",
-    "notes": "Crabby Steve\u2019s serves seafood right on the beach in a laid-back setting. Great for waterfront dining.",
-    "hours": "Tue-Fri 11am-7:30pm, Mon closed Sat-Sun 11am-7:30pm",
+    "notes": "Crabby Steve\u2019s serves laid-back seafood on the beach behind High Pointe Resort in Seacrest. The open-air deck looks out on the Gulf of America. It may close in bad weather.",
+    "hours": "Tue-Sun: 11am-7pm, Mon: Closed",
     "cuisines": [
-      "Seafood"
+      "Seafood",
+      "American"
     ],
     "meals": [
       "Lunch",
@@ -2573,12 +2574,12 @@
       "Sandwiches"
     ],
     "vibes": [
-      "Fine Dining"
+      "Casual Dining"
     ],
     "category": "Bar & Restaurant",
-    "outdoor": false,
+    "outdoor": true,
     "waterfront": true,
-    "bar": false,
+    "bar": true,
     "kids": true,
     "music": false,
     "laurensFavorite": false,
@@ -2586,20 +2587,16 @@
     "happyFood": false,
     "reservations": false,
     "groups": false,
-    "facebook": "https://www.facebook.com/profile.php?id=100063438927011",
-    "instagram": "https://www.instagram.com/crabbysteves30a/",
+    "facebook": "https://www.facebook.com/pages/Crabby-Steves-Bar-Gulfside-Restaurant/151074171632615",
+    "instagram": "",
     "photos": [
       {
         "id": null,
-        "src": "/images/restaurants/crabby-steves-rosemary-beach/01.jpg"
-      },
-      {
-        "id": null,
-        "src": "/images/restaurants/crabby-steves-rosemary-beach/02.jpg"
+        "src": "/images/restaurants/crabby-steves-seacrest/01.jpg"
       }
     ],
     "logo": null,
-    "search": "crabby steve\u2019s rosemary beach high pointe rosemary beach | high pointe seafood lunch dinner sandwiches bar & restaurant crabby steve\u2019s serves seafood right on the beach in a laid-back setting. great for waterfront dining. crabby steve\u2019s bar restaurant sandwiches seafood fine dining rosemary beach $$"
+    "search": "crabby steve\u2019s seacrest high pointe seacrest beach | high pointe seafood american lunch dinner sandwiches bar & restaurant crabby steve\u2019s serves laid-back seafood on the beach behind high pointe resort in seacrest. the open-air deck looks out on the gulf of america. it may close in bad weather. crabby steve\u2019s bar restaurant sandwiches seafood casual dining seacrest beach $$"
   },
   {
     "slug": "crackings-grayton-beach",

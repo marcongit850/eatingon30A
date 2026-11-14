@@ -708,6 +708,20 @@ const lacoBare = trailingSlashRedirect(new URL("https://www.eatingon30a.com/rest
 assert.equal(lacoBare.status, 301);
 assert.equal(lacoBare.headers.get("location"), lacoTarget);
 
+const crabbyTarget = "https://www.eatingon30a.com/restaurants/crabby-steves-seacrest/";
+for (const path of [
+  "/restaurants/crabby-steves-rosemary-beach",
+  "/restaurants/crabby-steves-rosemary-beach/",
+  "/restaurants/crabby-steves-rosemary-beach/index.html",
+  "/restaurants/crabby-steves",
+  "/restaurants/crabby-steves/",
+]) {
+  const moved = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
+  assert.equal(moved.status, 301, path);
+  assert.equal(moved.headers.get("location"), crabbyTarget, path);
+}
+assert.equal(legacyAmpersandRedirect(new URL("https://www.eatingon30a.com/restaurants/crabby-steves-seacrest/")), null);
+
 for (const path of ["/restaurants/growler-garage-30a", "/restaurants/growler-garage-30a/"]) {
   const growler = legacyAmpersandRedirect(new URL(`https://www.eatingon30a.com${path}`));
   assert.equal(growler.status, 301);

@@ -727,6 +727,9 @@ export const LEGACY_SLUG_REDIRECTS = {
   // LaCo's public slug changed. Both old paths go straight to the new page.
   "la-cocina": "/restaurants/laco-seacrest/",
   "la-cocina-seacrest": "/restaurants/laco-seacrest/",
+  // Crabby Steve's is in Seacrest, behind High Pointe, not in Rosemary Beach.
+  "crabby-steves": "/restaurants/crabby-steves-seacrest/",
+  "crabby-steves-rosemary-beach": "/restaurants/crabby-steves-seacrest/",
 };
 
 // Search Console coverage, separate from the maps above. These URLs only
